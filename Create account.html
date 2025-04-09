@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Account</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .signup-box {
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 450px;
+    }
+
+    .signup-box h2 {
+      margin-bottom: 25px;
+      font-size: 24px;
+      text-align: center;
+      color: #333;
+    }
+
+    .signup-box label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    .signup-box input[type="text"],
+    .signup-box input[type="email"],
+    .signup-box input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 18px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .signup-box button {
+      width: 100%;
+      padding: 12px;
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .signup-box button:hover {
+      background-color: #218838;
+    }
+
+    .signup-box .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .signup-box .footer a {
+      color: #2575fc;
+      text-decoration: none;
+    }
+
+    .signup-box .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-box">
+    <h2>Create Your Account</h2>
+    <form action="http://localhost:3000/signup" method="POST">
+      <label for="fullname">Full Name</label>
+      <input type="text" id="fullname" name="fullname" placeholder="Tusar Kanti Mandal" required />
+
+      <label for="PlantName">Plant Name</label>
+      <input type="text" id="PlantName" name="PlantName" placeholder="Gear Plant" required />
+
+      <label for="cell">Cell Name</label>
+      <input type="text" id="cell" name="cell" placeholder="E.V Gear" required />
+
+      <label for="email">Email Address</label>
+      <input type="email" id="email" name="email" placeholder="you@example.com" required />
+
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" placeholder="Choose a username" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Create a password" required />
+
+      <button type="submit">Sign Up</button>
+
+      <div class="footer">
+        <p><a href="signup.html">Sign Up Again</a></p>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
