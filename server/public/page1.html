@@ -1,267 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Profile Page</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      height: 100vh;
-      position: relative;
-      background: linear-gradient(to right, #e0eafc, #cfdef3); /* soft gradient */
-      color: #333;
-    }
-
-    /* Date/Time top right */
-    .datetime {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      font-size: 14px;
-      color: #333;
-      text-align: right;
-      background-color: rgba(255, 255, 255, 0.7);
-      padding: 8px 12px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    /* Profile button top left */
-    .profile-button {
-      position: absolute;
-      top: 20px;
-      left: 30px;
-      padding: 10px 25px;
-      font-size: 16px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 30px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    .profile-button:hover {
-      background-color: #45a049;
-    }
-
-    /* Centered content area */
-    .content {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-    }
-
-    /* Dropdown styling */
-    .dropdown-label {
-      font-size: 18px;
-      margin-bottom: 10px;
-    }
-
-    select {
-      padding: 10px 15px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      cursor: pointer;
-      background-color: #fff;
-      width: 250px;
-    }
-
-    select:focus {
-      outline: none;
-      border-color: #4CAF50;
-    }
-    
-    .skill-indicator {
-      margin-bottom: 15px;
-      padding: 8px 15px;
-      background-color: rgba(255, 255, 255, 0.7);
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      font-weight: bold;
-    }
-    
-    .l1 {
-      color: #3498db;
-    }
-    
-    .l2 {
-      color: #2ecc71;
-    }
-    
-    .l3 {
-      color: #9b59b6;
-    }
-    .logout-button {
-  position: absolute;
-  top: 20px;
-  left: 160px;
-  padding: 10px 25px;
-  font-size: 16px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 30px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.logout-button:hover {
-  background-color: #d32f2f;
-}
-
-  </style>
-</head>
-<body>
-
-  <!-- My Profile Button in top-left -->
-  <button class="profile-button" onclick="checkProfile()">My Profile</button>
-  <button class="logout-button" onclick="logout()">Logout</button>
-
-  <!-- Date and Time in top-right -->
-  <div class="datetime">
-    <div id="date"></div>
-    <div id="time"></div>
-  </div>
-
-  <!-- Centered content area -->
-  <div class="content">
-    <div id="skillDisplay" class="skill-indicator">Loading skill level...</div>
-    <label for="objectDropdown" class="dropdown-label"><h1>Machine:</h1></label>
-    <select id="objectDropdown" onchange="handleSelect(this)">
-      <option value="">-- Choose one --</option>
-      <!-- Options will be populated based on skill level -->
-    </select>
-  </div>
-
-  <script>
-    // Machine options organized by skill level
-    const machinesBySkill = {
-      l1: [
-        { value: "GP200-1", label: "GP200-1" },
-        { value: "MARKING Machine", label: "MARKING Machine" }
-      ],
-      l2: [
-        { value: "GP200-1", label: "GP200-1" },
-        { value: "GP200-2", label: "GP200-2" },
-        { value: "MARKING Machine", label: "MARKING Machine" },
-        { value: "MICROMATIC", label: "MICROMATIC" }
-      ],
-      l3: [
-        { value: "GP200-1", label: "GP200-1" },
-        { value: "GP200-2", label: "GP200-2" },
-        { value: "RAVJEET CHAMFER", label: "RAVJEET CHAMFER" },
-        { value: "DMG", label: "DMG" },
-        { value: "MICROMATIC", label: "MICROMATIC" },
-        { value: "MARKING Machine", label: "MARKING Machine" }
-      ]
-    };
-
-    // Function to get URL parameters
-    function getUrlParameter(name) {
-      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-      var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-      var results = regex.exec(location.search);
-      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-    }
-
-    // Get the skill level from URL parameter
-    function loadSkillLevel() {
-      let skill = getUrlParameter('skill');
-      
-      if (!skill || !machinesBySkill[skill.toLowerCase()]) {
-        skill = 'l1';
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Profile Page</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        height: 100vh;
+        position: relative;
+        background: linear-gradient(
+          to right,
+          #e0eafc,
+          #cfdef3
+        ); /* soft gradient */
+        color: #333;
       }
-      
-      return skill.toLowerCase();
-    }
 
-    // Populate dropdown based on skill level
-    function populateDropdown(skill) {
-      const dropdown = document.getElementById('objectDropdown');
-      const skillDisplay = document.getElementById('skillDisplay');
-      
-      // Clear existing options (except the default)
-      while (dropdown.options.length > 1) {
-        dropdown.remove(1);
+      /* Date/Time top right */
+      .datetime {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 14px;
+        color: #333;
+        text-align: right;
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 8px 12px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       }
-      
-      // Update skill indicator
-      skillDisplay.textContent = `Skill Level: ${skill.charAt(0).toUpperCase() + skill.slice(1)}`;
-      skillDisplay.className = `skill-indicator ${skill}`;
-      
-      // Add options for the specified skill level
-      const machines = machinesBySkill[skill];
-      machines.forEach(machine => {
-        const option = document.createElement('option');
-        option.value = machine.value;
-        option.textContent = machine.label;
-        dropdown.appendChild(option);
-      });
-    }
 
-    // Handle selecting a machine
-    function handleSelect(selectElement) {
-      const selectedValue = selectElement.value;
-      if (selectedValue) {
-        // Replace spaces with %20 or use encodeURIComponent for safety
-        const page = encodeURIComponent(selectedValue) + ".html";
-        window.location.href = page;
+      /* Profile button top left */
+      .profile-button {
+        position: absolute;
+        top: 20px;
+        left: 30px;
+        padding: 10px 25px;
+        font-size: 16px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 30px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: background-color 0.3s ease;
       }
-    }
 
-    // Update Date and Time
-    function updateDateTime() {
-      const now = new Date();
-      const date = now.toLocaleDateString(undefined, {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-      const time = now.toLocaleTimeString();
-      document.getElementById('date').textContent = date;
-      document.getElementById('time').textContent = time;
-    }
+      .profile-button:hover {
+        background-color: #45a049;
+      }
 
-    // Profile button action
-    function checkProfile() {
-      alert("Redirecting to your profile...");
-      // In a real application, you might redirect to a profile page here
-      // window.location.href = "profile.html";
-    }
+      /* Centered content area */
+      .content {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
 
-    // Initialize the page
-    window.onload = function() {
-      const skill = loadSkillLevel();
-      populateDropdown(skill);
-      updateDateTime();
-      setInterval(updateDateTime, 1000);
-    };
+      /* Dropdown styling */
+      .dropdown-label {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
 
-    function logout() {
-  fetch('/logout', {
-    method: 'POST',
-    credentials: 'include'
-  })
-  .then(() => {
-    window.location.href = '/login';
-  })
-  .catch(err => {
-    console.error('Logout error:', err);
-    alert('Logout failed!');
-  });
-}
+      select {
+        padding: 10px 15px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        background-color: #fff;
+        width: 250px;
+      }
 
-  </script>
+      select:focus {
+        outline: none;
+        border-color: #4caf50;
+      }
 
-</body>
+      .plant-indicator {
+        margin-bottom: 15px;
+        padding: 8px 15px;
+        background-color: rgba(255, 255, 255, 0.7);
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        font-weight: bold;
+      }
+
+      .plant1 {
+        color: #3498db;
+      }
+
+      .plant2 {
+        color: #2ecc71;
+      }
+
+      .plant3 {
+        color: #9b59b6;
+      }
+      .logout-button {
+        position: absolute;
+        top: 20px;
+        left: 160px;
+        padding: 10px 25px;
+        font-size: 16px;
+        background-color: #f44336;
+        color: white;
+        border: none;
+        border-radius: 30px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .logout-button:hover {
+        background-color: #d32f2f;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- My Profile Button in top-left -->
+    <button class="profile-button" onclick="checkProfile()">My Profile</button>
+    <button class="logout-button" onclick="logout()">Logout</button>
+
+    <!-- Date and Time in top-right -->
+    <div class="datetime">
+      <div id="date"></div>
+      <div id="time"></div>
+    </div>
+
+    <!-- Centered content area -->
+    <div class="content">
+      <div id="plantDisplay" class="plant-indicator">
+        Loading plant information...
+      </div>
+      <label for="objectDropdown" class="dropdown-label"
+        ><h1>Machine:</h1></label
+      >
+      <select id="objectDropdown" onchange="handleSelect(this)">
+        <option value="">-- Choose one --</option>
+        <!-- Options will be populated based on plant ID -->
+      </select>
+    </div>
+
+    <script>
+      // Machine options organized by plant ID
+      const machinesByPlant = {
+        plant1: [
+          { value: "GP200-1", label: "GP200-1" },
+          { value: "GP200-2", label: "GP200-2" },
+          { value: "MARKING Machine", label: "MARKING Machine" },
+          { value: "MICROMATIC", label: "MICROMATIC" },
+        ],
+        plant2: [
+          { value: "GP200-1", label: "GP200-1" },
+          { value: "GP200-2", label: "GP200-2" },
+          { value: "RAVJEET CHAMFER", label: "RAVJEET CHAMFER" },
+          { value: "DMG", label: "DMG" },
+          { value: "MICROMATIC", label: "MICROMATIC" },
+          { value: "MARKING Machine", label: "MARKING Machine" },
+        ],
+      };
+
+      // Plant names for display
+      const plantNames = {
+        plant1: "ABC Plant",
+        plant2: "XYZ Plant",
+      };
+
+      // Function to get URL parameters
+      function getUrlParameter(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+        var results = regex.exec(location.search);
+        return results === null
+          ? ""
+          : decodeURIComponent(results[1].replace(/\+/g, " "));
+      }
+
+      // Get the plant ID from URL parameter
+      function loadPlantId() {
+        let plantId = getUrlParameter("plant");
+
+        if (!plantId || !machinesByPlant[plantId.toLowerCase()]) {
+          plantId = "1";
+        }
+
+        return plantId.toLowerCase();
+      }
+
+      // Populate dropdown based on plant ID
+      function populateDropdown(plantId) {
+        const dropdown = document.getElementById("objectDropdown");
+        const plantDisplay = document.getElementById("plantDisplay");
+
+        // Clear existing options (except the default)
+        while (dropdown.options.length > 1) {
+          dropdown.remove(1);
+        }
+
+        // Update plant indicator
+        const plantName = plantNames[plantId] || "Unknown Plant";
+        plantDisplay.textContent = `Plant: ${plantName}`;
+        plantDisplay.className = `plant-indicator ${plantId}`;
+
+        // Add options for the specified plant ID
+        const machines = machinesByPlant[plantId];
+        machines.forEach((machine) => {
+          const option = document.createElement("option");
+          option.value = machine.value;
+          option.textContent = machine.label;
+          dropdown.appendChild(option);
+        });
+      }
+
+      // Handle selecting a machine
+      function handleSelect(selectElement) {
+        const selectedValue = selectElement.value;
+        if (selectedValue) {
+          // Replace spaces with %20 or use encodeURIComponent for safety
+          const page = encodeURIComponent(selectedValue) + ".html";
+          window.location.href = page;
+        }
+      }
+
+      // Update Date and Time
+      function updateDateTime() {
+        const now = new Date();
+        const date = now.toLocaleDateString(undefined, {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        const time = now.toLocaleTimeString();
+        document.getElementById("date").textContent = date;
+        document.getElementById("time").textContent = time;
+      }
+
+      // Profile button action
+      function checkProfile() {
+       window.location.href = "/me";
+      }
+
+      // Initialize the page
+      window.onload = function () {
+        const plantId = loadPlantId();
+        
+        populateDropdown('plant' + plantId);
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+      };
+
+      function logout() {
+        fetch("/logout", {
+          method: "POST",
+          credentials: "include",
+        })
+          .then(() => {
+            window.location.href = "/login";
+          })
+          .catch((err) => {
+            console.error("Logout error:", err);
+            alert("Logout failed!");
+          });
+      }
+    </script>
+  </body>
 </html>

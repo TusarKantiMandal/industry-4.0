@@ -210,12 +210,12 @@
         document.getElementById('loading-indicator').style.display = 'none';
         
         // Check if skill is in the response
-        if (data && data.skill) {
-          // Redirect to the next page with skill parameter
-          window.location.href = `page1.html?skill=${data.skill}`;
+        if (data && data.plant_id) {
+          // Redirect to the next page with plant parameter
+          window.location.href = `page1.html?plant=${data.plant_id}`;
         } else {
-          // If skill is missing in response
-          throw new Error('Invalid server response. Skill information missing.');
+          // If plant is missing in response
+          throw new Error('Invalid server response. Plant information missing.');
         }
       })
       .catch(error => {

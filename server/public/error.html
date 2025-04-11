@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error Occurred</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --error-color: #e74c3c;
+      --error-hover: #c0392b;
+      --text-color: #333;
+      --light-bg: #f8f9fa;
+      --border-color: #e1e4e8;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--light-bg);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      line-height: 1.6;
+    }
+    
+    .error-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 500px;
+      padding: 40px 30px;
+      text-align: center;
+      animation: slideUp 0.4s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .error-icon {
+      color: var(--error-color);
+      font-size: 64px;
+      margin-bottom: 20px;
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .error-title {
+      color: var(--error-color);
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    
+    .error-message {
+      color: #555;
+      font-size: 16px;
+      margin-bottom: 30px;
+    }
+    
+    .error-code {
+      display: inline-block;
+      background-color: #f1f1f1;
+      color: #666;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+    
+    .action-button {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: var(--error-color);
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    .action-button:hover {
+      background-color: var(--error-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+    }
+    
+    .action-button:active {
+      transform: translateY(0);
+    }
+    
+    .secondary-action {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .secondary-action a {
+      color: #3498db;
+      text-decoration: none;
+      margin-left: 5px;
+    }
+    
+    .secondary-action a:hover {
+      text-decoration: underline;
+    }
+    
+    .error-details {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      font-size: 14px;
+      color: #777;
+      text-align: left;
+    }
+    
+    .error-details pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin-top: 10px;
+      display: none;
+    }
+    
+    .show-details-btn {
+      background: none;
+      border: none;
+      color: #3498db;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: underline;
+      padding: 0;
+    }
+    
+    .show-details-btn:hover {
+      color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <div class="error-icon">
+      <i class="fas fa-exclamation-circle"></i>
+    </div>
+    <h1 class="error-title" id="errorTitle">Oops! Something went wrong.</h1>
+    <!-- <div class="error-code" id="errorCode">Error</div> -->
+    <p class="error-message" id="errorMessage">There was an error processing your request. Please try again.</p>
+    <a href="javascript:history.back()" class="action-button" id="primaryAction">Go Back</a>
+    <div class="secondary-action">
+      <span>Or</span>
+      <a href="/" id="secondaryAction">Return to Homepage</a>
+    </div>
+    
+    <div class="error-details">
+      <button class="show-details-btn" onclick="toggleDetails()">Show Technical Details</button>
+      <pre id="errorDetails">No additional details available.</pre>
+    </div>
+  </div>
+
+  <script>
+    // This script makes the error page dynamic and reusable for different error scenarios
+    
+    function getUrlParameter(name) {
+      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      var results = regex.exec(location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+    
+    window.onload = function() {
+      // Get error parameters from URL if provided
+      const errorType = getUrlParameter('type') || 'general';
+      const errorCode = getUrlParameter('code');
+      const message = getUrlParameter('message');
+      const details = getUrlParameter('details');
+      const actionUrl = getUrlParameter('action_url');
+      const actionText = getUrlParameter('action_text');
+      
+      // Default error messages by type
+      const errorTypes = {
+        'auth': {
+          title: 'Authentication Error',
+          message: 'There was a problem with your authentication. Please try signing in again.',
+          action: '/login',
+          actionText: 'Back to Login'
+        },
+        'signup': {
+          title: 'Signup Error',
+          message: 'There was an error processing your signup. Please try again.',
+          action: '/signup',
+          actionText: 'Back to Signup'
+        },
+        'server': {
+          title: 'Server Error',
+          message: 'We\'re experiencing technical difficulties. Please try again later.',
+          action: '/',
+          actionText: 'Go to Homepage'
+        },
+        'notfound': {
+          title: 'Page Not Found',
+          message: 'The page you are looking for doesn\'t exist or has been moved.',
+          action: '/',
+          actionText: 'Go to Homepage'
+        },
+        'forbidden': {
+          title: 'Access Denied',
+          message: 'You don\'t have permission to access this resource.',
+          action: '/',
+          actionText: 'Go to Homepage'
+        },
+        'validation': {
+          title: 'Validation Error',
+          message: 'Please check your information and try again.',
+          action: 'javascript:history.back()',
+          actionText: 'Go Back'
+        },
+        'general': {
+          title: 'Oops! Something went wrong.',
+          message: 'There was an error processing your request. Please try again.',
+          action: 'javascript:history.back()',
+          actionText: 'Go Back'
+        }
+      };
+      
+      // Set error information
+      const selectedError = errorTypes[errorType] || errorTypes.general;
+      
+      document.getElementById('errorTitle').textContent = message || selectedError.title;
+      document.getElementById('errorMessage').textContent = message || selectedError.message;
+      document.getElementById('errorCode').textContent = errorCode ? `Error ${errorCode}` : errorType.charAt(0).toUpperCase() + errorType.slice(1);
+      
+      // Set primary action
+      const primaryAction = document.getElementById('primaryAction');
+      primaryAction.href = actionUrl || selectedError.action;
+      primaryAction.textContent = actionText || selectedError.actionText;
+      
+      // Set error details if available
+      if (details) {
+        document.getElementById('errorDetails').textContent = details;
+      }
+      
+      // Set page title
+      document.title = `Error - ${document.getElementById('errorTitle').textContent}`;
+    };
+    
+    function toggleDetails() {
+      const details = document.getElementById('errorDetails');
+      if (details.style.display === 'block') {
+        details.style.display = 'none';
+        document.querySelector('.show-details-btn').textContent = 'Show Technical Details';
+      } else {
+        details.style.display = 'block';
+        document.querySelector('.show-details-btn').textContent = 'Hide Technical Details';
+      }
+    }
+  </script>
+</body>
+</html>
