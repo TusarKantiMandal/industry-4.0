@@ -10,8 +10,33 @@ app.use(express.urlencoded({ extended: true }));
 // Add middleware to parse JSON data
 app.use(express.json());
 
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = 'SECRET_KEY'; // TODO: get from .env
+
+// protected files
+app.get('/page1.html', verifyToken, (req, res) => {
+  const userSkill = req.user.skill;
+  const requestedSkill = req.query.skill;
+
+  if (!requestedSkill) {
+    return res.sendFile(path.join(__dirname, 'public', '404.html'));
+  }
+
+  if (userSkill !== requestedSkill) {
+    return res.sendFile(path.join(__dirname, 'public', '403.html'));
+  }
+
+  // Serve the actual HTML page
+  res.sendFile(path.join(__dirname, 'public', 'page1.html'));
+});
+
+
 // Serve static files (like HTML/CSS/JS)
 app.use(express.static(path.join(__dirname, 'public')));
+
 
 // Enable CORS for all routes (helpful for development)
 app.use((req, res, next) => {
@@ -67,6 +92,34 @@ app.post('/signup', (req, res) => {
   });
 });
 
+app.get('/login', (req, res) => {
+  const token = req.cookies.token;
+  
+  if (!token) {
+    return res.sendFile(path.join(__dirname, 'public', 'login.html'));
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      // Invalid token → show login
+      return res.sendFile(path.join(__dirname, 'public', 'login.html'));
+    }
+
+    const userSkill = decoded.skill;
+    // Redirect to protected page with skill query
+    return res.redirect(`/page1.html?skill=${userSkill}`);
+  });
+});
+
+app.post('/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'Lax'
+  });
+  return res.status(200).json({ message: 'Logged out' });
+});
+
 // Handle login - Support both form and JSON data
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
@@ -88,9 +141,6 @@ app.post('/login', (req, res) => {
     
     console.log(`User "${username}" logged in.`);
     
-    // Handle content negotiation - check if client accepts JSON
-    if (req.headers.accept && req.headers.accept.includes('application/json')) {
-      // Return user data as JSON
       const userData = {
         success: true,
         id: row.id,
@@ -102,18 +152,41 @@ app.post('/login', (req, res) => {
         skill: row.skill
       };
       
-      // Remove sensitive data
       delete userData.password;
+
       
+      const token = jwt.sign(userData, JWT_SECRET, { expiresIn: '1h' });
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: false, 
+        sameSite: 'Lax', 
+        maxAge: 1 * 60 * 60 * 1000 * 24 * 30, // 30 days
+      });
+  
       return res.status(200).json(userData);
-    } else {
-      // For traditional form submissions, redirect to page1.html
-      return res.redirect('/page1.html');
-    }
   });
+});
+
+app.use((req, res, next) => {
+  if (!res.headersSent) {
+    res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+  } else {
+    next();
+  }
 });
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+
+function verifyToken(req, res, next) {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).send('Unauthorized: No token');
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(403).send('Forbidden: Invalid token');
+    req.user = decoded;
+    next();
+  });
+}
