@@ -1,101 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Professional Contact Details</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Unique Contact Card</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      background-color: #f4f6f8;
+    }
+
+    body {
+      height: 100vh;
+      background: linear-gradient(135deg, #dfe9f3, #ffffff);
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    .contact-card {
-      background-color: #ffffff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-      max-width: 500px;
+    .glass-card {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      padding: 40px 30px;
       width: 100%;
+      max-width: 480px;
     }
 
-    .contact-card h2 {
-      margin-bottom: 20px;
-      font-size: 24px;
-      color: #333333;
-      border-bottom: 1px solid #e0e0e0;
-      padding-bottom: 10px;
+    .glass-card h2 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 30px;
+      color: #2c3e50;
     }
 
     .contact-info {
       list-style: none;
-      padding: 0;
-      margin: 0;
     }
 
     .contact-info li {
-      margin-bottom: 15px;
-      font-size: 16px;
-      color: #555;
+      display: flex;
+      align-items: center;
+      margin-bottom: 18px;
+      font-size: 17px;
+      color: #333;
+      flex-wrap: wrap;
     }
 
-    .contact-info span {
-      display: inline-block;
-      width: 100px;
-      font-weight: bold;
-      color: #222;
+    .contact-info li span.icon {
+      font-size: 20px;
+      margin-right: 12px;
+      width: 24px;
     }
 
-    a {
-      color: #1a73e8;
+    .contact-info li a {
+      color: #0077cc;
       text-decoration: none;
+      margin-right: 8px;
     }
 
-    a:hover {
+    .contact-info li a:hover {
       text-decoration: underline;
     }
 
+    .note {
+      font-style: italic;
+      color: #777;
+    }
+
+    .label {
+      color: #555;
+      font-size: 14px;
+    }
+
     @media (max-width: 600px) {
-      .contact-card {
-        padding: 20px;
+      .glass-card {
+        padding: 25px;
       }
 
-      .contact-info span {
-        width: 90px;
+      .glass-card h2 {
+        font-size: 24px;
+      }
+
+      .contact-info li {
+        font-size: 15px;
       }
     }
   </style>
 </head>
 <body>
 
-  <div class="contact-card">
-    <h2>Contact Information</h2>
+  <div class="glass-card">
+    <h2>📇 Contact Card</h2>
     <ul class="contact-info">
-      <li><span>Phone:</span> <a href=""> +91 816253053  </a>-Tusar Kanti Mandal</li>
-      <li><span>Phone:</span> <a href="">+91 8658481376   </a>-Gyanaranjan Behera</li>
-
-      <li><span>Email:</span> <a href="tusarmandal2@gmail.com">tusarmandal2@gmail.com</a></li>
-      <li><span>Address:</span><h1>sorry i can't share </h1></li>
-      <li><span>Website:</span> <a href="https://www.company.com" target="_blank">www.danaanand.com</a></li>
+      <li><span class="icon">📞</span> <a href="tel:+91816253053">+91 816253053</a> <span class="label">– Tusar Kanti Mandal</span></li>
+      <li><span class="icon">📞</span> <a href="tel:+918658481376">+91 8658481376</a> <span class="label">– Gyanaranjan Behera</span></li>
+      <li><span class="icon">✉️</span> <a href="mailto:tusarmandal2@gmail.com">tusarmandal2@gmail.com</a></li>
+      <li><span class="icon">📍</span> <span class="note">Sorry, I can't share</span></li>
+      <li><span class="icon">🌐</span> <a href="https://www.danaanand.com" target="_blank">www.danaanand.com</a></li>
     </ul>
   </div>
-
-</body>
-</html>
 
 </body>
 </html>

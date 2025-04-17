@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #222;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+
+    nav {
+      background-color: #333;
+      padding: 10px;
+      text-align: center;
+    }
+
+    nav a {
+      color: #fff;
+      margin: 0 10px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background-color: #0073e6;
+      color: white;
+    }
+
+    td[contenteditable="true"] {
+      background-color: #f9f9f9;
+    }
+
+    button {
+      background-color: #e60000;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #cc0000;
+    }
+
+    footer {
+      background-color: #222;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Simulate Admin Check -->
+  <script>
+    const isAdmin = true; // Change to false to block access
+
+    if (!isAdmin) {
+      alert("Access denied. Admins only.");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <header>
+    <h1>User Management</h1>
+  </header>
+
+  <nav>
+    <a href="admin.html">Back to Admin</a>
+  </nav>
+
+  <div class="container">
+    <h2>User List</h2>
+    <p><strong>Total Users:</strong> <span id="user-count">0</span></p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone Number</th>
+          <th>Plant</th>
+          <th>Cell</th>
+          <th>Time</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="user-table-body">
+        <tr>
+          <td contenteditable="true">John Doe</td>
+          <td contenteditable="true">john@example.com</td>
+          <td contenteditable="true">9876543210</td>
+          <td contenteditable="true">Gear</td>
+          <td contenteditable="true">E.V</td>
+          <td contenteditable="true">08:00 AM</td>
+          <td><button onclick="deleteRow(this)">Delete</button></td>
+        </tr>
+        <tr>
+          <td contenteditable="true">Jane Smith</td>
+          <td contenteditable="true">jane@example.com</td>
+          <td contenteditable="true">9123456789</td>
+          <td contenteditable="true">Banjo</td>
+          <td contenteditable="true">Axle</td>
+          <td contenteditable="true">10:30 AM</td>
+          <td><button onclick="deleteRow(this)">Delete</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    &copy; 2025 Dana Anand Admin Portal. All rights reserved.
+  </footer>
+
+  <script>
+    function deleteRow(button) {
+      if (confirm("Are you sure you want to delete this user?")) {
+        const row = button.parentElement.parentElement;
+        row.remove();
+        updateUserCount();
+      }
+    }
+
+    function updateUserCount() {
+      const tableBody = document.getElementById("user-table-body");
+      const rowCount = tableBody.getElementsByTagName("tr").length;
+      document.getElementById("user-count").textContent = rowCount;
+    }
+
+    window.onload = updateUserCount;
+  </script>
+
+</body>
+</html>

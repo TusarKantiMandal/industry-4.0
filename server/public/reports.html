@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #222;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    nav {
+      background-color: #333;
+      padding: 10px;
+      text-align: center;
+    }
+
+    nav a {
+      color: white;
+      margin: 0 10px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    footer {
+      background-color: #222;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background-color: #0073e6;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Reports</h1>
+  </header>
+
+  <nav>
+    <a href="admin.html">Back to Dashboard</a>
+    <a href="index.html">Home</a>
+  </nav>
+
+  <div class="container">
+    <h2>System Reports</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Process</th>
+          <th>Model</th>
+          <th>Ratio</th>
+          <th>Machine Name</th>
+          <th>Shift</th>
+          <th>Time</th>
+          <th>User</th>
+          <th>AM Check Sheet Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>hobbing</td>
+          <td>H.D Idler</td>
+          <td>1.5</td>
+          <td>GP200-2</td>
+          <td>A Shift</td>
+          <td>08:00 AM</td>
+          <td>John Doe</td>
+          <td>✓ Checked</td>
+        </tr>
+        <tr>
+          <td>Axle Part</td>
+          <td>AX100</td>
+          <td>2.0</td>
+          <td>AX100-1</td>
+          <td>B Shift</td>
+          <td>10:30 AM</td>
+          <td>Jane Smith</td>
+          <td>✗ Not Checked</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    &copy; 2025 Dana Anand Admin Portal. All rights reserved.
+  </footer>
+
+</body>
+</html>
