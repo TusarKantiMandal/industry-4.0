@@ -17,10 +17,63 @@ app.use(cookieParser());
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = "SECRET_KEY"; // TODO: get from .env
 
-// protected files
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://127.0.0.1:3001"); // <-- Match frontend origin
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Credentials", "true"); 
+  next();
+});
+
+app.use("/admin", (req, res, next) => {
+  const token = req.cookies.token;
+
+  if (!token)
+    return res.redirect("/error.html?type=auth&errorCode=401&details=No token");
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    if (req.path.startsWith("/it")) {
+      if (decoded.role !== "itAdmin") {
+        return res.redirect(
+          "/error.html?type=auth&errorCode=403&details=IT Admin only"
+        );
+      }
+    } else {
+      if (!["admin", "itAdmin"].includes(decoded.role)) {
+        return res.redirect(
+          "/error.html?type=auth&errorCode=403&details=Unauthorized"
+        );
+      }
+    }
+
+    next();
+  } catch (err) {
+    return res.redirect(
+      "/error.html?type=auth&errorCode=401&details=Invalid token"
+    );
+  }
+});
+
+const adminRoutes = require("./admin");
+const apiRoutes = require("./api");
+app.use("/admin", adminRoutes);
+app.use('/api', verifyItAdmin, apiRoutes);
+
 app.get("/page1.html", verifyToken, (req, res) => {
   const usersPlant = req.user.plant_id;
   const plant = req.query.plant;
+
+  if (plant === undefined || plant === "") {
+    return res.redirect(
+      "/page1.html?plant=" +
+        usersPlant
+    );
+  }
 
   if (!plant) {
     return res.sendFile(path.join(__dirname, "public", "404.html"));
@@ -30,24 +83,12 @@ app.get("/page1.html", verifyToken, (req, res) => {
     return res.sendFile(path.join(__dirname, "public", "403.html"));
   }
 
-  // Serve the actual HTML page
   res.sendFile(path.join(__dirname, "public", "page1.html"));
 });
 
-// Serve static files (like HTML/CSS/JS)
 app.use(express.static(path.join(__dirname, "public")));
 
-// Enable CORS for all routes (helpful for development)
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://127.0.0.1:3001"); // <-- Match frontend origin
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Credentials", "true"); // Only if you send cookies/auth
-  next();
-});
+
 
 // Initialize SQLite database
 const db = new sqlite3.Database("./database.db", (err) => {
@@ -75,6 +116,8 @@ const db = new sqlite3.Database("./database.db", (err) => {
           username TEXT NOT NULL UNIQUE,
           password TEXT NOT NULL,
           plant_id INTEGER NOT NULL,
+          role TEXT DEFAULT 'user',
+          active INTEGER DEFAULT 1,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (plant_id) REFERENCES plants(id)
@@ -120,8 +163,6 @@ const db = new sqlite3.Database("./database.db", (err) => {
 // Handle signup form submission
 app.post("/signup", (req, res) => {
   const { fullname, plant_id, cell, email, username, password } = req.body;
-
-  console.log(req.body);
 
   if (!fullname || !plant_id || !cell || !email || !username || !password) {
     return res.redirect("/error.html?type=signup&errorCode=400");
@@ -190,9 +231,17 @@ app.post("/login", (req, res) => {
     }
 
     if (!row) {
-      return res.redirect(
-        "/error.html?type=auth&errorCode=401&details=No user exists or wrong password!"
-      );
+      return res.status(401).json({
+        success: false,
+        message: "No user exists or wrong credentials!"
+      });
+    }
+
+    if (!row.active) {
+      return res.status(403).json({
+        success: false,
+        message: "User account is inactive."
+      });
     }
 
     console.log(`User "${username}" logged in.`);
@@ -205,11 +254,13 @@ app.post("/login", (req, res) => {
       cell: row.cell,
       email: row.email,
       username: row.username,
+      role: row.role,
+      active: row.active
     };
 
     delete userData.password;
 
-    const token = jwt.sign(userData, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign(userData, JWT_SECRET, { expiresIn: "24h" });
     res.cookie("token", token, {
       httpOnly: true,
       secure: false,
@@ -237,7 +288,6 @@ app.get("/me", verifyToken, (req, res) => {
   WHERE u.id = ?
   `;
 
-
   db.all(query, [userId], (err, rows) => {
     if (err) return res.status(500).send("DB error");
 
@@ -249,7 +299,7 @@ app.get("/me", verifyToken, (req, res) => {
       .filter((row) => row.machine_name)
       .map((row) => {
         const levelText = row.skill;
-        const level = parseInt(levelText.charAt(1)); 
+        const level = parseInt(levelText.charAt(1));
         const levelClass = `level-${level}`;
         const icon =
           level === 3
@@ -296,116 +346,6 @@ app.get("/me", verifyToken, (req, res) => {
   });
 });
 
-// app.get("/user/:id", (req, res) => {
-//   const userId = req.params.id;
-
-//   // Query to get user data with plant information and machine skills
-//   const query = `
-//     SELECT
-//       u.id, u.fullname, u.cell, u.email, u.username,
-//       p.id as plant_id, p.name as plant_name,
-//       m.id as machine_id, m.name as machine_name,
-//       us.skill
-//     FROM users u
-//     JOIN plants p ON u.plant_id = p.id
-//     LEFT JOIN user_skills us ON u.id = us.user_id
-//     LEFT JOIN machines m ON us.machine_id = m.id AND m.plant_id = p.id
-//     WHERE u.id = ?
-//   `;
-
-//   db.all(query, [userId], (err, rows) => {
-//     if (err) {
-//       console.error("Error fetching user data:", err.message);
-//       return res.status(500).send("Database error occurred");
-//     }
-
-//     if (rows.length === 0) {
-//       return res.status(404).send("User not found");
-//     }
-
-//     // Process data to organize machine skills
-//     const userData = {
-//       id: rows[0].id,
-//       fullname: rows[0].fullname,
-//       cell: rows[0].cell,
-//       email: rows[0].email,
-//       username: rows[0].username,
-//       plant: {
-//         id: rows[0].plant_id,
-//         name: rows[0].plant_name,
-//       },
-//       machineSkills: [],
-//     };
-
-//     rows.forEach((row) => {
-//       if (row.machine_id) {
-//         // Check if machine already exists in our array
-//         const existingMachine = userData.machineSkills.find(
-//           (m) => m.id === row.machine_id
-//         );
-
-//         if (!existingMachine) {
-//           userData.machineSkills.push({
-//             id: row.machine_id,
-//             name: row.machine_name,
-//             skills: [row.skill],
-//           });
-//         } else if (row.skill) {
-//           existingMachine.skills.push(row.skill);
-//         }
-//       }
-//     });
-
-//     // Read the HTML template file
-//     fs.readFile(
-//       path.join(__dirname, "templates", "user-profile.html"),
-//       "utf8",
-//       (err, template) => {
-//         if (err) {
-//           console.error("Error reading template file:", err);
-//           return res.status(500).send("Error loading template");
-//         }
-
-//         // Replace placeholders with actual data
-//         let html = template
-//           .replace("{{userId}}", userData.id)
-//           .replace("{{fullname}}", userData.fullname)
-//           .replace("{{username}}", userData.username)
-//           .replace("{{email}}", userData.email)
-//           .replace("{{cell}}", userData.cell)
-//           .replace("{{plantName}}", userData.plant.name);
-
-//         // Generate machine skills HTML
-//         let machineSkillsHTML = "";
-//         if (userData.machineSkills.length === 0) {
-//           machineSkillsHTML =
-//             '<p class="no-skills">No machine skills recorded.</p>';
-//         } else {
-//           userData.machineSkills.forEach((machine) => {
-//             let skillsList = "";
-//             machine.skills.forEach((skill) => {
-//               skillsList += `<li>${skill}</li>`;
-//             });
-
-//             machineSkillsHTML += `
-//             <div class="machine-card">
-//               <h3>${machine.name}</h3>
-//               <h4>Skills:</h4>
-//               <ul>${skillsList}</ul>
-//             </div>
-//           `;
-//           });
-//         }
-
-//         // Insert machine skills HTML
-//         html = html.replace("{{machineSkills}}", machineSkillsHTML);
-
-//         res.send(html);
-//       }
-//     );
-//   });
-// });
-
 app.use((req, res, next) => {
   if (!res.headersSent) {
     res.status(404).sendFile(path.join(__dirname, "public", "404.html"));
@@ -421,11 +361,34 @@ app.listen(PORT, () => {
 
 function verifyToken(req, res, next) {
   const token = req.cookies.token;
-  if (!token) return res.redirect("/error.html?type=auth&errorCode=401&details=No token");
+  if (!token)
+    return res.redirect("/error.html?type=auth&errorCode=401&details=No token");
 
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) return res.redirect("/error.html?type=auth&errorCode=403&details=Invalid token");
+    if (err)
+      return res.redirect(
+        "/error.html?type=auth&errorCode=403&details=Invalid token"
+      );
     req.user = decoded;
+    next();
+  });
+}
+
+function verifyItAdmin(req, res, next) {
+  const token = req.cookies.token;
+  if (!token)
+    return res.redirect("/error.html?type=auth&errorCode=401&details=No token");
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err)
+      return res.redirect(
+        "/error.html?type=auth&errorCode=403&details=Invalid token"
+      );
+    req.user = decoded;
+    if (decoded.role != 'itAdmin')
+      return res.redirect(
+        "/403.html"
+      )
     next();
   });
 }
