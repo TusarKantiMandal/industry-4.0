@@ -121,6 +121,10 @@ activeStatus.addEventListener("change", () => {
 form.addEventListener("submit", (e) => {
   e.preventDefault();
 
+  if(!confirm("Are you sure you want to update the User Details?\nThis action cannot be undone.")){
+    return;
+  }
+
   // Collect form data
   const formData = {
     fullname: document.getElementById("fullname").value,

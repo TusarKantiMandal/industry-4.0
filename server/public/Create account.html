@@ -5,112 +5,375 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Create Account</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #6a11cb, #2575fc);
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
     }
-
-    .signup-box {
-      background-color: #fff;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    
+    body::before {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      top: -100px;
+      left: -100px;
+      z-index: -1;
+    }
+    
+    body::after {
+      content: '';
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      bottom: -70px;
+      right: -70px;
+      z-index: -1;
+    }
+    
+    .signup-container {
+      position: relative;
+      max-width: 500px;
       width: 100%;
-      max-width: 450px;
     }
-
-    .signup-box h2 {
-      margin-bottom: 25px;
-      font-size: 24px;
+    
+    .signup-box {
+      background-color: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      transform: translateY(0);
+      transition: all 0.5s ease;
+    }
+    
+    .signup-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .signup-header {
       text-align: center;
-      color: #333;
+      margin-bottom: 30px;
     }
-
-    .signup-box label {
+    
+    .signup-header h2 {
+      color: #333;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    
+    .signup-header p {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .input-group label {
       display: block;
       margin-bottom: 8px;
-      font-weight: 600;
-      color: #555;
+      font-weight: 500;
+      color: #444;
+      font-size: 14px;
+      transition: all 0.3s ease;
     }
-
-    .signup-box input[type="text"],
-    .signup-box input[type="email"],
-    .signup-box input[type="password"] {
+    
+    .input-group input {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 18px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
+      padding: 14px 15px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+      background-color: rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
     }
-
-    .signup-box button {
+    
+    .input-group input:focus {
+      border-color: #2575fc;
+      box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.1);
+      outline: none;
+    }
+    
+    .input-group input::placeholder {
+      color: #aaa;
+    }
+    
+    .input-icon {
+      position: absolute;
+      right: 15px;
+      top: 42px;
+      color: #aaa;
+      font-size: 18px;
+    }
+    
+    .btn-submit {
       width: 100%;
-      padding: 12px;
-      background-color: #28a745;
+      padding: 15px;
+      background: linear-gradient(to right, #2575fc, #6a11cb);
       color: #fff;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
-
-    .signup-box button:hover {
-      background-color: #218838;
+    
+    .btn-submit:hover {
+      background: linear-gradient(to right, #1f68e0, #5b0fb3);
+      transform: translateY(-2px);
+      box-shadow: 0 7px 15px rgba(37, 117, 252, 0.3);
     }
-
-    .signup-box .footer {
-      margin-top: 20px;
+    
+    .btn-submit:active {
+      transform: translateY(1px);
+    }
+    
+    .footer {
+      margin-top: 25px;
       text-align: center;
       font-size: 14px;
       color: #666;
     }
-
-    .signup-box .footer a {
+    
+    .footer a {
       color: #2575fc;
       text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
     }
-
-    .signup-box .footer a:hover {
-      text-decoration: underline;
+    
+    .footer a:hover {
+      color: #6a11cb;
+    }
+    
+    .two-cols {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .two-cols .input-group {
+      flex: 1;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 15px;
+      top: 42px;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 10;
+    }
+    
+    .completion-bar {
+      height: 5px;
+      background-color: #eee;
+      border-radius: 10px;
+      margin-top: 5px;
+      overflow: hidden;
+    }
+    
+    .completion-progress {
+      height: 100%;
+      background: linear-gradient(to right, #ff416c, #ff4b2b);
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .signup-box {
+      animation: fadeIn 0.8s ease forwards;
+    }
+    
+    .input-group {
+      opacity: 0;
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    .input-group:nth-child(1) { animation-delay: 0.1s; }
+    .input-group:nth-child(2) { animation-delay: 0.2s; }
+    .input-group:nth-child(3) { animation-delay: 0.3s; }
+    .input-group:nth-child(4) { animation-delay: 0.4s; }
+    .input-group:nth-child(5) { animation-delay: 0.5s; }
+    .input-group:nth-child(6) { animation-delay: 0.6s; }
+    
+    button {
+      opacity: 0;
+      animation: fadeIn 0.5s ease forwards;
+      animation-delay: 0.7s;
+    }
+    
+    .footer {
+      opacity: 0;
+      animation: fadeIn 0.5s ease forwards;
+      animation-delay: 0.8s;
     }
   </style>
 </head>
 <body>
-  <div class="signup-box">
-    <h2>Create Your Account</h2>
-    <form action="/signup" method="POST">
-      <label for="fullname">Full Name</label>
-      <input type="text" id="fullname" name="fullname" placeholder="Tusar Kanti Mandal" required />
-
-      <label for="plant_id">Plant ID</label>
-      <input type="text" id="plant_id" name="plant_id" placeholder="1" required />
-
-      <label for="cell">Cell Name</label>
-      <input type="text" id="cell" name="cell" placeholder="E.V Gear" required />
-
-      <label for="email">Email Address</label>
-      <input type="email" id="email" name="email" placeholder="you@example.com" required />
-
-      <label for="username">Username</label>
-      <input type="text" id="username" name="username" placeholder="Choose a username" required />
-
-      <label for="password">Password</label>
-      <input type="password" id="password" name="password" placeholder="Create a password" required />
-
-      <button type="submit">Sign Up</button>
-
-      <div class="footer">
-        <p><a href="signup.html">Sign Up Again</a></p>
+  <div class="signup-container">
+    <div class="signup-box">
+      <div class="signup-header">
+        <h2>Create Your Account</h2>
+        <p>Fill in the details to get started</p>
       </div>
-    </form>
+      <form id="signupForm" action="/signup" method="POST">
+        <div class="two-cols">
+          <div class="input-group">
+            <label for="fullname">Full Name</label>
+            <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required />
+          </div>
+          <div class="input-group">
+            <label for="plant_id">Plant ID</label>
+            <input type="text" id="plant_id" name="plant_id" placeholder="Enter plant ID" required />
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label for="cell">Cell Name</label>
+          <input type="text" id="cell" name="cell" placeholder="Enter cell name" required />
+        </div>
+        
+        <div class="input-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="your@email.com" required />
+        </div>
+        
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Choose a username" required />
+        </div>
+        
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Create a strong password" required />
+          <span class="password-toggle" onclick="togglePassword()">👁</span>
+          <div class="completion-bar">
+            <div class="completion-progress" id="passwordStrength"></div>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn-submit">Create Account</button>
+        <div class="footer">
+          <p>Already have an account? <a href="login.html">Sign In</a></p>
+        </div>
+      </form>
+    </div>
   </div>
+
+  <script>
+    // Toggle password visibility
+    function togglePassword() {
+      const passwordInput = document.getElementById('password');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+      } else {
+        passwordInput.type = 'password';
+      }
+    }
+    
+    // Password strength meter
+    const passwordInput = document.getElementById('password');
+    const strengthMeter = document.getElementById('passwordStrength');
+    
+    passwordInput.addEventListener('input', function() {
+      const value = passwordInput.value;
+      let strength = 0;
+      
+      if (value.length >= 8) strength += 20;
+      if (/[A-Z]/.test(value)) strength += 20;
+      if (/[a-z]/.test(value)) strength += 20;
+      if (/[0-9]/.test(value)) strength += 20;
+      if (/[^A-Za-z0-9]/.test(value)) strength += 20;
+      
+      strengthMeter.style.width = strength + '%';
+      
+      if (strength <= 40) {
+        strengthMeter.style.background = 'linear-gradient(to right, #ff416c, #ff4b2b)';
+      } else if (strength <= 80) {
+        strengthMeter.style.background = 'linear-gradient(to right, #f7b733, #fc4a1a)';
+      } else {
+        strengthMeter.style.background = 'linear-gradient(to right, #56ab2f, #a8e063)';
+      }
+    });
+    
+    // Form validation
+    const form = document.getElementById('signupForm');
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Add form validation here
+      const fullname = document.getElementById('fullname').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      if (fullname.length < 3) {
+        alert('Please enter a valid name');
+        return;
+      }
+      
+      if (!validateEmail(email)) {
+        alert('Please enter a valid email address');
+        return;
+      }
+      
+      if (password.length < 8) {
+        alert('Password must be at least 8 characters long');
+        return;
+      }
+      
+      // If all validations pass, submit the form
+      this.submit();
+    });
+    
+    function validateEmail(email) {
+      const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(String(email).toLowerCase());
+    }
+    
+    // Add smooth hover effect to input fields
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+      input.addEventListener('focus', function() {
+        this.parentElement.style.transform = 'translateY(-2px)';
+      });
+      
+      input.addEventListener('blur', function() {
+        this.parentElement.style.transform = 'translateY(0)';
+      });
+    });
+  </script>
 </body>
 </html>
