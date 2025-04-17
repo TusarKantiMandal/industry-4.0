@@ -15,9 +15,11 @@ router.get("/it", (req, res) => {
       u.email, 
       u.plant_id,
       u.active,
+      u.role,
       p.name as plant_name
     FROM users u
     LEFT JOIN plants p ON u.plant_id = p.id
+    WHERE u.role != 'itAdmin'
     ORDER BY u.id ASC
   `;
   
@@ -45,6 +47,7 @@ function generateAdminHTML(users) {
         <td>${user.fullname}</td>
         <td>${user.username}</td>
         <td>${user.email}</td>
+        <td>${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</td>
         <td><span class="chip active-chip-${user.active}">${user.active === 1 ? 'Active' : 'Inactive'}</span></td>
         <td><span class="chip chip-${user.plant_id}">${user.plant_id}</span></td>
         <td class="actions-cell">
