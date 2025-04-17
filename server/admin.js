@@ -5,8 +5,15 @@ const sqlite3 = require('sqlite3').verbose();
 const router = express.Router();
 const db = new sqlite3.Database('./database.db');
 
+
+router.get("/it/users/edit", (req, res) => {
+  const userId = req.query.id;
+
+  res.sendFile(path.join(__dirname, "public", "editUser.html"));
+}
+)
+
 router.get("/it", (req, res) => {
-  
   const query = `
     SELECT 
       u.id, 
@@ -72,106 +79,6 @@ function generateAdminHTML(users) {
   return html;
 }
   
-//   const enhancedScript = `
-//     <script>
-//       // Initialize dropdown actions
-//       document.querySelectorAll('.dropdown-toggle').forEach(button => {
-//           button.addEventListener('click', function() {
-//               // Create dropdown menu if it doesn't exist
-//               let menu = this.nextElementSibling;
-//               if (!menu || !menu.classList.contains('dropdown-menu')) {
-//                   menu = document.createElement('div');
-//                   menu.className = 'dropdown-menu';
-//                   menu.innerHTML = \`
-//                       <a href="#" class="dropdown-item edit-user">Edit</a>
-//                       <a href="#" class="dropdown-item delete-user">Deactivate</a>
-//                   \`;
-//                   this.parentNode.appendChild(menu);
-//               }
-              
-//               // Toggle menu visibility
-//               menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-              
-//               // Close other menus
-//               document.querySelectorAll('.dropdown-menu').forEach(otherMenu => {
-//                   if (otherMenu !== menu) {
-//                       otherMenu.style.display = 'none';
-//                   }
-//               });
-              
-//               // Stop propagation
-//               event.stopPropagation();
-//           });
-//       });
-      
-//       // Close dropdown when clicking elsewhere
-//       document.addEventListener('click', function() {
-//           document.querySelectorAll('.dropdown-menu').forEach(menu => {
-//               menu.style.display = 'none';
-//           });
-//       });
-
-//       // Sort functionality
-//       document.querySelectorAll('th button').forEach(button => {
-//           button.addEventListener('click', function() {
-//               const index = this.closest('th').cellIndex;
-//               const isAscending = this.getAttribute('data-order') !== 'asc';
-              
-//               // Reset all other sort indicators
-//               document.querySelectorAll('th button').forEach(btn => {
-//                   btn.removeAttribute('data-order');
-//                   btn.querySelector('.sort-icon').className = 'fas fa-sort sort-icon';
-//               });
-              
-//               // Set this column's sort order
-//               this.setAttribute('data-order', isAscending ? 'asc' : 'desc');
-//               this.querySelector('.sort-icon').className = 'fas fa-sort-' + (isAscending ? 'up' : 'down') + ' sort-icon';
-              
-//               // Sort table
-//               const tbody = document.querySelector('tbody');
-//               const rows = Array.from(tbody.querySelectorAll('tr'));
-              
-//               rows.sort((a, b) => {
-//                   const aValue = a.cells[index].textContent.trim();
-//                   const bValue = b.cells[index].textContent.trim();
-                  
-//                   // Handle numeric sorting
-//                   if (!isNaN(aValue) && !isNaN(bValue)) {
-//                       return isAscending ? aValue - bValue : bValue - aValue;
-//                   }
-                  
-//                   // String sorting
-//                   return isAscending 
-//                       ? aValue.localeCompare(bValue) 
-//                       : bValue.localeCompare(aValue);
-//               });
-              
-//               // Reorder rows
-//               rows.forEach(row => tbody.appendChild(row));
-//           });
-//       });
-      
-//       // Search functionality
-//       document.querySelector('.search-input').addEventListener('input', function() {
-//           const searchTerm = this.value.toLowerCase();
-//           const rows = document.querySelectorAll('tbody tr');
-          
-//           let visibleCount = 0;
-//           rows.forEach(row => {
-//               const text = row.textContent.toLowerCase();
-//               const isVisible = text.includes(searchTerm);
-//               row.style.display = isVisible ? '' : 'none';
-//               if (isVisible) visibleCount++;
-//           });
-          
-//           // Update counter
-//           document.querySelector('.table-footer div:first-child').textContent = 
-//               \`Showing \${visibleCount} of \${rows.length} users\`;
-//       });
-      
-//     </script>
-//   `;
-
 const enhancedScript = `
 <script>
   // Initialize dropdown actions
@@ -181,7 +88,7 @@ const enhancedScript = `
           let menu = this.nextElementSibling;
            const row = this.closest('tr');
             const userId = row.cells[0].textContent;
-            const status = row.cells[4].textContent;
+            const status = row.cells[5].textContent;
 
             const secondOption = status === 'Active' ? 'Deactivate' : 'Activate'
 
@@ -226,7 +133,7 @@ const enhancedScript = `
   // Function to open edit user page
   function openEditUserPage(userId) {
       // Navigate to edit page with user ID
-      window.location.href = \`/admin/users/edit/\${userId}\`;
+      window.location.href = \`/admin/it/users/edit?id=\${userId}\`;
   }
   
   // Function to confirm and handle user deactivation
@@ -270,7 +177,7 @@ const enhancedScript = `
   // Function to call API and deactivate user
   function deactivateUser(userId, row, action) {
       // Show loading state
-      const statusCell = row.cells[4].querySelector('.chip');
+      const statusCell = row.cells[5].querySelector('.chip');
       const originalText = statusCell.textContent;
       statusCell.textContent = 'Processing...';
       
@@ -390,7 +297,6 @@ const enhancedScript = `
   });
 </script>
 `;
-
 
 const additionalStyles = `
     <style>

@@ -24,7 +24,7 @@ app.use((req, res, next) => {
     "Origin, X-Requested-With, Content-Type, Accept"
   );
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Credentials", "true"); 
+  res.header("Access-Control-Allow-Credentials", "true");
   next();
 });
 
@@ -62,17 +62,14 @@ app.use("/admin", (req, res, next) => {
 const adminRoutes = require("./admin");
 const apiRoutes = require("./api");
 app.use("/admin", adminRoutes);
-app.use('/api', verifyItAdmin, apiRoutes);
+app.use("/api", verifyItAdmin, apiRoutes);
 
 app.get("/page1.html", verifyToken, (req, res) => {
   const usersPlant = req.user.plant_id;
   const plant = req.query.plant;
 
   if (plant === undefined || plant === "") {
-    return res.redirect(
-      "/page1.html?plant=" +
-        usersPlant
-    );
+    return res.redirect("/page1.html?plant=" + usersPlant);
   }
 
   if (!plant) {
@@ -87,8 +84,6 @@ app.get("/page1.html", verifyToken, (req, res) => {
 });
 
 app.use(express.static(path.join(__dirname, "public")));
-
-
 
 // Initialize SQLite database
 const db = new sqlite3.Database("./database.db", (err) => {
@@ -233,14 +228,14 @@ app.post("/login", (req, res) => {
     if (!row) {
       return res.status(401).json({
         success: false,
-        message: "No user exists or wrong credentials!"
+        message: "No user exists or wrong credentials!",
       });
     }
 
     if (!row.active) {
       return res.status(403).json({
         success: false,
-        message: "User account is inactive."
+        message: "User account is inactive.",
       });
     }
 
@@ -255,7 +250,7 @@ app.post("/login", (req, res) => {
       email: row.email,
       username: row.username,
       role: row.role,
-      active: row.active
+      active: row.active,
     };
 
     delete userData.password;
@@ -277,15 +272,21 @@ app.get("/me", verifyToken, (req, res) => {
 
   const query = `
    SELECT 
-  u.id, u.fullname, u.cell, u.email, u.username,
-  p.id as plant_id, p.name as plant_name,
-  m.id as machine_id, m.name as machine_name,
-  COALESCE(us.skill, 'L1') AS skill
-  FROM users u
-  JOIN plants p ON u.plant_id = p.id
-  JOIN machines m ON m.plant_id = p.id
-  LEFT JOIN user_skills us ON us.user_id = u.id AND us.machine_id = m.id
-  WHERE u.id = ?
+    u.id, 
+    u.fullname, 
+    u.cell, 
+    u.email, 
+    u.username,
+    p.id as plant_id, 
+    p.name as plant_name,
+    m.id as machine_id, 
+    m.name as machine_name,
+    COALESCE(us.skill, 'L1') AS skill
+    FROM users u
+    JOIN plants p ON u.plant_id = p.id
+    JOIN machines m ON m.plant_id = p.id
+    LEFT JOIN user_skills us ON us.user_id = u.id AND us.machine_id = m.id
+    WHERE u.id = ?
   `;
 
   db.all(query, [userId], (err, rows) => {
@@ -385,10 +386,7 @@ function verifyItAdmin(req, res, next) {
         "/error.html?type=auth&errorCode=403&details=Invalid token"
       );
     req.user = decoded;
-    if (decoded.role != 'itAdmin')
-      return res.redirect(
-        "/403.html"
-      )
+    if (decoded.role != "itAdmin") return res.redirect("/403.html");
     next();
   });
 }
