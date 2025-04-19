@@ -1,19 +1,31 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const sqlite3 = require('sqlite3').verbose();
+const sqlite3 = require("sqlite3").verbose();
 const router = express.Router();
-const db = new sqlite3.Database('./database.db');
-
+const db = new sqlite3.Database("./database.db");
 
 router.get("/it/users/edit", (req, res) => {
   const userId = req.query.id;
 
   res.sendFile(path.join(__dirname, "public", "editUser.html"));
-}
-)
+});
+
 
 router.get("/it", (req, res) => {
+  const tab = req.query.tab || "users";
+
+  if (tab === "users") {
+    renderUsersPage(res);
+  } else if (tab === "settings") {
+    renderSettingsPage(res);
+  } else {
+    res.status(400).send("Invalid tab");
+  }
+});
+
+
+function renderUsersPage(res) {
   const query = `
     SELECT 
       u.id, 
@@ -29,34 +41,38 @@ router.get("/it", (req, res) => {
     WHERE u.role != 'itAdmin'
     ORDER BY u.id ASC
   `;
-  
+
   db.all(query, [], (err, users) => {
     if (err) {
       console.error("Error retrieving users:", err.message);
       return res.status(500).send("Database error occurred");
     }
-    
+
     const html = generateAdminHTML(users);
-    
+
     res.send(html);
   });
-});
-
+};
 
 function generateAdminHTML(users) {
-  const adminTemplatePath = path.join(__dirname, "public",  'admin.html');
-  let html = fs.readFileSync(adminTemplatePath, 'utf8');
-  
-  const userRows = users.map(user => {
-    return `
+  const adminTemplatePath = path.join(__dirname, "public", "admin.html");
+  let html = fs.readFileSync(adminTemplatePath, "utf8");
+
+  const userRows = users
+    .map((user) => {
+      return `
       <tr>
         <td>${user.id}</td>
         <td>${user.fullname}</td>
         <td>${user.username}</td>
         <td>${user.email}</td>
         <td>${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</td>
-        <td><span class="chip active-chip-${user.active}">${user.active === 1 ? 'Active' : 'Inactive'}</span></td>
-        <td><span class="chip chip-${user.plant_id}">${user.plant_id}</span></td>
+        <td><span class="chip active-chip-${user.active}">${
+        user.active === 1 ? "Active" : "Inactive"
+      }</span></td>
+        <td><span class="chip chip-${user.plant_id}">${
+        user.plant_id
+      }</span></td>
         <td class="actions-cell">
           <div class="dropdown">
             <button class="dropdown-toggle">
@@ -66,19 +82,26 @@ function generateAdminHTML(users) {
         </td>
       </tr>
     `;
-  }).join('');
-  
-  html = html.replace(/<tbody>[\s\S]*?<\/tbody>/g, `<tbody>${userRows}</tbody>`);
-  
-  html = html.replace(/Showing \d+ of \d+ users/g, `Showing ${users.length} of ${users.length} users`);
+    })
+    .join("");
 
-  html = html.replace('</head>', additionalStyles + '</head>');
-  
-  html = html.replace('</body>', enhancedScript + '</body>');
-  
+  html = html.replace(
+    /<tbody>[\s\S]*?<\/tbody>/g,
+    `<tbody>${userRows}</tbody>`
+  );
+
+  html = html.replace(
+    /Showing \d+ of \d+ users/g,
+    `Showing ${users.length} of ${users.length} users`
+  );
+
+  html = html.replace("</head>", additionalStyles + "</head>");
+
+  html = html.replace("</body>", enhancedScript + "</body>");
+
   return html;
 }
-  
+
 const enhancedScript = `
 <script>
   // Initialize dropdown actions
@@ -425,6 +448,171 @@ const additionalStyles = `
       }
     </style>
 `;
-  
+
+function renderSettingsPage(res) {
+  // Get plants data
+  const plantsQuery = `SELECT id, name FROM plants ORDER BY name ASC`;
+  const skillsQuery = `SELECT id, name FROM skills ORDER BY name ASC`;
+
+  db.all(plantsQuery, [], (err, plants) => {
+    if (err) {
+      console.error("Error retrieving plants:", err.message);
+      return res.status(500).send("Database error occurred");
+    }
+
+    // Get machines data
+    const machinesQuery = `
+      SELECT 
+        m.id, 
+        m.name, 
+        s.name as minimum_skill,
+        m.minimum_skill as minimum_skill_id,
+        m.plant_id,
+        m.cell_id,
+        c.name as cell_name,
+        p.name as plant_name
+      FROM machines m
+      JOIN plants p ON m.plant_id = p.id
+      JOIN skills s ON m.minimum_skill = s.id
+      JOIN cells c ON m.cell_id = c.id
+      ORDER BY m.name ASC
+    `;
+
+    db.all(machinesQuery, [], (err, machines) => {
+      if (err) {
+        console.error("Error retrieving machines:", err.message);
+        return res.status(500).send("Database error occurred");
+      }
+
+      // Get all cells
+      const cellsQuery = `
+      SELECT 
+        c.id,
+        c.name,
+        c.plant_id,
+        p.name as plant_name
+      FROM cells c
+      JOIN plants p ON c.plant_id = p.id
+      ORDER BY c.name ASC`;
+
+      db.all(cellsQuery, [], (err, cells) => {
+        if (err) {
+          console.error("Error retrieving cells:", err.message);
+          return res.status(500).send("Database error occurred");
+        }
+
+        db.all(skillsQuery, [], (err, skills) => {
+          if (err) {
+            console.error("Error retrieving skills:", err.message);
+            return res.status(500).send("Database error occurred");
+          }
+
+          const html = generateSettingsHTML(plants, machines, cells, skills);
+          res.send(html);
+        });
+      });
+    });
+  });
+};
+
+// Function to generate settings HTML
+function generateSettingsHTML(plants, machines, cells, skills) {
+  const settingsTemplatePath = path.join(__dirname, "public", "settings.html");
+  let html = fs.readFileSync(settingsTemplatePath, "utf8");
+
+  // Generate plants table rows
+  const plantRows = plants
+    .map((plant) => {
+      return `
+      <tr data-id="${plant.id}">
+        <td>${plant.id}</td>
+        <td>${plant.name}</td>
+        <td class="actions-cell">
+          <div class="dropdown">
+            <button class="dropdown-toggle">
+              Actions <i class="fas fa-chevron-down"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+    })
+    .join("");
+
+  // Generate machines table rows
+  const machineRows = machines
+    .map((machine) => {
+      return `
+      <tr data-id="${machine.id}">
+        <td>${machine.id}</td>
+        <td>${machine.name}</td>
+        <td><span class="minSkill minSkill-${machine.minimum_skill_id}">${machine.minimum_skill}</span></td>
+        <td><span class="chip chip-${machine.plant_id}">${machine.plant_name}</span></td>
+        <td><span class="chip chip-${machine.cell_id}">${machine.cell_name}</span></td>
+        <td class="actions-cell">
+          <div class="dropdown">
+            <button class="dropdown-toggle">
+              Actions <i class="fas fa-chevron-down"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+    })
+    .join("");
+
+  // Generate cells table rows
+  const cellRows = cells
+    .map((cell) => {
+      return `
+      <tr data-id="${cell.id}">
+        <td>${cell.id}</td>
+        <td>${cell.name}</td>
+        <td><span class="chip chip-${cell.plant_id}">${cell.plant_name}</span></td>
+        <td class="actions-cell">
+          <div class="dropdown">
+            <button class="dropdown-toggle">
+              Actions <i class="fas fa-chevron-down"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+    })
+    .join("");
+
+  // Replace placeholders in the template
+  html = html.replace("<!-- PLANTS_TABLE_ROWS -->", plantRows);
+  html = html.replace("<!-- MACHINES_TABLE_ROWS -->", machineRows);
+  html = html.replace("<!-- CELLS_TABLE_ROWS -->", cellRows);
+
+  // Generate plant options for dropdown
+  const plantOptions = plants
+    .map((plant) => {
+      return `<option value="${plant.id}">${plant.name}</option>`;
+    })
+    .join("");
+
+  // Generate skills options for dropdown
+  const skillOptions = skills
+    .map((skill) => {
+      return `<option value="${skill.id}">${skill.name}</option>`;
+    })
+    .join("");
+
+    // Generate cells options for dropdown
+  const cellOptions = cells
+  .map((cell) => {
+    return `<option value="${cell.id}">${cell.name}</option>`;
+  })
+  .join("");
+
+  html = html.replace("<!-- PLANT_OPTIONS -->", plantOptions);
+  html = html.replace("<!-- PLANT_OPTIONS_CELLS -->", plantOptions);
+  html = html.replace("<!-- SKILL_OPTIONS -->", skillOptions);
+  html = html.replace("<!-- CELL_OPTIONS -->", cellOptions);
+
+  return html;
+}
 
 module.exports = router;

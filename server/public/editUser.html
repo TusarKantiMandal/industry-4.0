@@ -100,18 +100,6 @@
                     value="{{email}}"
                   />
                 </div>
-
-                <div class="form-group">
-                  <label for="cell" class="form-label">Cell</label>
-                  <input
-                    type="text"
-                    id="cell"
-                    name="cell"
-                    class="form-input"
-                    value="{{cell}}"
-                  />
-                </div>
-
                 <div class="form-group">
                   <label for="role" class="form-label">Role</label>
                   <select id="role" name="role" class="form-input">
@@ -153,8 +141,26 @@
                     >Manufacturing Plant</label
                   >
                   <select id="plant-id" name="plant-id" class="form-select">
-                    <option value="1">Plant 1</option>
-                    <option value="2">Plant 2</option>
+                     <!-- PLANT_OPTIONS -->
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">
+                  <i class="fas fa-building panel-icon"></i>
+                  Cell
+                </h2>
+              </div>
+              <div class="panel-body">
+                <div class="form-group">
+                  <label for="cell-id" class="form-label"
+                    ></label
+                  >
+                  <select id="cell-id" name="cell-id" class="form-select">
+                    <!-- CELL_OPTIONS -->
                   </select>
                 </div>
               </div>

@@ -21,6 +21,7 @@ console.log(urlParams);
 const userId = urlParams.get("id") || "";
 
 var globalUser = {};
+var gloablData = [];
 
 // Load user data when page loads
 document.addEventListener("DOMContentLoaded", () => {
@@ -40,12 +41,13 @@ function loadUserData(userId) {
       }
       return response.json();
     })
-    .then((user) => {
+    .then((data) => {
+      const user = data.user;
       // Populate form fields
       document.getElementById("fullname").value = user.fullname || "";
       document.getElementById("username").value = user.username || "";
       document.getElementById("email").value = user.email || "";
-      document.getElementById("cell").value = user.cell || "";
+      // document.getElementById("cell").value = user.cell || "";
       document.getElementById("user-id").value = userId;
       document.getElementById("active-status").checked = user.active === 1;
       document.getElementById("role").value = user.role;
@@ -64,15 +66,35 @@ function loadUserData(userId) {
         userAvatar.style.color = "var(--danger)";
       }
 
+      //set cell selection
+      if (user.cell_id) {
+        const cells = data.cells;
+        const cellSelect = document.getElementById("cell-id");
+        cells.forEach((cell) => {
+          const option = document.createElement("option");
+          option.value = cell.id;
+          option.textContent = cell.name;
+          cellSelect.appendChild(option);
+          if (cell.id == user.cell_id) {
+            cellSelect.value = cell.id;
+          }
+        });
+      }
+
+
       // Set plant selection
       if (user.plant_id) {
+        const plants = data.plants;
         const plantSelect = document.getElementById("plant-id");
-        for (let i = 0; i < plantSelect.options.length; i++) {
-          if (plantSelect.options[i].value == user.plant_id) {
-            plantSelect.selectedIndex = i;
-            break;
+        plants.forEach((plant) => {
+          const option = document.createElement("option");
+          option.value = plant.id;
+          option.textContent = plant.name;
+          plantSelect.appendChild(option);
+          if (plant.id == user.plant_id) {
+            plantSelect.value = plant.id;
           }
-        }
+        });
       }
 
       // Clear existing skills
@@ -89,8 +111,9 @@ function loadUserData(userId) {
       }
 
       globalUser = user;
+      gloablData = data;
 
-      populateMachines(user.plant_id);
+      populateMachines(data.machines);
     })
     .catch((error) => {
       showNotification(error.message, "error");
@@ -129,7 +152,7 @@ form.addEventListener("submit", (e) => {
   const formData = {
     fullname: document.getElementById("fullname").value,
     email: document.getElementById("email").value,
-    cell: document.getElementById("cell").value,
+    // cell: document.getElementById("cell").value,
     skills: [],
   };
 
@@ -313,20 +336,9 @@ document.addEventListener("click", (e) => {
   }
 });
 
-async function getMachines(plantId) {
-  try {
-    const response = await fetch(`/api/plants/${plantId}/machines`);
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching machines:", error);
-    showNotification("Error fetching machines", "error");
-  }
-}
 
-async function populateMachines(plantId) {
+async function populateMachines(machines) {
   skillSelect.innerHTML = '<option value="">-- Select a Skill --</option>';
-
-  const machines = await getMachines(plantId);
 
   machines.forEach((machine) => {
     const option = document.createElement("option");
@@ -341,6 +353,45 @@ async function populateMachines(plantId) {
     noMachinesOption.textContent = "No machines available";
     skillSelect.appendChild(noMachinesOption);
   }
+}
+
+function onCellChange(event) {
+  const confirmed = confirm(
+    "Are you sure you want to change the cell?\nAll the skills will be removed and this action cannot be UNDONE."
+  );
+
+  if (!confirmed) {
+    event.target.value = globalUser.cell_id;
+    return;
+  }
+
+  const selectedCell = event.target.value;
+  fetch(`/api/users/${globalUser.id}/cell`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ cellId: selectedCell }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to update cell");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log(data.message);
+      showNotification("Cell updated successfully!", "success");
+      globalUser.cell_id = selectedCell;
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      showNotification("Error updating cell. Please try again.", "error");
+      event.target.value = globalUser.cell_id;
+    })
+    .finally(() => {
+      window.location.reload();
+    });
 }
 
 function onPlantChange(event) {
@@ -386,3 +437,6 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("plant-id").addEventListener("change", onPlantChange);
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("cell-id").addEventListener("change", onCellChange);
+});

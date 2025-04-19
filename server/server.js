@@ -93,6 +93,8 @@ const db = new sqlite3.Database("./database.db", (err) => {
     console.log("Connected to SQLite database.");
 
     db.serialize(() => {
+      db.run("PRAGMA foreign_keys = ON;");
+
       db.run(`
         CREATE TABLE IF NOT EXISTS plants (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -103,10 +105,22 @@ const db = new sqlite3.Database("./database.db", (err) => {
       `);
 
       db.run(`
+        CREATE TABLE IF NOT EXISTS cells (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          plant_id INTEGER NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(name, plant_id),
+          FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE CASCADE
+        );
+      `);
+
+      db.run(`
         CREATE TABLE IF NOT EXISTS users (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           fullname TEXT NOT NULL,
-          cell TEXT NOT NULL,
+          cell_id INTEGER,
           email TEXT NOT NULL UNIQUE,
           username TEXT NOT NULL UNIQUE,
           password TEXT NOT NULL,
@@ -115,7 +129,8 @@ const db = new sqlite3.Database("./database.db", (err) => {
           active INTEGER DEFAULT 1,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (plant_id) REFERENCES plants(id)
+          FOREIGN KEY (cell_id) REFERENCES cells(id) ON DELETE SET NULL,
+          FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE CASCADE
         );
       `);
 
@@ -123,31 +138,56 @@ const db = new sqlite3.Database("./database.db", (err) => {
         CREATE TABLE IF NOT EXISTS machines (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,
+          minimum_skill INTEGER DEFAULT 1,
           plant_id INTEGER NOT NULL,
+          cell_id INTEGER NOT NULL,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (plant_id) REFERENCES plants(id)
+          FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE CASCADE,
+          FOREIGN KEY (cell_id) REFERENCES cells(id) ON DELETE CASCADE,
+          FOREIGN KEY (minimum_skill) REFERENCES skills(id)
         );
       `);
 
       db.run(
-        `CREATE TABLE IF NOT EXISTS user_skills (
+        `
+        CREATE TABLE IF NOT EXISTS skills (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL UNIQUE,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+      `
+      );
+
+      db.run(
+        `
+        CREATE TABLE IF NOT EXISTS user_skills (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id INTEGER NOT NULL,
           machine_id INTEGER NOT NULL,
-          skill TEXT NOT NULL,
+          skill_id INTEGER NOT NULL,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users(id),
-          FOREIGN KEY (machine_id) REFERENCES machines(id),
-          UNIQUE(user_id, machine_id)
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY (machine_id) REFERENCES machines(id) ON DELETE CASCADE,
+          FOREIGN KEY (skill_id) REFERENCES skills(id) ON DELETE CASCADE,
+          UNIQUE(user_id, machine_id, skill_id)
         );
-      `,
+      `);
+
+      // Insert skill levels
+      db.run(
+        `
+        INSERT INTO skills (name) VALUES 
+          ('L1'), ('L2'), ('L3')
+        ON CONFLICT(name) DO NOTHING;
+        `,
         (err) => {
           if (err) {
-            console.error("Error creating tables", err.message);
+            console.error("Error inserting into skills table", err.message);
           } else {
-            console.log("All tables created successfully.");
+            console.log("Skills inserted successfully.");
           }
         }
       );
@@ -157,20 +197,20 @@ const db = new sqlite3.Database("./database.db", (err) => {
 
 // Handle signup form submission
 app.post("/signup", (req, res) => {
-  const { fullname, plant_id, cell, email, username, password } = req.body;
+  const { fullname, plant_id, cell_id, email, username, password } = req.body;
 
-  if (!fullname || !plant_id || !cell || !email || !username || !password) {
+  if (!fullname || !plant_id || !cell_id || !email || !username || !password) {
     return res.redirect("/error.html?type=signup&errorCode=400");
   }
 
   const insertUserQuery = `
-    INSERT INTO users (fullname, cell, email, username, password, plant_id)
+    INSERT INTO users (fullname, cell_id, email, username, password, plant_id)
     VALUES (?, ?, ?, ?, ?, ?)
   `;
 
   db.run(
     insertUserQuery,
-    [fullname, cell, email, username, password, plant_id],
+    [fullname, cell_id, email, username, password, plant_id],
     function (err) {
       if (err) {
         console.error("Signup error:", err.message);
@@ -271,22 +311,26 @@ app.get("/me", verifyToken, (req, res) => {
   const userId = req.user.id;
 
   const query = `
-   SELECT 
-    u.id, 
-    u.fullname, 
-    u.cell, 
-    u.email, 
-    u.username,
-    p.id as plant_id, 
-    p.name as plant_name,
-    m.id as machine_id, 
-    m.name as machine_name,
-    COALESCE(us.skill, 'L1') AS skill
+       SELECT 
+      u.id, 
+      u.fullname, 
+      c.name AS cell, 
+      c.id AS cell_id,
+      u.email, 
+      u.username,
+      p.id AS plant_id, 
+      p.name AS plant_name,
+      m.id AS machine_id,
+      m.name AS machine_name,
+      COALESCE(s.name, 'L1') AS skill
     FROM users u
     JOIN plants p ON u.plant_id = p.id
     JOIN machines m ON m.plant_id = p.id
     LEFT JOIN user_skills us ON us.user_id = u.id AND us.machine_id = m.id
+    LEFT JOIN skills s ON us.skill_id = s.id
+    LEFT JOIN cells c ON u.cell_id = c.id
     WHERE u.id = ?
+    ORDER BY m.id
   `;
 
   db.all(query, [userId], (err, rows) => {
