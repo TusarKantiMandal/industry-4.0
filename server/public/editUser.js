@@ -3,9 +3,13 @@ const form = document.getElementById("edit-user-form");
 const addSkillBtn = document.getElementById("add-skill-btn");
 const skillsContainer = document.getElementById("skills-container");
 const modal = document.getElementById("add-skill-modal");
+const machineModal = document.getElementById("add-machine-modal");
 const closeModalBtn = document.getElementById("close-modal");
+const closeModalMachineBtn = document.getElementById("close-machine-modal");
 const cancelAddSkillBtn = document.getElementById("cancel-add-skill");
+const cancelAddMachineBtn = document.getElementById("cancel-add-machine");
 const confirmAddSkillBtn = document.getElementById("confirm-add-skill");
+const confirmAddMachineBtn = document.getElementById("confirm-add-machine");
 const cancelBtn = document.getElementById("cancel-btn");
 const resetPasswordBtn = document.getElementById("reset-password-btn");
 const activeStatus = document.getElementById("active-status");
@@ -14,6 +18,8 @@ const notificationMessage = document.getElementById("notification-message");
 const usernameInput = document.getElementById("username");
 const userAvatar = document.getElementById("user-avatar");
 const skillSelect = document.getElementById("new-skill-name");
+const machineSelect = document.getElementById("new-machine-name");
+const panelTitle = document.querySelector(".machine-skills");
 
 // Get user ID from URL parameter
 const urlParams = new URLSearchParams(window.location.search);
@@ -66,48 +72,69 @@ function loadUserData(userId) {
         userAvatar.style.color = "var(--danger)";
       }
 
+      // Populate cells dropdown
+      const cells = data.cells;
+      const cellSelect = document.getElementById("cell-id");
+      cells.forEach((cell) => {
+        const option = document.createElement("option");
+        option.value = cell.id;
+        option.textContent = cell.name;
+        cellSelect.appendChild(option);
+      });
+
       //set cell selection
       if (user.cell_id) {
-        const cells = data.cells;
-        const cellSelect = document.getElementById("cell-id");
-        cells.forEach((cell) => {
-          const option = document.createElement("option");
-          option.value = cell.id;
-          option.textContent = cell.name;
-          cellSelect.appendChild(option);
-          if (cell.id == user.cell_id) {
-            cellSelect.value = cell.id;
-          }
-        });
+        cellSelect.value = user.cell_id;
+      } else {
+        const option = document.createElement("option");
+        option.textContent = "Not Assigned";
+        option.value = 0;
+        cellSelect.appendChild(option);
+        cellSelect.value = 0;
       }
 
+      // Populate plants dropdown
+      const plants = data.plants;
+      const plantSelect = document.getElementById("plant-id");
 
-      // Set plant selection
+      plants.forEach((plant) => {
+        const option = document.createElement("option");
+        option.value = plant.id;
+        option.textContent = plant.name;
+        plantSelect.appendChild(option);
+      });
+
+      // Set plant selection if user has a plant_id
       if (user.plant_id) {
-        const plants = data.plants;
-        const plantSelect = document.getElementById("plant-id");
-        plants.forEach((plant) => {
-          const option = document.createElement("option");
-          option.value = plant.id;
-          option.textContent = plant.name;
-          plantSelect.appendChild(option);
-          if (plant.id == user.plant_id) {
-            plantSelect.value = plant.id;
-          }
-        });
+        plantSelect.value = user.plant_id;
+      } else {
+        const option = document.createElement("option");
+        option.textContent = "Not Assigned";
+        option.value = 0;
+        plantSelect.appendChild(option);
+        plantSelect.value = 0;
       }
 
       // Clear existing skills
       skillsContainer.innerHTML = "";
 
-      // Add user skills
-      if (user.skills && user.skills.length > 0) {
-        user.skills.forEach((skill, index) => {
-          addSkillCard(skill.machine_name, skill.skill.toString(), index + 1);
-        });
-        skillCounter = user.skills.length + 1;
+      if (user.role === "ptt") {
+        panelTitle.innerHTML = `
+        <i class="fas fa-cogs panel-icon"></i>
+        Add Machines
+      `;
+
+        addSkillBtn.innerHTML = `<i class="fas fa-plus"></i> Add Machine`;
       } else {
-        skillCounter = 1;
+        // Add user skills
+        if (user.skills && user.skills.length > 0) {
+          user.skills.forEach((skill, index) => {
+            addSkillCard(skill.machine_name, skill.skill.toString(), index + 1);
+          });
+          skillCounter = user.skills.length + 1;
+        } else {
+          skillCounter = 1;
+        }
       }
 
       globalUser = user;
@@ -144,7 +171,11 @@ activeStatus.addEventListener("change", () => {
 form.addEventListener("submit", (e) => {
   e.preventDefault();
 
-  if(!confirm("Are you sure you want to update the User Details?\nThis action cannot be undone.")){
+  if (
+    !confirm(
+      "Are you sure you want to update the User Details?\nThis action cannot be undone."
+    )
+  ) {
     return;
   }
 
@@ -231,22 +262,31 @@ resetPasswordBtn.addEventListener("click", () => {
 let skillCounter = 3;
 
 addSkillBtn.addEventListener("click", () => {
-  openModal();
+  openModal(globalUser.role);
 });
 
-function openModal() {
-  modal.classList.add("active");
-  document.getElementById("new-skill-name").focus();
+function openModal(role) {
+  if (role == "ptt") {
+    machineModal.classList.add("active");
+    document.getElementById("new-machine-name").focus();
+  } else {
+    modal.classList.add("active");
+    document.getElementById("new-skill-name").focus();
+  }
 }
 
 function closeModal() {
   modal.classList.remove("active");
+  machineModal.classList.remove("active");
   document.getElementById("new-skill-name").value = "";
+  document.getElementById("new-machine-name").value = "";
   document.getElementById("new-skill-level-1").checked = true;
 }
 
 closeModalBtn.addEventListener("click", closeModal);
+closeModalMachineBtn.addEventListener("click", closeModal);
 cancelAddSkillBtn.addEventListener("click", closeModal);
+cancelAddMachineBtn.addEventListener("click", closeModal);
 
 confirmAddSkillBtn.addEventListener("click", () => {
   const skillName = document.getElementById("new-skill-name").value.trim();
@@ -262,6 +302,19 @@ confirmAddSkillBtn.addEventListener("click", () => {
   addSkillCard(skillName, skillLevel);
   closeModal();
 });
+
+confirmAddMachineBtn.addEventListener("click", () => {
+  const skillName = document.getElementById("new-machine-name").value.trim();
+
+  if (!skillName) {
+    alert("Please enter a skill name");
+    return;
+  }
+
+  addMachineCard(skillName);
+  closeModal();
+});
+
 
 function addSkillCard(name, level, customId = null) {
   const skillId = customId || skillCounter++;
@@ -336,22 +389,27 @@ document.addEventListener("click", (e) => {
   }
 });
 
-
 async function populateMachines(machines) {
   skillSelect.innerHTML = '<option value="">-- Select a Skill --</option>';
+  machineSelect.innerHTML = '<option value="">-- Select a Machine --</option>';
 
   machines.forEach((machine) => {
     const option = document.createElement("option");
     option.value = machine.name;
     option.textContent = machine.name;
     skillSelect.appendChild(option);
+
+    const machineOption = document.createElement("option");
+    machineOption.value = machine.name;
+    machineOption.textContent = machine.name;
+    machineSelect.appendChild(machineOption);
   });
 
   if (machines.length === 0) {
-    const noMachinesOption = document.createElement("option");
-    noMachinesOption.value = "";
-    noMachinesOption.textContent = "No machines available";
-    skillSelect.appendChild(noMachinesOption);
+    // const noMachinesOption = document.createElement("option");
+    // noMachinesOption.value = "";
+    // noMachinesOption.textContent = "";
+    // skillSelect.appendChild(noMachinesOption);
   }
 }
 

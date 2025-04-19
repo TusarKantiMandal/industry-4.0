@@ -209,6 +209,8 @@
           const username = document.getElementById("username").value;
           const password = document.getElementById("password").value;
 
+          ADMIN_ROLES = ["admin", "itAdmin", "ptt"]
+
           // Create request
           fetch("/login", {
             method: "POST",
@@ -234,6 +236,10 @@
               }
             })
             .then((data) => {
+              if(data && ADMIN_ROLES.includes(data.role)) {
+                window.location.href = '/admin';
+              }
+
               document.getElementById("loading-indicator").style.display =
                 "none";
 

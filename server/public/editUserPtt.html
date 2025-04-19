@@ -19,13 +19,13 @@
         </div>
         <a href="/admin/it" class="back-button">
           <i class="fas fa-arrow-left"></i>
-          Back to Admin
+          Back
         </a>
       </div>
     </header>
 
     <main class="container">
-      <h1 class="page-title">Edit User Profile</h1>
+      <h1 class="page-title">User Profile</h1>
 
       <div
         id="notification"
@@ -47,7 +47,7 @@
               </div>
               <div class="panel-body">
                 <div class="user-details">
-                  <div class="user-avatar" id="user-avatar">J</div>
+                  <div class="user-avatar" id="user-avatar">U</div>
                   <div class="form-group">
                     <div class="checkbox-group">
                       <input
@@ -55,6 +55,7 @@
                         id="active-status"
                         class="checkbox-input"
                         checked
+                        disabled
                       />
                       <label for="active-status" class="checkbox-label"
                         >User is active</label
@@ -71,6 +72,8 @@
                     name="fullname"
                     class="form-input"
                     value="{{fullname}}"
+                    disabled
+                    readonly
                   />
                 </div>
 
@@ -98,11 +101,13 @@
                     name="email"
                     class="form-input"
                     value="{{email}}"
+                    disabled
+                    readonly
                   />
                 </div>
                 <div class="form-group">
                   <label for="role" class="form-label">Role</label>
-                  <select id="role" name="role" class="form-input">
+                  <select id="role" name="role" class="form-input" disabled >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                     <option value="ptt">PTT</option>
@@ -141,8 +146,8 @@
                   <label for="plant-id" class="form-label"
                     >Manufacturing Plant</label
                   >
-                  <select id="plant-id" name="plant-id" class="form-select">
-                    <!-- PLANT_OPTIONS -->
+                  <select id="plant-id" name="plant-id" class="form-select" disabled>
+                     <!-- PLANT_OPTIONS -->
                   </select>
                 </div>
               </div>
@@ -157,8 +162,10 @@
               </div>
               <div class="panel-body">
                 <div class="form-group">
-                  <label for="cell-id" class="form-label"></label>
-                  <select id="cell-id" name="cell-id" class="form-select">
+                  <label for="cell-id" class="form-label"
+                    ></label
+                  >
+                  <select id="cell-id" name="cell-id" class="form-select" disabled>
                     <!-- CELL_OPTIONS -->
                   </select>
                 </div>
@@ -167,7 +174,7 @@
 
             <div class="panel">
               <div class="panel-header">
-                <h2 class="panel-title machine-skills">
+                <h2 class="panel-title">
                   <i class="fas fa-cogs panel-icon"></i>
                   Machine Skills
                 </h2>
@@ -284,71 +291,11 @@
       </div>
     </div>
 
-    <!-- Add Machine Modal -->
-    <div id="add-machine-modal" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <h3 class="modal-title">Add Machine</h3>
-          <button type="button" class="modal-close" id="close-machine-modal">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="new-machine-name" class="form-label"
-              >Machine Name</label
-            >
-            <select
-              id="new-machine-name"
-              name="new-machine-name"
-              class="form-input"
-            >
-              <option value="">-- Select a Machine --</option>
-              <!-- Dynamically populated machine names -->
-            </select>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            id="cancel-add-machine"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            id="confirm-add-machine"
-          >
-            Add Machine
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div
-      id="confirmChangesModal"
-      style="
-        display: none;
-        position: fixed;
-        top: 20%;
-        left: 30%;
-        width: 40%;
-        background: white;
-        border: 1px solid gray;
-        padding: 20px;
-        z-index: 1000;
-      "
-    >
+    <div id="confirmChangesModal" style="display:none; position:fixed; top:20%; left:30%; width:40%; background:white; border:1px solid gray; padding:20px; z-index:1000;">
       <h4>Confirm Changes</h4>
       <ul id="changeList"></ul>
       <button id="confirmChangesBtn">Confirm</button>
-      <button
-        onclick="document.getElementById('confirmChangesModal').style.display='none'"
-      >
-        Cancel
-      </button>
+      <button onclick="document.getElementById('confirmChangesModal').style.display='none'">Cancel</button>
     </div>
 
     <script src="/editUser.js"></script>

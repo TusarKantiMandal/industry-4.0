@@ -28,6 +28,8 @@ app.use((req, res, next) => {
   next();
 });
 
+const ADMIN_ROLES = ["admin", "ptt", "itAdmin"];
+
 app.use("/admin", (req, res, next) => {
   const token = req.cookies.token;
 
@@ -37,20 +39,11 @@ app.use("/admin", (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
-    if (req.path.startsWith("/it")) {
-      if (decoded.role !== "itAdmin") {
-        return res.redirect(
-          "/error.html?type=auth&errorCode=403&details=IT Admin only"
-        );
-      }
-    } else {
-      if (!["admin", "itAdmin"].includes(decoded.role)) {
-        return res.redirect(
-          "/error.html?type=auth&errorCode=403&details=Unauthorized"
-        );
-      }
+    if (!ADMIN_ROLES.includes(decoded.role)) {
+      return res.redirect(
+        "/error.html?type=auth&errorCode=403&details=Unauthorized"
+      );
     }
-
     next();
   } catch (err) {
     return res.redirect(
@@ -124,7 +117,7 @@ const db = new sqlite3.Database("./database.db", (err) => {
           email TEXT NOT NULL UNIQUE,
           username TEXT NOT NULL UNIQUE,
           password TEXT NOT NULL,
-          plant_id INTEGER NOT NULL,
+          plant_id INTEGER,
           role TEXT DEFAULT 'user',
           active INTEGER DEFAULT 1,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -174,7 +167,20 @@ const db = new sqlite3.Database("./database.db", (err) => {
           FOREIGN KEY (skill_id) REFERENCES skills(id) ON DELETE CASCADE,
           UNIQUE(user_id, machine_id, skill_id)
         );
-      `);
+      `
+      );
+
+      db.run(
+        `CREATE TABLE IF NOT EXISTS ppt_machines(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          machine_id INTEGER NOT NULL,
+          user_id INTEGER NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (machine_id) REFERENCES machines(id) ON DELETE CASCADE,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );`
+      );
 
       // Insert skill levels
       db.run(
@@ -234,6 +240,10 @@ app.get("/login", (req, res) => {
     if (err) {
       // Invalid token → show login
       return res.sendFile(path.join(__dirname, "public", "login.html"));
+    }
+
+    if (ADMIN_ROLES.includes(decoded.role)) {
+      return res.redirect("/admin");
     }
 
     const plantId = decoded.plant_id;

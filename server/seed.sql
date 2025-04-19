@@ -1,9 +1,7 @@
 INSERT INTO plants (name) VALUES ('Plant A');
 INSERT INTO plants (name) VALUES ('Plant B');
 
-INSERT INTO users (fullname, cell, email, username, password, plant_id, role)
-VALUES 
-  ('Bhaskar', 'Test', 'hello@bhaskaraa45.me', 'bhaskaraa45', '123456', 1, 'itAdmin'),
+INSERT INTO users (fullname, email, username, password, role) VALUES  ('Test', 'it@test.me', 'itAdmin', '12345678', 'itAdmin');
   ('Alice Smith', '1234567890', 'alice@example.com', 'alice', 'password123', 1, 'admin'),
   ('Bob Johnson', '9876543210', 'bob@example.com', 'bob', 'password456', 1, 'user'),
   ('Charlie Brown', '1112223333', 'charlie@example.com', 'charlie', 'password789', 2, 'user');

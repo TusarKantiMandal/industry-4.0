@@ -49,22 +49,23 @@ router.get("/users/:id", (req, res) => {
   const userId = req.params.id;
 
   const userQuery = `
-    SELECT 
-      u.id, 
-      u.fullname, 
-      u.email, 
-      u.username,
-      u.role,
-      u.active,
-      p.id AS plant_id, 
-      p.name AS plant_name,
-      c.id AS cell_id,
-      c.name AS cell
-    FROM users u
-    JOIN plants p ON u.plant_id = p.id
-    LEFT JOIN cells c ON u.cell_id = c.id
-    WHERE u.id = ?
-  `;
+  SELECT 
+    u.id, 
+    u.fullname, 
+    u.email, 
+    u.username,
+    u.role,
+    u.active,
+    p.id AS plant_id, 
+    p.name AS plant_name,
+    c.id AS cell_id,
+    c.name AS cell
+  FROM users u
+  LEFT JOIN plants p ON u.plant_id = p.id
+  LEFT JOIN cells c ON u.cell_id = c.id
+  WHERE u.id = ?
+`;
+
 
   const skillsQuery = `
     SELECT 
