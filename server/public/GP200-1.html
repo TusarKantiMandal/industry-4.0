@@ -170,9 +170,7 @@
       <div class="header-item"><strong>Cell:</strong><input value="E.V Gear"></div>
       <div class="header-item">
         <strong>Month:</strong>
-        <select id="month" onchange="updateDays()">
-          <option value="6" selected>June</option>
-        </select>
+        <select id="month" onchange="updateDays()"></select>
       </div>
       <div class="header-item"><strong>Year:</strong><input type="number" id="year" value="2025" onchange="updateDays()"></div>
     </div>
@@ -189,16 +187,40 @@
         <tbody id="checkpointRows"></tbody>
       </table>
     </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+      <button class="popup-button btn-m" onclick="openApprovalPopup()">Submit Check Sheet</button>
+    </div>
   </div>
 
+  <!-- Popups -->
   <div id="markPopup" class="popup">
     <div class="popup-content">
       <div class="popup-header">
         <h3>Mark Status</h3>
         <p id="popup-info">Checkpoint: <span id="checkpoint-name"></span>, Day: <span id="day-number"></span>, Shift: <span id="shift-letter"></span></p>
       </div>
-      <div class="popup-buttons" id="popup-buttons">
-        <!-- Buttons will be inserted dynamically -->
+      <div class="popup-buttons" id="popup-buttons"></div>
+    </div>
+  </div>
+
+  <div id="approvalPopup" class="popup">
+    <div class="popup-content">
+      <div class="popup-header">
+        <h3>Submit for Approval</h3>
+      </div>
+      <div style="text-align: center; margin-bottom: 10px;">
+        <label for="approver">Select Approver:</label>
+        <select id="approver" style="margin: 10px; padding: 8px;">
+          <option value="">-- Choose --</option>
+          <option value="Tusar Manager">Tusar</option>
+          <option value="Gyana Supervisor">Gyana</option>
+          <option value="Mustafa Lead">Mustafa</option>
+        </select>
+      </div>
+      <div class="popup-buttons">
+        <button class="popup-button btn-tick" onclick="submitToApprover()">Confirm</button>
+        <button class="popup-button btn-clear" onclick="closeApprovalPopup()">Cancel</button>
       </div>
     </div>
   </div>
@@ -214,22 +236,58 @@
       "Check air coming out fom AC blower", "Air leckages", "Abnormal noise", "Check PM due date"
     ];
 
-    const specialCheckpoints = [5, 8, 9]; // 1-based index for L/M/H popup
+    const specialCheckpoints = [5, 8, 9]; // L/M/H
+    const numericCheckpoints = {
+      6: { min: 1, max: 3, unit: 'bar' },
+      10: { min: 20, max: 40, unit: 'kg/cm²' },
+      11: { min: 50, max: 70, unit: 'kg/cm²' },
+      12: { min: 20, max: 40, unit: 'kg/cm²' }
+    };
+
+    const checkpointCategories = {
+      1: "Safety", 2: "Safety", 4: "Safety", 13: "Safety", 15: "Safety",
+      5: "Maintenance", 6: "Maintenance", 7: "Maintenance", 8: "Maintenance", 9: "Maintenance",
+      10: "Hydraulic", 11: "Hydraulic", 12: "Hydraulic"
+    };
+
+    const categoryContacts = {
+      Safety: "safety_team@example.com",
+      Maintenance: "maintenance@example.com",
+      Hydraulic: "hydraulic_team@example.com"
+    };
 
     let currentCell = null;
 
+    function populateMonthDropdown() {
+      const monthSelect = document.getElementById('month');
+      const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
+      monthSelect.innerHTML = '';
+      monthNames.forEach((name, index) => {
+        const option = document.createElement('option');
+        option.value = index + 1;
+        option.textContent = name;
+        if (index === 5) option.selected = true;
+        monthSelect.appendChild(option);
+      });
+    }
+
+    function getDaysInMonth(month, year) {
+      return new Date(year, month, 0).getDate();
+    }
+
     function updateDays() {
-      const daysInMonth = 30; // June
+      const month = parseInt(document.getElementById('month').value);
+      const year = parseInt(document.getElementById('year').value);
+      const daysInMonth = getDaysInMonth(month, year);
       const dayRow = document.getElementById('dayRow');
       const headerRow = document.getElementById('headerRow');
-
       dayRow.innerHTML = '';
       while (headerRow.children.length > 6) headerRow.removeChild(headerRow.lastChild);
       for (let i = 1; i <= daysInMonth; i++) {
         dayRow.innerHTML += `<th class="day-header">${i}</th>`;
         headerRow.innerHTML += `<th></th>`;
       }
-
       generateCheckpointRows(daysInMonth);
     }
 
@@ -237,15 +295,12 @@
       const tbody = document.getElementById('checkpointRows');
       tbody.innerHTML = '';
       const shifts = ['A', 'B', 'C'];
-
       checkpointNames.forEach((name, i) => {
         shifts.forEach((shift, j) => {
           const row = document.createElement('tr');
-
           if (j === 0) {
             row.innerHTML += `<td rowspan="3">${i + 1}</td><td rowspan="3" class="wide">${name}</td><td rowspan="3">15</td><td rowspan="3">D</td><td rowspan="3">V</td>`;
           }
-
           row.innerHTML += `<td>${shift}</td>`;
           for (let d = 1; d <= days; d++) {
             const td = document.createElement('td');
@@ -257,7 +312,6 @@
             td.onclick = () => openPopup(td);
             row.appendChild(td);
           }
-
           tbody.appendChild(row);
         });
       });
@@ -266,7 +320,6 @@
     function openPopup(cell) {
       currentCell = cell;
       const index = parseInt(cell.dataset.checkpointIndex);
-      const info = document.getElementById('popup-info');
       document.getElementById('checkpoint-name').textContent = cell.dataset.checkpoint;
       document.getElementById('day-number').textContent = cell.dataset.day;
       document.getElementById('shift-letter').textContent = cell.dataset.shift;
@@ -274,7 +327,16 @@
       const popupButtons = document.getElementById('popup-buttons');
       popupButtons.innerHTML = '';
 
-      if (specialCheckpoints.includes(index)) {
+      if (numericCheckpoints[index]) {
+        const { min, max, unit } = numericCheckpoints[index];
+        popupButtons.innerHTML = `
+          <label>Enter value (${min}–${max} ${unit}): 
+            <input type="number" id="numericValue" min="${min}" max="${max}" step="0.1" style="padding: 5px; margin: 5px;">
+          </label>
+          <button class="popup-button btn-m" onclick="submitNumeric(${min}, ${max}, '${unit}')">Submit</button>
+          <button class="popup-button btn-clear" onclick="markCell('')">Clear</button>
+        `;
+      } else if (specialCheckpoints.includes(index)) {
         popupButtons.innerHTML = `
           <button class="popup-button btn-l" onclick="markCell('L')">Low</button>
           <button class="popup-button btn-m" onclick="markCell('M')">Medium</button>
@@ -298,19 +360,64 @@
         currentCell.textContent = value;
         currentCell.className = 'day-cell';
         if (value === '✓') currentCell.classList.add('tick');
-        else if (value === '✗') currentCell.classList.add('cross');
+        else if (value === '✗') {
+          currentCell.classList.add('cross');
+          const index = parseInt(currentCell.dataset.checkpointIndex);
+          const category = checkpointCategories[index];
+          const contact = categoryContacts[category];
+          if (contact) {
+            alert(`❗ Alert sent to ${category} team: ${contact}\nCheckpoint "${currentCell.dataset.checkpoint}" failed on Day ${currentCell.dataset.day}, Shift ${currentCell.dataset.shift}.`);
+          }
+        }
         else if (value === 'NA') currentCell.classList.add('na');
       }
       document.getElementById('markPopup').style.display = 'none';
+    }
+
+    function submitNumeric(min, max, unit) {
+      const val = parseFloat(document.getElementById('numericValue').value);
+      if (isNaN(val)) {
+        alert("Please enter a valid number.");
+        return;
+      }
+      if (val < min || val > max) {
+        alert(`Value out of range! Please enter between ${min} and ${max} ${unit}.`);
+        return;
+      }
+      markCell(`${val} ${unit}`);
+    }
+
+    function openApprovalPopup() {
+      document.getElementById('approvalPopup').style.display = 'block';
+    }
+
+    function closeApprovalPopup() {
+      document.getElementById('approvalPopup').style.display = 'none';
+    }
+
+    function submitToApprover() {
+      const approver = document.getElementById('approver').value;
+      if (!approver) {
+        alert("Please select an approver.");
+        return;
+      }
+      closeApprovalPopup();
+      alert(`Check Sheet submitted to ${approver} for approval.`);
     }
 
     window.onclick = function(event) {
       if (event.target === document.getElementById('markPopup')) {
         document.getElementById('markPopup').style.display = 'none';
       }
+      if (event.target === document.getElementById('approvalPopup')) {
+        closeApprovalPopup();
+      }
     };
 
-    document.addEventListener('DOMContentLoaded', updateDays);
+    document.addEventListener('DOMContentLoaded', () => {
+      populateMonthDropdown();
+      updateDays();
+    });
   </script>
 </body>
 </html>
