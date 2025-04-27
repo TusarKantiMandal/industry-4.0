@@ -304,17 +304,21 @@ confirmAddSkillBtn.addEventListener("click", () => {
 });
 
 confirmAddMachineBtn.addEventListener("click", () => {
-  const skillName = document.getElementById("new-machine-name").value.trim();
 
-  if (!skillName) {
-    alert("Please enter a skill name");
+  const machines = gloablData.machines;
+  const id = document.getElementById("new-machine-name").value.trim();
+
+  const machineName = machines.find((machine) => machine.id == id)?.name;
+  console.log(machineName);
+
+  if (!machineName) {
+    alert("Please enter a machine name");
     return;
   }
 
-  addMachineCard(skillName);
+  addMachineCard(machineName, id);
   closeModal();
 });
-
 
 function addSkillCard(name, level, customId = null) {
   const skillId = customId || skillCounter++;
@@ -366,6 +370,31 @@ function addSkillCard(name, level, customId = null) {
     }
   });
 }
+function addMachineCard(machineName, id = null) {
+  const machineId = id;
+
+  const machineCard = document.createElement("div");
+  machineCard.className = "skill-card";
+  machineCard.innerHTML = `
+    <div class="skill-header">
+      <h3 class="skill-title">${machineName}</h3>
+      <button type="button" class="remove-skill">
+        <i class="fas fa-trash"></i> Remove
+      </button>
+    </div>
+    </div>
+  `;
+
+  skillsContainer.appendChild(machineCard);
+
+  // Add event listener to remove button
+  const removeBtn = machineCard.querySelector(".remove-skill");
+  removeBtn.addEventListener("click", () => {
+    if (confirm("Are you sure you want to remove this machine?")) {
+      machineCard.remove();
+    }
+  });
+}
 
 // Display notification
 function showNotification(message, type) {
@@ -390,7 +419,6 @@ document.addEventListener("click", (e) => {
 });
 
 async function populateMachines(machines) {
-  skillSelect.innerHTML = '<option value="">-- Select a Skill --</option>';
   machineSelect.innerHTML = '<option value="">-- Select a Machine --</option>';
 
   machines.forEach((machine) => {
@@ -400,7 +428,7 @@ async function populateMachines(machines) {
     skillSelect.appendChild(option);
 
     const machineOption = document.createElement("option");
-    machineOption.value = machine.name;
+    machineOption.value = machine.id;
     machineOption.textContent = machine.name;
     machineSelect.appendChild(machineOption);
   });
@@ -498,3 +526,46 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("cell-id").addEventListener("change", onCellChange);
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("role").addEventListener("change", onRoleChange);
+});
+
+function onRoleChange(event) {
+  const confirmed = confirm(
+    "Are you sure you want to change the role?\nAll the skills will be removed and this action cannot be undone."
+  );
+
+  if (!confirmed) {
+    event.target.value = globalUser.role;
+    return;
+  }
+
+  const selectedRole = event.target.value;
+  fetch(`/api/users/${globalUser.id}/role`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ role: selectedRole }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to update role");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log(data.message);
+      showNotification("Role updated successfully!", "success");
+      globalUser.role = selectedRole;
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      showNotification("Error updating role. Please try again.", "error");
+      event.target.value = globalUser.role;
+    })
+    .finally(() => {
+      // window.location.reload();
+    });
+}

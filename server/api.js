@@ -66,7 +66,6 @@ router.get("/users/:id", (req, res) => {
   WHERE u.id = ?
 `;
 
-
   const skillsQuery = `
     SELECT 
       us.machine_id,
@@ -85,7 +84,7 @@ router.get("/users/:id", (req, res) => {
     user: null,
     plants: [],
     cells: [],
-    machines: []
+    machines: [],
   };
 
   db.get(userQuery, [userId], (err, user) => {
@@ -130,16 +129,22 @@ router.get("/users/:id", (req, res) => {
             WHERE plant_id = ? AND cell_id = ?
           `;
 
-          db.all(machinesQuery, [user.plant_id, user.cell_id], (err, machines) => {
-            if (err) {
-              console.error("Error retrieving machines:", err.message);
-              return res.status(500).json({ error: "Database error occurred" });
+          db.all(
+            machinesQuery,
+            [user.plant_id, user.cell_id],
+            (err, machines) => {
+              if (err) {
+                console.error("Error retrieving machines:", err.message);
+                return res
+                  .status(500)
+                  .json({ error: "Database error occurred" });
+              }
+
+              data.machines = machines || [];
+
+              res.json(data);
             }
-
-            data.machines = machines || [];
-
-            res.json(data);
-          });
+          );
         });
       });
     });
@@ -386,6 +391,27 @@ router.put("/users/:id/cell", (req, res) => {
   });
 });
 
+router.put("/users/:id/role", (req, res) => {
+  const userId = req.params.id;
+  const { role } = req.body;
+
+  const ROLES = ["admin", "user", "ptt"];
+
+  if (!ROLES.includes(role)) {
+    return res.status(400).json({ error: "Invalid role" });
+  }
+  const updateUserQuery = `UPDATE users SET role = ? WHERE id = ?`;
+
+  db.run(updateUserQuery, [role, userId], function (err) {
+    if (err) {
+      console.error("Error updating user's role:", err.message);
+      return res.status(500).json({ error: "Failed to update user's role" });
+    }
+
+    return res.status(200).json({ message: "Role updated successfully" });
+  });
+});
+
 // Simple password hashing function (use bcrypt in production)
 function hashPassword(password) {
   // In a real application, use a proper password hashing library like bcrypt
@@ -575,10 +601,11 @@ router.delete("/machines/:id", (req, res) => {
       return res.status(404).json({ error: "Machine not found" });
     }
 
-    res.json({ message: "Machine and related user skills deleted successfully." });
+    res.json({
+      message: "Machine and related user skills deleted successfully.",
+    });
   });
 });
-
 
 router.delete("/machines/:id", (req, res) => {
   const machineId = req.params.id;
@@ -709,9 +736,11 @@ router.delete("/cells/:id", (req, res) => {
       return res.status(404).json({ error: "Cell not found" });
     }
 
-    res.json({ message: "Cell and all related machines and user skills deleted successfully." });
+    res.json({
+      message:
+        "Cell and all related machines and user skills deleted successfully.",
+    });
   });
 });
-
 
 module.exports = router;

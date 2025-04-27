@@ -4,6 +4,7 @@ const sqlite3 = require("sqlite3").verbose();
 const app = express();
 const PORT = 3000;
 const fs = require("fs");
+const { getUserById } = require('./db');
 
 // Middleware to parse form data
 app.use(express.urlencoded({ extended: true }));
@@ -54,8 +55,10 @@ app.use("/admin", (req, res, next) => {
 
 const adminRoutes = require("./admin");
 const apiRoutes = require("./api");
+const openRoutes = require("./openRoutes");
 app.use("/admin", adminRoutes);
 app.use("/api", verifyItAdmin, apiRoutes);
+app.use("/open", openRoutes);
 
 app.get("/page1.html", verifyToken, (req, res) => {
   const usersPlant = req.user.plant_id;
@@ -112,6 +115,7 @@ const db = new sqlite3.Database("./database.db", (err) => {
       db.run(`
         CREATE TABLE IF NOT EXISTS users (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
+          employee_id TEXT NOT NULL UNIQUE,
           fullname TEXT NOT NULL,
           cell_id INTEGER,
           email TEXT NOT NULL UNIQUE,
@@ -203,20 +207,36 @@ const db = new sqlite3.Database("./database.db", (err) => {
 
 // Handle signup form submission
 app.post("/signup", (req, res) => {
-  const { fullname, plant_id, cell_id, email, username, password } = req.body;
+  const {
+    fullname,
+    plant_id,
+    cell_id,
+    email,
+    username,
+    password,
+    employee_id,
+  } = req.body;
 
-  if (!fullname || !plant_id || !cell_id || !email || !username || !password) {
+  if (
+    !fullname ||
+    !plant_id ||
+    !cell_id ||
+    !email ||
+    !username ||
+    !password ||
+    !employee_id
+  ) {
     return res.redirect("/error.html?type=signup&errorCode=400");
   }
 
   const insertUserQuery = `
-    INSERT INTO users (fullname, cell_id, email, username, password, plant_id)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO users (fullname, cell_id, email, username, password, plant_id, employee_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.run(
     insertUserQuery,
-    [fullname, cell_id, email, username, password, plant_id],
+    [fullname, cell_id, email, username, password, plant_id, employee_id],
     function (err) {
       if (err) {
         console.error("Signup error:", err.message);
@@ -231,6 +251,7 @@ app.post("/signup", (req, res) => {
 
 app.get("/login", (req, res) => {
   const token = req.cookies.token;
+  let role = null;
 
   if (!token) {
     return res.sendFile(path.join(__dirname, "public", "login.html"));
@@ -242,13 +263,19 @@ app.get("/login", (req, res) => {
       return res.sendFile(path.join(__dirname, "public", "login.html"));
     }
 
-    if (ADMIN_ROLES.includes(decoded.role)) {
-      return res.redirect("/admin");
-    }
-
-    const plantId = decoded.plant_id;
-    // Redirect to protected page with skill query
-    return res.redirect(`/page1.html?plant=${plantId}`);
+    getUserById(decoded.id).then((user) => {
+      console.log("User found:", user);
+      if (!user) {
+        return res.sendFile(path.join(__dirname, "public", "login.html"));
+      }
+      role = user.role;
+      if (ADMIN_ROLES.includes(role)) {
+        return res.redirect("/admin");
+      }
+      const plantId = decoded.plant_id;
+      // Redirect to protected page with skill query
+      return res.redirect(`/page1.html?plant=${plantId}`);
+    });
   });
 });
 
@@ -332,7 +359,7 @@ app.get("/me", verifyToken, (req, res) => {
       p.name AS plant_name,
       m.id AS machine_id,
       m.name AS machine_name,
-      COALESCE(s.name, 'L1') AS skill
+      COALESCE(s.name, 'L0') AS skill
     FROM users u
     JOIN plants p ON u.plant_id = p.id
     JOIN machines m ON m.plant_id = p.id

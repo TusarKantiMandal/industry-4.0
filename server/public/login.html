@@ -238,6 +238,7 @@
             .then((data) => {
               if(data && ADMIN_ROLES.includes(data.role)) {
                 window.location.href = '/admin';
+                return;
               }
 
               document.getElementById("loading-indicator").style.display =
