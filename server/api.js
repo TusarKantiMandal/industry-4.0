@@ -151,14 +151,11 @@ router.get("/users/:id", (req, res) => {
   });
 });
 
-// Update user
 router.put("/users/:id", (req, res) => {
   const userId = req.params.id;
-  const { fullname, email, cell, skills } = req.body;
+  const { fullname, email, skills } = req.body;
 
-  console.log(req.body);
-
-  if (!fullname || !email || !cell || !skills) {
+  if (!fullname || !email || !skills) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
@@ -166,13 +163,13 @@ router.put("/users/:id", (req, res) => {
     return res.status(400).json({ error: "Skills must be an array" });
   }
 
-  for (const skill of skills) {
-    if (!skill.name || !skill.level) {
-      return res
-        .status(400)
-        .json({ error: "Skill name and level are required" });
-    }
-  }
+  // for (const skill of skills) {
+  //   if (!skill.name || !skill.level || !skill.machine_id) {
+  //     return res.status(400).json({
+  //       error: "Each skill must include name, level, and machine_id",
+  //     });
+  //   }
+  // }
 
   db.get("SELECT id FROM users WHERE id = ?", [userId], (err, row) => {
     if (err) {
@@ -183,81 +180,67 @@ router.put("/users/:id", (req, res) => {
     if (!row) {
       return res.status(404).json({ error: "User not found" });
     }
-  });
 
-  db.serialize(() => {
-    db.run("BEGIN TRANSACTION");
+    db.serialize(() => {
+      db.run("BEGIN TRANSACTION");
 
-    const updateUserQuery = `
-      UPDATE users
-      SET 
-        fullname = ?,
-        email = ?,
-        cell = ?
-      WHERE id = ?
-    `;
+      const updateUserQuery = `
+        UPDATE users
+        SET fullname = ?, email = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `;
 
-    db.run(updateUserQuery, [fullname, email, cell, userId], function (err) {
-      if (err) {
-        console.error("Error updating user:", err.message);
-        db.run("ROLLBACK");
-        return res.status(500).json({ error: "Failed to update user" });
-      }
-
-      // Delete existing skills
-      db.run(
-        "DELETE FROM user_skills WHERE user_id = ?",
-        [userId],
-        function (err) {
-          if (err) {
-            console.error("Error deleting skills:", err.message);
-            db.run("ROLLBACK");
-            return res.status(500).json({ error: "Failed to update skills" });
-          }
-
-          // Insert new skills
-          const insertSkillStmt = db.prepare(`
-          INSERT INTO user_skills (user_id, machine_id, skill_id)
-          SELECT
-              ?, m.id, SELECT s.name FROM skills s WHERE s.name = ?
-          FROM machines m
-          JOIN users u ON u.id = ?
-          WHERE m.name = ?
-              AND m.plant_id = u.plant_id
-        `);
-
-          let skillError = false;
-
-          if (skills && skills.length > 0) {
-            skills.forEach((skill) => {
-              insertSkillStmt.run(
-                userId,
-                skill.level,
-                userId,
-                skill.name,
-                function (err) {
-                  if (err) {
-                    skillError = true;
-                  }
-                }
-              );
-            });
-          }
-
-          insertSkillStmt.finalize();
-
-          if (skillError) {
-            db.run("ROLLBACK");
-            return res.status(500).json({ error: "Failed to update skills" });
-          }
-
-          db.run("COMMIT");
-          return res.status(200).json({ message: "User updated successfully" });
+      db.run(updateUserQuery, [fullname, email, userId], function (err) {
+        if (err) {
+          console.error("Error updating user:", err.message);
+          db.run("ROLLBACK");
+          return res.status(500).json({ error: "Failed to update user" });
         }
-      );
+
+        const insertSkills = (index) => {
+          if (index >= skills.length) {
+            db.run("COMMIT");
+            return res.status(200).json({ message: "User updated successfully" });
+          }
+
+          const { name, level } = skills[index];
+
+          db.get("SELECT id FROM machines WHERE name = ?", [name], (err, machine) => {
+            if (err || !machine) {
+              console.error("Invalid machine ID:", err?.message);
+              db.run("ROLLBACK");
+              return res.status(400).json({ error: "Invalid machine ID" });
+            }
+
+            db.get("SELECT id FROM skills WHERE name = ?", [level], (err, skill) => {
+              if (err || !skill) {
+                console.error("Invalid skill name:", err?.message);
+                db.run("ROLLBACK");
+                return res.status(400).json({ error: "Invalid skill name" });
+              }
+
+              const updateSkillsQuery = `
+                INSERT OR REPLACE INTO user_skills (user_id, machine_id, skill_id)
+                VALUES (?, ?, ?)
+              `;
+              db.run(updateSkillsQuery, [userId, machine.id, skill.id], (err) => {
+                if (err) {
+                  console.error("Error updating user skills:", err.message);
+                  db.run("ROLLBACK");
+                  return res.status(500).json({ error: "Failed to update user skills" });
+                }
+                insertSkills(index + 1); // process next skill
+              });
+            });
+          });
+        };
+
+        insertSkills(0); // start inserting skills
+      });
     });
   });
 });
+
 
 // Reset user password
 router.post("/users/:id/reset-password", (req, res) => {

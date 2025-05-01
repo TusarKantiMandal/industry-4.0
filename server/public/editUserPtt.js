@@ -5,11 +5,10 @@ const skillsContainer = document.getElementById("skills-container");
 const modal = document.getElementById("add-skill-modal");
 const machineModal = document.getElementById("add-machine-modal");
 const closeModalBtn = document.getElementById("close-modal");
-const closeModalMachineBtn = document.getElementById("close-machine-modal");
 const cancelAddSkillBtn = document.getElementById("cancel-add-skill");
 const cancelAddMachineBtn = document.getElementById("cancel-add-machine");
 const confirmAddSkillBtn = document.getElementById("confirm-add-skill");
-const confirmAddMachineBtn = document.getElementById("confirm-add-machine");
+// const confirmAddMachineBtn = document.getElementById("confirm-add-machine");
 const cancelBtn = document.getElementById("cancel-btn");
 const resetPasswordBtn = document.getElementById("reset-password-btn");
 const activeStatus = document.getElementById("active-status");
@@ -284,9 +283,9 @@ function closeModal() {
 }
 
 closeModalBtn.addEventListener("click", closeModal);
-closeModalMachineBtn.addEventListener("click", closeModal);
+// closeModalMachineBtn.addEventListener("click", closeModal);
 cancelAddSkillBtn.addEventListener("click", closeModal);
-cancelAddMachineBtn.addEventListener("click", closeModal);
+// cancelAddMachineBtn.addEventListener("click", closeModal);
 
 confirmAddSkillBtn.addEventListener("click", () => {
   const skillName = document.getElementById("new-skill-name").value.trim();
@@ -303,27 +302,25 @@ confirmAddSkillBtn.addEventListener("click", () => {
   closeModal();
 });
 
-confirmAddMachineBtn.addEventListener("click", () => {
+// confirmAddMachineBtn.addEventListener("click", () => {
 
-  const machines = gloablData.machines;
-  const id = document.getElementById("new-machine-name").value.trim();
+//   const machines = gloablData.machines;
+//   const id = document.getElementById("new-machine-name").value.trim();
 
-  const machineName = machines.find((machine) => machine.id == id)?.name;
-  console.log(machineName);
+//   const machineName = machines.find((machine) => machine.id == id)?.name;
+//   console.log(machineName);
 
-  if (!machineName) {
-    alert("Please enter a machine name");
-    return;
-  }
+//   if (!machineName) {
+//     alert("Please enter a machine name");
+//     return;
+//   }
 
-  addMachineCard(machineName, id);
-  closeModal();
-});
+//   addMachineCard(machineName, id);
+//   closeModal();
+// });
 
 function addSkillCard(name, level, customId = null) {
   const skillId = customId || skillCounter++;
-
-  console.log(level);
 
   const skillCard = document.createElement("div");
   skillCard.className = "skill-card";
@@ -419,7 +416,7 @@ document.addEventListener("click", (e) => {
 });
 
 async function populateMachines(machines) {
-  machineSelect.innerHTML = '<option value="">-- Select a Machine --</option>';
+//   machineSelect.innerHTML = '<option value="">-- Select a Machine --</option>';
 
   machines.forEach((machine) => {
     const option = document.createElement("option");
@@ -427,10 +424,10 @@ async function populateMachines(machines) {
     option.textContent = machine.name;
     skillSelect.appendChild(option);
 
-    const machineOption = document.createElement("option");
-    machineOption.value = machine.id;
-    machineOption.textContent = machine.name;
-    machineSelect.appendChild(machineOption);
+    // const machineOption = document.createElement("option");
+    // machineOption.value = machine.id;
+    // machineOption.textContent = machine.name;
+    // machineSelect.appendChild(machineOption);
   });
 
   if (machines.length === 0) {
