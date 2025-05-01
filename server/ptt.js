@@ -30,18 +30,15 @@ function renderUsersPage(req, res) {
       u.active,
       u.role,
       p.name AS plant_name
-    FROM ppt_machines pm
-    JOIN user_skills us ON pm.machine_id = us.machine_id
-    JOIN users u ON us.user_id = u.id
+    FROM users u
     LEFT JOIN plants p ON u.plant_id = p.id
-    WHERE pm.user_id = ?
-      AND u.id != ?
+    WHERE u.id != ?
       AND u.active = 1
     ORDER BY u.id ASC;
   `;
   
 
-  db.all(query, [pttUserId, pttUserId], (err, users) => {
+  db.all(query, [pttUserId], (err, users) => {
     if (err) {
       console.error("Error retrieving users:", err.message);
       return res.status(500).send("Database error occurred");
