@@ -342,15 +342,9 @@ tbody tr:hover {
                     </a>
                 </li> -->
           <li class="sidebar-menu-item">
-            <a href="/admin/it?tab=users" class="sidebar-link active">
+            <a href="/admin/ptt?tab=users" class="sidebar-link active">
               <span class="sidebar-icon"><i class="fas fa-users"></i></span>
               <span>Users</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a href="/admin/it?tab=settings" class="sidebar-link">
-              <span class="sidebar-icon"><i class="fas fa-cog"></i></span>
-              <span>Settings</span>
             </a>
           </li>
           <li class="sidebar-menu-item">
@@ -472,6 +466,7 @@ tbody tr:hover {
           console.log("Sort clicked");
         });
       });
+
       function logout() {
         fetch("/logout", {
           method: "POST",

@@ -16,6 +16,11 @@ router.get("/", (req, res) => {
     }
 });
 
+router.get("/users/edit", (req, res) => {
+  const userId = req.query.id;
+  res.sendFile(path.join(__dirname, "public", "editUserPtt.html"));
+});
+
 function renderUsersPage(req, res) {
 
     const pttUserId = req.user.id;
@@ -34,6 +39,7 @@ function renderUsersPage(req, res) {
     LEFT JOIN plants p ON u.plant_id = p.id
     WHERE u.id != ?
       AND u.active = 1
+      AND u.role NOT IN ('admin', 'itAdmin', 'ptt')
     ORDER BY u.id ASC;
   `;
   
@@ -51,7 +57,7 @@ function renderUsersPage(req, res) {
 };
 
 function generateAdminHTML(users) {
-  const adminTemplatePath = path.join(__dirname, "public", "admin.html");
+  const adminTemplatePath = path.join(__dirname, "public", "ptt.html");
   let html = fs.readFileSync(adminTemplatePath, "utf8");
 
   const userRows = users
@@ -152,7 +158,7 @@ const enhancedScript = `
   // Function to open edit user page
   function openEditUserPage(userId) {
       // Navigate to edit page with user ID
-      window.location.href = \`/admin/it/users/edit?id=\${userId}\`;
+      window.location.href = \`/admin/ptt/users/edit?id=\${userId}\`;
   }
   
   // Function to confirm and handle user deactivation

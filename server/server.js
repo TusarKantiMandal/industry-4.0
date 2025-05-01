@@ -354,6 +354,7 @@ app.get("/me", verifyToken, (req, res) => {
       c.name AS cell, 
       c.id AS cell_id,
       u.email, 
+      u.role,
       u.username,
       p.id AS plant_id, 
       p.name AS plant_name,
@@ -376,6 +377,29 @@ app.get("/me", verifyToken, (req, res) => {
     if (!rows.length) return res.status(404).send("User not found");
 
     const user = rows[0];
+
+    console.log("User found:", user);
+
+    if (user.role === "itAdmin" || user.role === "ptt") {
+       // Read HTML file
+    const filePath = path.join(__dirname, "public", "profileAdmin.html");
+    fs.readFile(filePath, "utf8", (err, html) => {
+      if (err) return res.status(500).send("Could not load profile template");
+
+      let rendered = html
+        .replace(/{{username}}/g, user.username)
+        .replace(/{{fullname}}/g, user.fullname)
+        .replace(/{{email}}/g, user.email)
+        .replace(/{{cell}}/g, user.cell)
+        .replace(/{{userId}}/g, user.id)
+        .replace(
+          /{{username.charAt\(0\).toUpperCase\(\)}}/g,
+          user.fullname.charAt(0).toUpperCase()
+        )
+      res.send(rendered);
+    });
+    return;
+    }
 
     const skillCards = rows
       .filter((row) => row.machine_name)
@@ -467,7 +491,9 @@ function verifyItAdmin(req, res, next) {
         "/error.html?type=auth&errorCode=403&details=Invalid token"
       );
     req.user = decoded;
-    if (decoded.role != "itAdmin") return res.redirect("/403.html");
+    // Check if the user is an IT admin
+    const access = decoded.role == "itAdmin" || decoded.role == "ptt";
+    if (!accessa) return res.redirect("/403.html");
     next();
   });
 }
