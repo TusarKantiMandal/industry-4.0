@@ -6,6 +6,9 @@ const PORT = 3000;
 const fs = require("fs");
 const { getUserById } = require('./db');
 
+const cors = require("cors");
+
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 // Middleware to parse form data
 app.use(express.urlencoded({ extended: true }));
 
@@ -56,9 +59,11 @@ app.use("/admin", (req, res, next) => {
 const adminRoutes = require("./admin");
 const apiRoutes = require("./api");
 const openRoutes = require("./openRoutes");
+const checkSheetRoutes = require("./checkSheet");
 app.use("/admin", adminRoutes);
 app.use("/api", verifyItAdmin, apiRoutes);
 app.use("/open", openRoutes);
+app.use("/machine/:machineId", verifyMachineAccess, checkSheetRoutes);
 
 app.get("/page1.html", verifyToken, (req, res) => {
   const usersPlant = req.user.plant_id;
@@ -201,6 +206,54 @@ const db = new sqlite3.Database("./database.db", (err) => {
           }
         }
       );
+
+      db.run(
+        `CREATE TABLE IF NOT EXISTS checkpoints (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );`
+      );
+
+      db.run(
+        `CREATE TABLE IF NOT EXISTS machine_checkpoint (
+          checkpoint_id INTEGER NOT NULL,
+          machine_id INTEGER NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (checkpoint_id) REFERENCES checkpoints(id) ON DELETE CASCADE,
+          FOREIGN KEY (machine_id) REFERENCES machines(id) ON DELETE CASCADE,
+          PRIMARY KEY (checkpoint_id, machine_id),
+          UNIQUE(checkpoint_id, machine_id)
+        );`
+      );
+
+      db.run(
+        `CREATE TABLE IF NOT EXISTS data(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          machine_id INTEGER NOT NULL,
+          checkpoint_id INTEGER NOT NULL,
+          user_id INTEGER NOT NULL,
+          month INTEGER NOT NULL,
+          year INTEGER NOT NULL,
+          day INTEGER NOT NULL,
+          value TEXT NOT NULL,
+          shift TEXT NOT NULL,
+          approved INTEGER DEFAULT 0,
+          comment TEXT,
+          approver_email TEXT,
+          approver_name TEXT,
+          batch_id INTEGER,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (machine_id) REFERENCES machines(id) ON DELETE CASCADE,
+          FOREIGN KEY (checkpoint_id) REFERENCES checkpoints(id) ON DELETE CASCADE,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );`
+      );
+
+      db.run(`CREATE INDEX IF NOT EXISTS idx_batch_id ON data(batch_id);`);
     });
   }
 });
@@ -344,6 +397,13 @@ app.post("/login", (req, res) => {
   });
 });
 
+app.get("/approve", verifyToken, (req, res) => {
+  const { machineId, year, month, day, batchId } = req.query;
+  const filePath = path.join(__dirname, "public", "approveUi.html");
+
+  res.sendFile(filePath);
+});
+
 app.get("/me", verifyToken, (req, res) => {
   const userId = req.user.id;
 
@@ -370,7 +430,7 @@ app.get("/me", verifyToken, (req, res) => {
     WHERE u.id = ?
     ORDER BY m.id
   `;
-
+  
   db.all(query, [userId], (err, rows) => {
     if (err) return res.status(500).send("DB error");
 
@@ -378,7 +438,7 @@ app.get("/me", verifyToken, (req, res) => {
 
     const user = rows[0];
 
-    console.log("User found:", user);
+    console.log("User found:", rows);
 
     if (user.role === "itAdmin" || user.role === "ptt") {
        // Read HTML file
@@ -392,6 +452,7 @@ app.get("/me", verifyToken, (req, res) => {
         .replace(/{{email}}/g, user.email)
         .replace(/{{cell}}/g, user.cell)
         .replace(/{{userId}}/g, user.id)
+        .replace(/{{plantName}}/g, user.plant_name)
         .replace(
           /{{username.charAt\(0\).toUpperCase\(\)}}/g,
           user.fullname.charAt(0).toUpperCase()
@@ -493,7 +554,43 @@ function verifyItAdmin(req, res, next) {
     req.user = decoded;
     // Check if the user is an IT admin
     const access = decoded.role == "itAdmin" || decoded.role == "ptt";
-    if (!accessa) return res.redirect("/403.html");
+    if (!access) return res.redirect("/403.html");
     next();
+  });
+}
+
+function verifyMachineAccess(req, res, next) {
+  const token = req.cookies.token;
+  if (!token)
+    return res.redirect("/error.html?type=auth&errorCode=401&details=No token");
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err)
+      return res.redirect(
+        "/error.html?type=auth&errorCode=403&details=Invalid token"
+      );
+    req.user = decoded;
+    req.machineId = req.params.machineId;
+
+    const machineId = req.params.machineId;
+    const userId = decoded.id;
+
+    const query = `
+      SELECT COUNT(*) AS count FROM user_skills
+      WHERE user_id = ? AND machine_id = ?
+    `;
+
+    db.get(query, [userId, machineId], (err, row) => {
+      if (err) {
+        console.error("Error checking machine access:", err.message);
+        return res.status(500).send("Database error occurred");
+      }
+
+      if (row.count === 0) {
+        return res.redirect("/403.html");
+      }
+
+      next();
+    });
   });
 }

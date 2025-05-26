@@ -1,453 +1,376 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile </title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root {
-      --primary: #0052cc;
-      --primary-light: #e6f0ff;
-      --secondary: #00875a;
-      --secondary-light: #e6f7f2;
-      --danger: #de350b;
-      --warning: #ff991f;
-      --dark: #172b4d;
-      --gray: #5e6c84;
-      --gray-light: #dfe1e6;
-      --border: #ebecf0;
-      --card-shadow: rgba(9, 30, 66, 0.25) 0px 1px 1px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px;
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, 'Helvetica Neue', sans-serif;
-      line-height:.6;
-      color: var(--dark);
-      background-color: #f4f5f7;
-      margin: 0;
-      padding: 0;
-    }
-    
-    .header {
-      background-color: var(--primary);
-      color: white;
-      padding: 16px 0;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-    
-    .header-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .app-title {
-      font-size: 20px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .back-button {
-      background-color: rgba(255, 255, 255, 0.2);
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 3px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background-color 0.2s;
-    }
-    
-    .back-button:hover {
-      background-color: rgba(255, 255, 255, 0.3);
-    }
-    
-    .page-title {
-      font-size: 24px;
-      font-weight: 500;
-      margin: 30px 0 20px;
-      color: var(--dark);
-    }
-    
-    .profile-layout {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 24px;
-      margin-bottom: 40px;
-    }
-    
-    @media (min-width: 768px) {
-      .profile-layout {
-        grid-template-columns: 280px 1fr;
-      }
-    }
-    
-    .panel {
-      background-color: white;
-      border-radius: 3px;
-      box-shadow: var(--card-shadow);
-      overflow: hidden;
-    }
-    
-    .panel-header {
-      padding: 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .panel-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--dark);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .panel-icon {
-      color: var(--primary);
-    }
-    
-    .panel-body {
-      padding: 20px;
-    }
-    
-    .user-details {
-      text-align: center;
-      padding-bottom: 20px;
-    }
-    
-    .user-avatar {
-      width: 100px;
-      height: 100px;
-      background-color: var(--primary-light);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-      font-size: 36px;
-      font-weight: 500;
-      color: var(--primary);
-    }
-    
-    .user-name {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    
-    .user-role {
-      color: var(--gray);
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
-    
-    .status-badge {
-      display: inline-block;
-      background-color: var(--secondary-light);
-      color: var(--secondary);
-      padding: 2px 8px;
-      border-radius: 3px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    
-    .info-list {
-      list-style-type: none;
-      margin-top: 24px;
-    }
-    
-    .info-item {
-      display: flex;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    
-    .info-item:last-child {
-      border-bottom: none;
-    }
-    
-    .info-label {
-      width: 100px;
-      color: var(--gray);
-      font-size: 14px;
-    }
-    
-    .info-value {
-      flex: 1;
-      font-weight: 500;
-      font-size: 14px;
-    }
-    
-    .plant-details {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-    }
-    
-    .plant-icon {
-      width: 48px;
-      height: 48px;
-      background-color: var(--secondary-light);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--secondary);
-      font-size: 24px;
-    }
-    
-    .plant-info {
-      flex: 1;
-    }
-    
-    .plant-name {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--secondary);
-      margin-bottom: 4px;
-    }
-    
-    .plant-meta {
-      display: flex;
-      gap: 16px;
-      margin-top: 16px;
-    }
-    
-    .plant-meta-item {
-      flex: 1;
-    }
-    
-    .meta-label {
-      font-size: 12px;
-      color: var(--gray);
-      margin-bottom: 4px;
-    }
-    
-    .meta-value {
-      font-weight: 500;
-      font-size: 14px;
-    }
-    
-    .skill-cards {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
-    }
-    
-    @media (min-width: 768px) {
-      .skill-cards {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-    
-    @media (min-width: 1024px) {
-      .skill-cards {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-    
-    .skill-card {
-      background-color: white;
-      border-radius: 3px;
-      box-shadow: var(--card-shadow);
-      transition: transform 0.2s, box-shadow 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .skill-card:hover {
-      transform: translateY(-2px);
-      box-shadow: rgba(9, 30, 66, 0.25) 0px 8px 16px -4px, rgba(9, 30, 66, 0.31) 0px 0px 1px;
-    }
-    
-    .skill-level-indicator {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 0;
-      height: 0;
-      border-style: solid;
-      border-width: 0 40px 40px 0;
-      border-color: transparent var(--gray-light) transparent transparent;
-    }
-    
-    .skill-level-text {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      font-size: 12px;
-      font-weight: 700;
-      color: white;
-    }
-    
-    .skill-card.level-1 .skill-level-indicator {
-      border-color: transparent #ffbdad transparent transparent;
-    }
-    
-    .skill-card.level-2 .skill-level-indicator {
-      border-color: transparent #ffe2bd transparent transparent;
-    }
-    
-    .skill-card.level-3 .skill-level-indicator {
-      border-color: transparent #abf5d1 transparent transparent;
-    }
-    
-    .skill-card-content {
-      padding: 16px;
-    }
-    
-    .skill-icon {
-      width: 40px;
-      height: 40px;
-      background-color: var(--primary-light);
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--primary);
-      font-size: 20px;
-      margin-bottom: 12px;
-    }
-    
-    .skill-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-    
-    .skill-description {
-      font-size: 14px;
-      color: var(--gray);
-      margin-bottom: 12px;
-      min-height: 60px;
-    }
-    
-    .skill-meta {
-      display: flex;
-      gap: 12px;
-      border-top: 1px solid var(--border);
-      padding-top: 12px;
-      font-size: 12px;
-    }
-    
-    
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--gray);
-    }
-    
-    .empty-state-icon {
-      font-size: 40px;
-      margin-bottom: 16px;
-      color: var(--gray-light);
-    }
-    
-    .empty-state-title {
-      font-size: 16px;
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-    
-    
-    .action-button {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 3px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    
-    .action-button:hover {
-      background-color: #0747a6;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - {{fullname}}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 32px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        .avatar-container {
+            position: relative;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            font-weight: 700;
+            box-shadow: 0 8px 32px rgba(37, 99, 235, 0.3);
+            border: 4px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .status-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: #10b981;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+
+        .profile-details h1 {
+            color: #1e293b;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .username {
+            color: #64748b;
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+
+        .info-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(37, 99, 235, 0.05);
+            border-radius: 16px;
+            border-left: 4px solid #2563eb;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .stat-content h3 {
+            color: #1e293b;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .stat-content p {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .skills-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            color: #1e293b;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .section-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .skill-card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .skill-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15);
+            border-color: #2563eb;
+        }
+
+        .skill-card.level-0 {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+
+        .skill-card.level-1 {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .skill-card.level-2 {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        }
+
+        .skill-card.level-3 {
+            background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+        }
+
+        .skill-level-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .level-0 .skill-level-badge {
+            background: #2563eb;
+            color: white;
+        }
+
+        .level-1 .skill-level-badge {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .level-2 .skill-level-badge {
+            background: #059669;
+            color: white;
+        }
+
+        .level-3 .skill-level-badge {
+            background: #dc2626;
+            color: white;
+        }
+
+        .skill-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .skill-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #1e293b;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .skill-info h3 {
+            color: #1e293b;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .skill-description {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .no-skills {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .no-skills i {
+            font-size: 48px;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .profile-card {
+                padding: 24px;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 24px;
+            }
+
+            .avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 40px;
+            }
+
+            .profile-details h1 {
+                font-size: 28px;
+            }
+
+            .info-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .skills-section {
+                padding: 24px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header class="header">
-    <div class="container header-content">
-      <div class="app-title">
-        <i class="fas fa-industry"></i>
-        Manufacturing Portal
-      </div>
-      <a href="/page1.html" class="back-button">
-        <i class="fas fa-arrow-left"></i>
-        Back
-      </a>
-    </div>
-  </header>
-  
-  <main class="container">
-    <h1 class="page-title">User Profile</h1>
-    
-    <div class="profile-layout">
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">
-            <i class="fas fa-user panel-icon"></i>
-            Profile Details
-          </h2>
-          <!-- <button class="action-button">
-            <i class="fas fa-edit"></i>
-          </button> -->
-        </div>
-        <div class="panel-body">
-          <div class="user-details">
-            <div class="user-avatar">
-              {{username.charAt(0).toUpperCase()}}
+    <div class="container">
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="avatar-container">
+                    <div class="avatar">
+                        {{username.charAt(0).toUpperCase()}}
+                    </div>
+                    <div class="status-badge"></div>
+                </div>
+                <div class="profile-details">
+                    <h1>{{fullname}}</h1>
+                    <div class="username">@{{username}}</div>
+                </div>
             </div>
-            <h3 class="user-name">{{fullname}}</h3>
-            <span class="status-badge">Active</span>
-          </div>
-          
-          <ul class="info-list">
-            <li class="info-item">
-              <div class="info-label">Username</div>
-              <div class="info-value">{{username}}</div>
-            </li>
-            <li class="info-item">
-              <div class="info-label">Email</div>
-              <div class="info-value">{{email}}</div>
-            </li>
-            <li class="info-item">
-              <div class="info-label">Cell</div>
-              <div class="info-value">{{cell}}</div>
-            </li>
-            <li class="info-item">
-              <div class="info-label">User ID</div>
-              <div class="info-value">{{userId}}</div>
-            </li>
-          </ul>
+
+            <div class="info-stats">
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Email Address</h3>
+                        <p>{{email}}</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-id-badge"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Employee ID</h3>
+                        <p>#{{userId}}</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Work Cell</h3>
+                        <p>{{cell}}</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Plant Name</h3>
+                        <p>{{plantName}}</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </main>
 </body>
 </html>

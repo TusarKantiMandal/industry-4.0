@@ -264,7 +264,7 @@
         z-index: 10;
         display: none;
       }
-      
+
       .dropdown-item {
         display: block;
         padding: 0.75rem 1rem;
@@ -272,7 +272,7 @@
         color: var(--text-primary);
         transition: all 0.2s ease;
       }
-      
+
       .dropdown-item:hover {
         background-color: var(--hover-bg);
       }
@@ -474,23 +474,23 @@
         animation: slide-in 0.3s ease forwards;
         max-width: 350px;
       }
-      
+
       .notification-success {
         background-color: #dcfce7;
         color: #166534;
         border-left: 4px solid #16a34a;
       }
-      
+
       .notification-error {
         background-color: #fee2e2;
         color: #991b1b;
         border-left: 4px solid #dc2626;
       }
-      
+
       .notification-hide {
         animation: slide-out 0.3s ease forwards;
       }
-      
+
       @keyframes slide-in {
         from {
           transform: translateX(100%);
@@ -501,7 +501,7 @@
           opacity: 1;
         }
       }
-      
+
       @keyframes slide-out {
         from {
           transform: translateX(0);
@@ -536,6 +536,12 @@
             <a href="/" class="sidebar-link">
               <span class="sidebar-icon"><i class="fas fa-home"></i></span>
               <span>Go Back To Home</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a href="/" class="sidebar-link" onclick="logout()">
+              <span class="sidebar-icon"><i class="fas fa-sign-out"></i></span>
+              <span>Logout</span>
             </a>
           </li>
         </ul>
@@ -818,13 +824,13 @@
           // Remove active class from all tabs and content
           document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
           document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-          
+
           // Add active class to clicked tab and corresponding content
           this.classList.add('active');
           document.getElementById(this.dataset.tab + '-tab').classList.add('active');
         });
       });
-      
+
       // Initialize dropdown actions for plants
       function initPlantDropdowns() {
         document.querySelectorAll('#plants-table .dropdown-toggle').forEach(button => {
@@ -832,10 +838,10 @@
             const row = this.closest('tr');
             const plantId = row.dataset.id;
             const plantName = row.cells[1].textContent;
-            
+
             // Create dropdown menu if it doesn't exist
             let menu = this.nextElementSibling;
-            
+
             if (!menu || !menu.classList.contains('dropdown-menu')) {
               menu = document.createElement('div');
               menu.className = 'dropdown-menu';
@@ -844,35 +850,35 @@
                 <a href="#" class="dropdown-item delete-plant">Delete</a>
               `;
               this.parentNode.appendChild(menu);
-              
+
               // Add event listeners to the newly created menu items
               menu.querySelector('.edit-plant').addEventListener('click', function(e) {
                 e.preventDefault();
                 openEditPlantModal(plantId, plantName);
               });
-              
+
               menu.querySelector('.delete-plant').addEventListener('click', function(e) {
                 e.preventDefault();
                 confirmDeletePlant(plantId, plantName);
               });
             }
-            
+
             // Toggle menu visibility
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-            
+
             // Close other menus
             document.querySelectorAll('.dropdown-menu').forEach(otherMenu => {
               if (otherMenu !== menu) {
                 otherMenu.style.display = 'none';
               }
             });
-            
+
             // Stop propagation
             event.stopPropagation();
           });
         });
       }
-      
+
       // Initialize dropdown actions for machines
       function initMachineDropdowns() {
         document.querySelectorAll('#machines-table .dropdown-toggle').forEach(button => {
@@ -883,10 +889,10 @@
             const machineSkill = row.cells[2].querySelector('.minSkill').className.split('-')[1];
             const plantId = row.cells[3].querySelector('.chip').className.split('-')[1];
             const cellId = row.cells[4].querySelector('.chip').className.split('-')[1];
-            
+
             // Create dropdown menu if it doesn't exist
             let menu = this.nextElementSibling;
-            
+
             if (!menu || !menu.classList.contains('dropdown-menu')) {
               menu = document.createElement('div');
               menu.className = 'dropdown-menu';
@@ -895,35 +901,35 @@
                 <a href="#" class="dropdown-item delete-machine">Delete</a>
               `;
               this.parentNode.appendChild(menu);
-              
+
               // Add event listeners to the newly created menu items
               menu.querySelector('.edit-machine').addEventListener('click', function(e) {
                 e.preventDefault();
                 openEditMachineModal(machineId, machineName, machineSkill, plantId);
               });
-              
+
               menu.querySelector('.delete-machine').addEventListener('click', function(e) {
                 e.preventDefault();
                 confirmDeleteMachine(machineId, machineName);
               });
             }
-            
+
             // Toggle menu visibility
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-            
+
             // Close other menus
             document.querySelectorAll('.dropdown-menu').forEach(otherMenu => {
               if (otherMenu !== menu) {
                 otherMenu.style.display = 'none';
               }
             });
-            
+
             // Stop propagation
             event.stopPropagation();
           });
         });
       }
-      
+
       // Initialize dropdown actions for cells
       function initCellDropdowns() {
         document.querySelectorAll('#cells-table .dropdown-toggle').forEach(button => {
@@ -934,10 +940,10 @@
             const cellId = row.dataset.id;
 
             console.log(cellId);
-            
+
             // Create dropdown menu if it doesn't exist
             let menu = this.nextElementSibling;
-            
+
             if (!menu || !menu.classList.contains('dropdown-menu')) {
               menu = document.createElement('div');
               menu.className = 'dropdown-menu';
@@ -946,7 +952,7 @@
                 <a href="#" class="dropdown-item delete-cell">Delete</a>
               `;
               this.parentNode.appendChild(menu);
-              
+
               // Add event listeners to the newly created menu items
               menu.querySelector('.edit-cell').addEventListener('click', function(e) {
                 e.preventDefault();
@@ -958,23 +964,23 @@
                 confirmDeleteCell(cellId, cellName);
               });
             }
-            
+
             // Toggle menu visibility
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-            
+
             // Close other menus
             document.querySelectorAll('.dropdown-menu').forEach(otherMenu => {
               if (otherMenu !== menu) {
                 otherMenu.style.display = 'none';
               }
             });
-            
+
             // Stop propagation
             event.stopPropagation();
           });
         });
       }
-      
+
       // Plant modal functions
       function openAddPlantModal() {
         document.getElementById('plant-modal-title').textContent = 'Add Plant';
@@ -982,18 +988,18 @@
         document.getElementById('plant-name').value = '';
         document.getElementById('plant-modal').style.display = 'flex';
       }
-      
+
       function openEditPlantModal(plantId, plantName) {
         document.getElementById('plant-modal-title').textContent = 'Edit Plant';
         document.getElementById('plant-id').value = plantId;
         document.getElementById('plant-name').value = plantName;
         document.getElementById('plant-modal').style.display = 'flex';
       }
-      
+
       function closePlantModal() {
         document.getElementById('plant-modal').style.display = 'none';
       }
-      
+
       // Machine modal functions
       function openAddMachineModal() {
         document.getElementById('machine-modal-title').textContent = 'Add Machine';
@@ -1004,7 +1010,7 @@
         document.getElementById('machine-modal').style.display = 'flex';
         document.getElementById('cell-plant').value = '';
       }
-      
+
       function openEditMachineModal(machineId, machineName, machineSkill, plantId, cellId) {
         document.getElementById('machine-modal-title').textContent = 'Edit Machine';
         document.getElementById('machine-id').value = machineId;
@@ -1014,11 +1020,11 @@
         document.getElementById('cell-plant').value = cellId;
         document.getElementById('machine-modal').style.display = 'flex';
       }
-      
+
       function closeMachineModal() {
         document.getElementById('machine-modal').style.display = 'none';
       }
-      
+
       // Cell modal functions
       function openAddCellModal() {
         document.getElementById('cell-id').value = '';
@@ -1033,11 +1039,11 @@
         document.getElementById('cell-plant').value = plantId;
         document.getElementById('cell-modal').style.display = 'flex';
       }
-      
+
       function closeCellModal() {
         document.getElementById('cell-modal').style.display = 'none';
       }
-      
+
       // Confirmation modal functions
       function openConfirmModal(title, message, onConfirm) {
         document.getElementById('confirm-title').textContent = title;
@@ -1045,24 +1051,24 @@
         document.getElementById('confirm-modal').style.display = 'flex';
 
         console.log("CONFIRMATION MODAL OPENED");
-        
+
         // Set confirmation action
         document.getElementById('confirm-action').onclick = function() {
           // closeConfirmModal();
           onConfirm();
         };
       }
-      
+
       function closeConfirmModal() {
         document.getElementById('confirm-modal').style.display = 'none';
       }
-      
+
       function confirmDeletePlant(plantId, plantName) {
         if (confirm("Are you sure you want to delete this plant?\n\nThis action cannot be UNDONE, and all users, cells and machines associated with this plant will also be DELETED.")) {
           deletePlant(plantId);
         }
       }
-      
+
       function confirmDeleteMachine(machineId, machineName) {
         if (confirm("Are you sure you want to delete this machine?\n\nThis action cannot be UNDONE.")) {
           deleteMachine(machineId);
@@ -1074,21 +1080,21 @@
           deleteCell(cellId);
         }
       }
-      
+
       // API Functions
       function savePlant() {
         const plantId = document.getElementById('plant-id').value;
         const plantName = document.getElementById('plant-name').value;
-        
+
         if (!plantName) {
           showNotification('Plant name is required', 'error');
           return;
         }
-        
+
         const isEdit = plantId !== '';
         const url = isEdit ? `/api/plants/${plantId}` : '/api/plants';
         const method = isEdit ? 'PUT' : 'POST';
-        
+
         fetch(url, {
           method: method,
           headers: {
@@ -1114,7 +1120,7 @@
           showNotification(error.message, 'error');
         });
       }
-      
+
       function deletePlant(plantId) {
         fetch(`/api/plants/${plantId}`, {
           method: 'DELETE'
@@ -1141,23 +1147,23 @@
           showNotification(error.message, 'error');
         });
       }
-      
+
       function saveMachine() {
         const machineId = document.getElementById('machine-id').value;
         const machineName = document.getElementById('machine-name').value;
         const machineSkill = document.getElementById('machine-skill').value;
         const plantId = document.getElementById('machine-plant').value;
         const cellId = document.getElementById('machine-cell').value;
-        
+
         if (!machineName || !plantId || !cellId) {
           showNotification('Machine name, plant, and cell are required', 'error');
           return;
         }
-        
+
         const isEdit = machineId !== '';
         const url = isEdit ? `/api/machines/${machineId}` : '/api/machines';
         const method = isEdit ? 'PUT' : 'POST';
-        
+
         fetch(url, {
           method: method,
           headers: {
@@ -1188,7 +1194,7 @@
           showNotification(error.message, 'error');
         });
       }
-      
+
       function deleteMachine(machineId) {
         fetch(`/api/machines/${machineId}`, {
           method: 'DELETE'
@@ -1215,7 +1221,7 @@
           showNotification(error.message, 'error');
         });
       }
-      
+
       function deleteCell(cellId) {
         fetch(`/api/cells/${cellId}`, {
           method: 'DELETE'
@@ -1242,12 +1248,12 @@
           showNotification(error.message, 'error');
         });
       }
-      
+
       function saveCell() {
         const cellName = document.getElementById('cell-name').value;
         const cellId = document.getElementById('cell-id').value;
         const plant_id = document.getElementById('cell-plant').value;
-        
+
         if (!cellName || !plant_id) {
           showNotification('Cell name and plant are required', 'error');
           return;
@@ -1281,16 +1287,16 @@
           showNotification(error.message, 'error');
         });
       }
-      
+
       // Search functionality
       function setupSearch(entityType) {
         const searchInput = document.getElementById(`${entityType}-search`);
         const table = document.getElementById(`${entityType}-table`);
-        
+
         searchInput.addEventListener('input', function() {
           const searchTerm = this.value.toLowerCase();
           const rows = table.querySelectorAll('tbody tr');
-          
+
           let visibleCount = 0;
           rows.forEach(row => {
             const text = row.textContent.toLowerCase();
@@ -1298,12 +1304,12 @@
             row.style.display = isVisible ? '' : 'none';
             if (isVisible) visibleCount++;
           });
-          
+
           // Update counter
           updateTableCount(entityType, visibleCount, rows.length);
         });
       }
-      
+
       function updateTableCount(entityType, visibleCount, totalCount) {
         const countElement = document.getElementById(`${entityType}-count`);
         if (!visibleCount) {
@@ -1312,63 +1318,63 @@
           visibleCount = Array.from(rows).filter(row => row.style.display !== 'none').length;
           totalCount = rows.length;
         }
-        
+
         countElement.textContent = `Showing ${visibleCount} of ${totalCount} ${entityType}`;
       }
-      
+
       // Sort functionality
       function setupSorting(entityType) {
         const table = document.getElementById(`${entityType}-table`);
-        
+
         table.querySelectorAll('th button').forEach(button => {
           button.addEventListener('click', function() {
             const index = this.closest('th').cellIndex;
             const isAscending = this.getAttribute('data-order') !== 'asc';
-            
+
             // Reset all other sort indicators
             table.querySelectorAll('th button').forEach(btn => {
               btn.removeAttribute('data-order');
               btn.querySelector('.sort-icon').className = 'fas fa-sort sort-icon';
             });
-            
+
             // Set this column's sort order
             this.setAttribute('data-order', isAscending ? 'asc' : 'desc');
             this.querySelector('.sort-icon').className = 'fas fa-sort-' + (isAscending ? 'up' : 'down') + ' sort-icon';
-            
+
             // Sort table
             const tbody = table.querySelector('tbody');
             const rows = Array.from(tbody.querySelectorAll('tr'));
-            
+
             rows.sort((a, b) => {
               const aValue = a.cells[index].textContent.trim();
               const bValue = b.cells[index].textContent.trim();
-              
+
               // Handle numeric sorting
               if (!isNaN(aValue) && !isNaN(bValue)) {
                 return isAscending ? aValue - bValue : bValue - aValue;
               }
-              
+
               // String sorting
-              return isAscending 
-                ? aValue.localeCompare(bValue) 
+              return isAscending
+                ? aValue.localeCompare(bValue)
                 : bValue.localeCompare(aValue);
             });
-            
+
             // Reorder rows
             rows.forEach(row => tbody.appendChild(row));
           });
         });
       }
-      
+
       // Show notification
       function showNotification(message, type) {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.textContent = message;
-        
+
         // Add to DOM
         document.body.appendChild(notification);
-        
+
         // Remove after timeout
         setTimeout(() => {
           notification.classList.add('notification-hide');
@@ -1377,7 +1383,7 @@
           }, 300);
         }, 3000);
       }
-      
+
       // Close dropdown when clicking elsewhere
       document.addEventListener('click', function(event) {
         if (!event.target.closest('.dropdown-toggle')) {
@@ -1386,7 +1392,7 @@
           });
         }
       });
-      
+
       // Event listeners for modals
       document.getElementById('add-plant-btn').addEventListener('click', openAddPlantModal);
       document.getElementById('plant-modal-close').addEventListener('click', closePlantModal);
@@ -1395,7 +1401,7 @@
         e.preventDefault();
         savePlant();
       });
-      
+
       document.getElementById('add-machine-btn').addEventListener('click', openAddMachineModal);
       document.getElementById('machine-modal-close').addEventListener('click', closeMachineModal);
       document.getElementById('machine-cancel-btn').addEventListener('click', closeMachineModal);
@@ -1403,7 +1409,7 @@
         e.preventDefault();
         saveMachine();
       });
-      
+
       document.getElementById('add-cell-btn').addEventListener('click', openAddCellModal);
       document.getElementById('cell-modal-close').addEventListener('click', closeCellModal);
       document.getElementById('cell-cancel-btn').addEventListener('click', closeCellModal);
@@ -1411,32 +1417,32 @@
         e.preventDefault();
         saveCell();
       });
-      
+
       document.getElementById('confirm-close').addEventListener('click', closeConfirmModal);
       document.getElementById('confirm-cancel').addEventListener('click', closeConfirmModal);
-      
+
       // Initialize everything when the DOM is loaded
       document.addEventListener('DOMContentLoaded', function() {
         // Initialize dropdowns
         initPlantDropdowns();
         initMachineDropdowns();
         initCellDropdowns();
-        
+
         // Setup search functionality
         setupSearch('plants');
         setupSearch('machines');
         setupSearch('cells');
-        
+
         // Setup sorting
         setupSorting('plants');
         setupSorting('machines');
         setupSorting('cells');
-        
+
         // Update table counts
         updateTableCount('plants');
         updateTableCount('machines');
         updateTableCount('cells');
-        
+
         // Close modals when clicking outside
         window.addEventListener('click', function(event) {
           if (event.target.classList.contains('modal')) {
@@ -1444,6 +1450,20 @@
           }
         });
       });
+      function logout() {
+        console.log("Logging out...");
+        fetch("/logout", {
+          method: "POST",
+          credentials: "include",
+        })
+          .then(() => {
+            window.location.href = "/login";
+          })
+          .catch((err) => {
+            console.error("Logout error:", err);
+            alert("Logout failed!");
+          });
+      }
     </script>
   </body>
 </html>

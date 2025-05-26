@@ -140,6 +140,8 @@ function loadUserData(userId) {
       globalUser = user;
       gloablData = data;
 
+      console.log(data.machines);
+
       populateMachines(data.machines);
     })
     .catch((error) => {
@@ -419,7 +421,7 @@ document.addEventListener("click", (e) => {
 });
 
 async function populateMachines(machines) {
-  machineSelect.innerHTML = '<option value="">-- Select a Machine --</option>';
+  // machineSelect.innerHTML = '<option value="">-- Select a Machine --</option>';
 
   machines.forEach((machine) => {
     const option = document.createElement("option");
@@ -427,10 +429,10 @@ async function populateMachines(machines) {
     option.textContent = machine.name;
     skillSelect.appendChild(option);
 
-    const machineOption = document.createElement("option");
-    machineOption.value = machine.id;
-    machineOption.textContent = machine.name;
-    machineSelect.appendChild(machineOption);
+    // const machineOption = document.createElement("option");
+    // machineOption.value = machine.id;
+    // machineOption.textContent = machine.name;
+    // machineSelect.appendChild(machineOption);
   });
 
   if (machines.length === 0) {

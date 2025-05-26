@@ -121,9 +121,60 @@
       .logout-button:hover {
         background-color: #d32f2f;
       }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Loader styles */
+      #loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.7);
+        z-index: 9999;
+      }
+
+      #loader div {
+        text-align: center;
+      }
+
+      #loader .spinner {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: auto;
+      }
+
+      #loader .loading-text {
+        margin-top: 15px;
+        font-size: 18px;
+        color: #333;
+      }
     </style>
   </head>
   <body>
+    <!-- Loader overlay -->
+    <div id="loader">
+      <div>
+        <div class="spinner"></div>
+        <div class="loading-text">Loading...</div>
+      </div>
+    </div>
+
     <!-- My Profile Button in top-left -->
     <button class="profile-button" onclick="checkProfile()">My Profile</button>
     <button class="logout-button" onclick="logout()">Logout</button>
@@ -167,31 +218,29 @@
         ],
       };
 
-      // Plant names for display
-      const plantNames = {
-        plant1: "Gear Plant",
-        plant2: "Axle Plant",
-      };
+      var machines = {};
+      var plants = {};
+      var cells = {};
+      var user = {};
 
-      // Function to get URL parameters
-      function getUrlParameter(name) {
-        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
-        var results = regex.exec(location.search);
-        return results === null
-          ? ""
-          : decodeURIComponent(results[1].replace(/\+/g, " "));
-      }
-
-      // Get the plant ID from URL parameter
-      function loadPlantId() {
-        let plantId = getUrlParameter("plant");
-
-        if (!plantId || !machinesByPlant[plantId.toLowerCase()]) {
-          plantId = "1";
+      async function getUser() {
+        try {
+          const response = await fetch("/open/me", {
+            method: "GET",
+            credentials: "include",
+          });
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          const data = await response.json();
+          machines = data.machines;
+          plants = data.plants;
+          cells = data.cells;
+          user = data.user;
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          alert("Failed to load user data.");
         }
-
-        return plantId.toLowerCase();
       }
 
       // Populate dropdown based on plant ID
@@ -205,16 +254,21 @@
         }
 
         // Update plant indicator
-        const plantName = plantNames[plantId] || "Unknown Plant";
+        console.log(plants);
+        const plantObj = plants.find(
+          (plant) => String(plant.id) === String(plantId.replace("plant", ""))
+        );
+        const plantName = plantObj
+          ? plantObj.name || plantNames[plantId] || "Unknown Plant"
+          : plantNames[plantId] || "Unknown Plant";
         plantDisplay.textContent = `Plant: ${plantName}`;
         plantDisplay.className = `plant-indicator ${plantId}`;
 
         // Add options for the specified plant ID
-        const machines = machinesByPlant[plantId];
         machines.forEach((machine) => {
           const option = document.createElement("option");
-          option.value = machine.value;
-          option.textContent = machine.label;
+          option.value = machine.id;
+          option.textContent = machine.name;
           dropdown.appendChild(option);
         });
       }
@@ -223,9 +277,10 @@
       function handleSelect(selectElement) {
         const selectedValue = selectElement.value;
         if (selectedValue) {
+          const selectedLabel =
+            selectElement.options[selectElement.selectedIndex].text;
           // Replace spaces with %20 or use encodeURIComponent for safety
-          const page = encodeURIComponent(selectedValue) + ".html";
-          window.location.href = page;
+          window.location.href = `machine/${selectedValue}/checkSheet`;
         }
       }
 
@@ -245,16 +300,22 @@
 
       // Profile button action
       function checkProfile() {
-       window.location.href = "/me";
+        window.location.href = "/me";
       }
 
       // Initialize the page
-      window.onload = function () {
-        const plantId = loadPlantId();
-        
-        populateDropdown('plant' + plantId);
-        updateDateTime();
-        setInterval(updateDateTime, 1000);
+      window.onload = async function () {
+        document.getElementById("loader").style.display = "flex";
+        try {
+          await getUser();
+
+          const plantId = user.plant_id;
+          populateDropdown("plant" + plantId);
+          updateDateTime();
+          setInterval(updateDateTime, 1000);
+        } finally {
+          document.getElementById("loader").style.display = "none";
+        }
       };
 
       function logout() {

@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{machineName}} Check Sheet</title>
+    <style>
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --accent-color: #e74c3c;
+        --light-color: #ecf0f1;
+        --dark-color: #34495e;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+        padding: 20px;
+        background-color: #f9f9f9;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h2 {
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid var(--secondary-color);
+        padding-bottom: 10px;
+      }
+
+      .header-info {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        background: var(--light-color);
+        padding: 15px;
+        border-radius: 5px;
+      }
+
+      .header-item {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+      }
+
+      .header-item strong {
+        margin-right: 10px;
+        color: var(--primary-color);
+      }
+
+      select,
+      input {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+        font-size: 12px;
+      }
+
+      th {
+        background-color: var(--secondary-color);
+        color: white;
+        position: sticky;
+        top: 0;
+      }
+
+      .wide {
+        width: 200px;
+        text-align: left;
+      }
+
+      .day-cell {
+        min-width: 30px;
+        cursor: pointer;
+        background-color: white;
+        transition: background-color 0.2s;
+      }
+
+      .day-cell:hover {
+        background-color: #f0f0f0;
+      }
+
+      .day-header {
+        background-color: var(--dark-color);
+        color: white;
+      }
+
+      .tick {
+        color: green;
+        font-weight: bold;
+      }
+      .cross {
+        color: red;
+        font-weight: bold;
+      }
+      .na {
+        color: orange;
+        font-weight: bold;
+      }
+
+      .popup {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .popup-content {
+        background-color: white;
+        position: absolute;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        transform: translate(-50%, -50%);
+        left: 50%;
+        top: 50%;
+      }
+
+      .popup-header {
+        text-align: center;
+        margin-bottom: 10px;
+        color: var(--primary-color);
+      }
+
+      .popup-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .popup-button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .btn-tick {
+        background: #2ecc71;
+        color: white;
+      }
+      .btn-cross {
+        background: #e74c3c;
+        color: white;
+      }
+      .btn-na {
+        background: #f39c12;
+        color: white;
+      }
+      .btn-clear {
+        background: #95a5a6;
+        color: white;
+      }
+      .btn-l {
+        background: #1abc9c;
+        color: white;
+      }
+      .btn-m {
+        background: #3498db;
+        color: white;
+      }
+      .btn-h {
+        background: #9b59b6;
+        color: white;
+      }
+
+      /* Loader styles */
+      #loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.7);
+        z-index: 9999;
+      }
+
+      .approve-pending{
+        background-color: #f39d1248;
+        /* color: rgb(0, 0, 0); */
+        font-weight: bold;
+      }
+
+      .approve-rejected {
+        background-color: #e74d3c3b;
+        /* color: rgb(0, 0, 0); */
+        font-weight: bold;
+      }
+
+      .approve-success {
+        background-color: #2ecc7045;
+        /* color: rgb(255, 255, 255); */
+        font-weight: bold;
+      }
+
+      #loader div {
+        text-align: center;
+      }
+
+      #loader .spinner {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: auto;
+      }
+
+      #loader .loading-text {
+        margin-top: 15px;
+        font-size: 18px;
+        color: #333;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .warning-note {
+        font-size: 12px;
+        color: #b9770e;
+        background: #fffbe6;
+        border-left: 4px solid #f39c12;
+        padding: 6px 12px;
+        margin-top: 8px;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Autonomous Machine Check Sheet</h2>
+      <div class="header-info">
+        <div class="header-item">
+          <strong>Machine Name:</strong><input value="" class="machine-name"/>
+        </div>
+        <div class="header-item">
+          <strong>Cell:</strong><input value="" class="cell-name"/>
+        </div>
+        <div class="header-item">
+          <strong>Month:</strong>
+          <select id="month" onchange="updateDays()"></select>
+        </div>
+        <div class="header-item">
+          <strong>Year:</strong
+          ><input
+            type="number"
+            id="year"
+            value="2025"
+            onchange="updateDays()"
+          />
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table id="checkSheet">
+          <thead>
+            <tr id="headerRow">
+              <th rowspan="2">S.No</th>
+              <th rowspan="2" class="wide">Check Point</th>
+              <th rowspan="2">Time</th>
+              <th rowspan="2">CLIT</th>
+              <th rowspan="2">How</th>
+              <th rowspan="2">Shift</th>
+            </tr>
+            <tr id="dayRow"></tr>
+          </thead>
+          <tbody id="checkpointRows"></tbody>
+        </table>
+      </div>
+
+      <div style="text-align: center; margin-top: 20px">
+        <button class="popup-button btn-m" onclick="openApprovalPopup()">
+          Submit Check Sheet
+        </button>
+      </div>
+
+    <!-- Popups -->
+    <div id="markPopup" class="popup">
+      <div class="popup-content">
+        <div class="popup-header">
+          <h3>Mark Status</h3>
+          <p id="popup-info">
+            Checkpoint: <span id="checkpoint-name"></span>, Day:
+            <span id="day-number"></span>, Shift:
+            <span id="shift-letter"></span>
+          </p>
+        </div>
+        <div class="popup-buttons" id="popup-buttons"></div>
+      </div>
+    </div>
+
+    <div id="detailsPopup" class="popup">
+      <div class="popup-content">
+        <div class="popup-header">
+          <h3>Checkpoint Details</h3>
+          <p id="details-info">
+            <strong>Checkpoint:</strong> <span id="details-checkpoint-name"></span><br />
+            <strong>Day:</strong> <span id="details-day-number"></span> | 
+            <strong>Shift:</strong> <span id="details-shift-letter"></span>
+          </p>
+        </div>
+      
+        <div class="popup-body">
+          <div class="detail-row">
+            <label>Value:</label>
+            <span id="details-value"></span>
+          </div>
+          <div class="detail-row">
+            <label>Status:</label>
+            <span id="details-status"></span>
+          </div>
+          <div class="detail-row" id="details-approval-request" style="display: none;">
+            <em>Approval has been requested.</em>
+          </div>
+          <div class="detail-row">
+            <label>Approver:</label>
+            <span id="details-approver"></span>
+          </div>
+        </div>
+      
+        <div class="popup-buttons" id="popup-buttons"></div>
+      </div>
+    </div>
+
+
+    <div id="approvalPopup" class="popup">
+      <div class="popup-content">
+        <div class="popup-header">
+          <h3>Submit for Approval</h3>
+        </div>
+        <div style="text-align: center; margin-bottom: 10px">
+          <label for="approver">Select Approver:</label>
+          <select id="approver" style="margin: 10px; padding: 8px">
+            <option value="">-- Choose --</option>
+            <!-- TODO: Populate this from database or config file -->
+            <option value="bhaskaraa45@duck.com">Bhaskar</option>
+            <option value="tusar@example.com">Tusar</option>
+            <option value="mustafa@example.com">Mustafa</option>
+          </select>
+          <div
+            style="
+              font-size: 12px;
+              color: #b9770e;
+              background: #fffbe6;
+              border-left: 4px solid #f39c12;
+              padding: 6px 12px;
+              margin-top: 8px;
+              border-radius: 3px;
+            "
+          >
+            <strong>Note:</strong> Approver will receive an email notification.
+            <span style="color: #e67e22; font-weight: 500"
+              >Only the selected approver can approve this.</span
+            >
+          </div>
+        </div>
+        <div class="popup-buttons">
+          <button class="popup-button btn-tick" onclick="submitToApprover()">
+            Confirm
+          </button>
+          <button class="popup-button btn-clear" onclick="closeApprovalPopup()">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader">
+      <div>
+        <div class="spinner"></div>
+        <div class="loading-text">Loading...</div>
+      </div>
+    </div>
+
+    <script>
+      let approverEmail = "";
+      let approverName = "";
+      let pendingCellValue = null;
+      let checkSheetEdits = [];
+
+      function getMachineIdFromUrl() {
+        const match = window.location.pathname.match(
+          /\/machine\/(\d+)\/checkSheet/
+        );
+        return match ? match[1] : null;
+      }
+
+      function showLoader() {
+        document.getElementById("loader").style.display = "flex";
+      }
+
+      function hideLoader() {
+        document.getElementById("loader").style.display = "none";
+      }
+
+      var sheetData = [];
+
+      function getData() {
+        showLoader();
+        const year = document.getElementById("year").value;
+        const month = document.getElementById("month").value;
+        const machineId = getMachineIdFromUrl();
+        fetch(
+          `/machine/${machineId}/api/checkSheet?year=${year}&month=${month}`
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            checkpointNames = data.checkpoints.map(
+              (checkpoint) => checkpoint.name
+            );
+            checkpointData = data.checkpoints.map((checkpoint) => ({
+              id: checkpoint.id,
+              name: checkpoint.name,
+            }));
+            sheetData = data.data || [];
+
+            updateSheetMetaData(
+              data.machine.name,
+              data.machine.cell_name
+            );
+            // Regenerate table after checkpointNames is updated
+            updateDays();
+          })
+          .catch((error) => {
+            console.error("Error fetching data:", error);
+            // Optionally clear table on error
+            checkpointNames = [];
+            checkpointData = [];
+            updateDays();
+          })
+          .finally(() => {
+            hideLoader();
+          });
+      }
+
+      function updateSheetMetaData(machineName, cellName) {
+        const machineNameDOM = document.querySelector(".machine-name");
+        const cellNameDOM = document.querySelector(".cell-name");
+        machineNameDOM.value = machineName;
+        cellNameDOM.value = cellName;
+      }
+
+      var checkpointNames = [
+        // "Emergency switch woking of operatig panel",
+        // "front safety door interlook checking",
+        // "Check bur cleaning of machine bed",
+        // "Check machine light woking ",
+        // "Central lubrication oil level",
+        // "Central lubrication pressure 1-3 kg/cm^2",
+        // "Pneumatic pressue checking",
+        // "Hydraulic oil level checking",
+        // "Lubrication oil level",
+        // "W/P pressure 20-40 kg/cm^2",
+        // "system pressure 50-70 kg/cm^2",
+        // "T/S pressure 20-40 kg/cm^2",
+        // "Light curtain working",
+        // "Check conveyor working",
+        // "Emergency switch working of conveyor side",
+        // "Check locknut tightenning ",
+        // "Electrical panel locking",
+        // "Check air coming out fom AC blower",
+        // "Air leckages",
+        // "Abnormal noise",
+        // "Check PM due date",
+      ];
+      var checkpointData = [];
+
+      const specialCheckpoints = [5, 8, 9]; // L/M/H
+      const numericCheckpoints = {
+        6: { min: 1, max: 3, unit: "bar" },
+        10: { min: 20, max: 40, unit: "kg/cm²" },
+        11: { min: 50, max: 70, unit: "kg/cm²" },
+        12: { min: 20, max: 40, unit: "kg/cm²" },
+      };
+
+      const checkpointCategories = {
+        1: "Safety",
+        2: "Safety",
+        4: "Safety",
+        13: "Safety",
+        15: "Safety",
+        5: "Maintenance",
+        6: "Maintenance",
+        7: "Maintenance",
+        8: "Maintenance",
+        9: "Maintenance",
+        10: "Hydraulic",
+        11: "Hydraulic",
+        12: "Hydraulic",
+      };
+
+      const categoryContacts = {
+        Safety: "safety_team@example.com",
+        Maintenance: "maintenance@example.com",
+        Hydraulic: "hydraulic_team@example.com",
+      };
+
+      let currentCell = null;
+
+      function populateMonthDropdown() {
+        const monthSelect = document.getElementById("month");
+        const monthNames = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+        monthSelect.innerHTML = "";
+        const now = new Date();
+        const currentMonth = now.getMonth(); // 0-based
+        monthNames.forEach((name, index) => {
+          const option = document.createElement("option");
+          option.value = index + 1;
+          option.textContent = name;
+          if (index === currentMonth) option.selected = true;
+          monthSelect.appendChild(option);
+        });
+        // Set year input to current year
+        document.getElementById("year").value = now.getFullYear();
+      }
+
+      function getDaysInMonth(month, year) {
+        return new Date(year, month, 0).getDate();
+      }
+
+      function updateDays() {
+        // Only regenerate table, do not call getData() to avoid infinite loop
+        const month = parseInt(document.getElementById("month").value);
+        const year = parseInt(document.getElementById("year").value);
+        const daysInMonth = getDaysInMonth(month, year);
+        const dayRow = document.getElementById("dayRow");
+        const headerRow = document.getElementById("headerRow");
+        dayRow.innerHTML = "";
+        while (headerRow.children.length > 6)
+          headerRow.removeChild(headerRow.lastChild);
+        for (let i = 1; i <= daysInMonth; i++) {
+          dayRow.innerHTML += `<th class="day-header">${i}</th>`;
+          headerRow.innerHTML += `<th></th>`;
+        }
+        generateCheckpointRows(daysInMonth);
+      }
+
+      function generateCheckpointRows(days) {
+        const tbody = document.getElementById("checkpointRows");
+        tbody.innerHTML = "";
+        const shifts = ["A", "B", "C"];
+        checkpointNames.forEach((name, i) => {
+          shifts.forEach((shift, j) => {
+            const row = document.createElement("tr");
+            if (j === 0) {
+              row.innerHTML += `<td rowspan="3">${
+                i + 1
+              }</td><td rowspan="3" class="wide">${name}</td><td rowspan="3">15</td><td rowspan="3">D</td><td rowspan="3">V</td>`;
+            }
+            row.innerHTML += `<td>${shift}</td>`;
+            for (let d = 1; d <= days; d++) {
+              const td = document.createElement("td");
+              td.className = "day-cell";
+              td.dataset.checkpointIndex = i + 1;
+              td.dataset.checkpoint = name;
+              td.dataset.day = d;
+              td.dataset.shift = shift;
+              // td.dataset.checkpointId = checkpointData.find(
+              //   (cp) => cp.name === name
+              // )?.id;
+              
+              setIntialValue(td);
+
+              // Add support for long press (on hold) event
+              let pressTimer;
+
+              td.onmousedown = td.ontouchstart = function(e) {
+                console.log("Mouse down or touch start detected");
+                pressTimer = setTimeout(() => {
+                  console.log("Long press detected");
+                  showDetailsPopup(td);
+                }, 400); // 400ms for long press
+              };
+
+              td.onmouseup = td.ontouchend = function(e) {
+                clearTimeout(pressTimer);
+              };
+
+              // Normal click still opens the mark popup
+              td.onclick = () => openPopup(td);
+              row.appendChild(td);
+            }
+            tbody.appendChild(row);
+          });
+        });
+      }
+
+      function setIntialValue(td) {
+        const month = parseInt(document.getElementById("month").value);
+        const year = parseInt(document.getElementById("year").value);
+        const day = parseInt(td.dataset.day);
+        const shift = td.dataset.shift;
+        const checkpoint = td.dataset.checkpoint.trim();
+
+        const checkpoint_id = checkpointData.find(
+          (cp) => cp.name === checkpoint
+        )?.id;
+        if (!checkpoint_id) {
+          console.error("Checkpoint ID not found for:", checkpoint);
+          return;
+        }
+
+        const existingEntry = sheetData.find(
+          (entry) =>
+            entry.day === day &&
+            entry.month === month &&
+            entry.year === year &&
+            entry.shift === shift &&
+            entry.checkpoint_id === checkpoint_id
+        );
+
+        if (existingEntry) {
+          td.textContent = existingEntry.value;
+          if (existingEntry.value === "✓") td.classList.add("tick");
+          else if (existingEntry.value === "✗") td.classList.add("cross");
+          else if (existingEntry.value === "NA") td.classList.add("na");
+          if (existingEntry.approved === 0) {
+            td.classList.add("approve-pending");
+          } else if (existingEntry.approved === 1) {
+            td.classList.add("approve-success");
+          } else if (existingEntry.approved === -1) {
+            td.classList.add("approve-rejected");
+          }
+        } else {
+          td.textContent = "";
+          td.classList.remove("tick", "cross", "na", "approve-pending", "approve-success", "approve-rejected");
+        }
+      }
+
+      function openPopup(cell) {
+        currentCell = cell;
+        const dataset = cell.dataset;
+        const index = parseInt(cell.dataset.checkpointIndex);
+        document.getElementById("checkpoint-name").textContent =
+          cell.dataset.checkpoint;
+        document.getElementById("day-number").textContent = cell.dataset.day;
+        document.getElementById("shift-letter").textContent =
+          cell.dataset.shift;
+
+        const popupButtons = document.getElementById("popup-buttons");
+        popupButtons.innerHTML = "";
+
+        if (numericCheckpoints[index]) {
+          const { min, max, unit } = numericCheckpoints[index];
+          popupButtons.innerHTML = `
+          <label>Enter value (${min}–${max} ${unit}): 
+            <input type="number" id="numericValue" min="${min}" max="${max}" step="0.1" style="padding: 5px; margin: 5px;">
+          </label>
+          <button class="popup-button btn-m" onclick="submitNumeric(${min}, ${max}, '${unit}')">Submit</button>
+          <button class="popup-button btn-clear" onclick="markCell('')">Clear</button>
+        `;
+        } else if (specialCheckpoints.includes(index)) {
+          popupButtons.innerHTML = `
+          <button class="popup-button btn-l" onclick="markCell('L')">Low</button>
+          <button class="popup-button btn-m" onclick="markCell('M')">Medium</button>
+          <button class="popup-button btn-h" onclick="markCell('H')">High</button>
+          <button class="popup-button btn-clear" onclick="markCell('')">Clear</button>
+        `;
+        } else {
+          popupButtons.innerHTML = `
+          <button class="popup-button btn-tick" onclick="markCell('✓')">✓ Pass</button>
+          <button class="popup-button btn-cross" onclick="markCell('✗')">✗ Fail</button>
+          <button class="popup-button btn-na" onclick="markCell('NA')">NA</button>
+          <button class="popup-button btn-clear" onclick="markCell('')">Clear</button>
+        `;
+        }
+
+        document.getElementById("markPopup").style.display = "block";
+      }
+
+      function markCell(value) {
+        console.log("Marking cell with value:", value);
+        if (currentCell) {
+          currentCell.textContent = value;
+          currentCell.className = "day-cell";
+          if (value === "✓") currentCell.classList.add("tick");
+          else if (value === "✗") {
+            currentCell.classList.add("cross");
+            const index = parseInt(currentCell.dataset.checkpointIndex);
+            const category = checkpointCategories[index];
+            const contact = categoryContacts[category];
+            // if (contact) {
+            //   alert(
+            //     `❗ Alert sent to ${category} team: ${contact}\nCheckpoint "${currentCell.dataset.checkpoint}" failed on Day ${currentCell.dataset.day}, Shift ${currentCell.dataset.shift}.`
+            //   );
+            // }
+          } else if (value === "NA") currentCell.classList.add("na");
+
+          // Store the edit in the array
+          checkSheetEdits.push({
+            month: parseInt(document.getElementById("month").value),
+            year: parseInt(document.getElementById("year").value),
+            day: parseInt(currentCell.dataset.day),
+            shift: currentCell.dataset.shift,
+            value: value,
+            checkpoint: currentCell.dataset.checkpoint.trim(),
+          });
+          currentCell = null;
+        }
+        document.getElementById("markPopup").style.display = "none";
+      }
+
+      function putDataIntoServer(data) {
+        showLoader();
+        fetch(`/machine/${data.machineId}/updateData`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Data saved successfully:", data);
+            hideLoader();
+            alert("Check sheet submitted successfully!");
+          })
+          .catch((error) => {
+            console.error("Error saving data:", error);
+            hideLoader();
+            alert("Failed to submit check sheet. Please try again.");
+          });
+      }
+
+      function submitNumeric(min, max, unit) {
+        const val = parseFloat(document.getElementById("numericValue").value);
+        if (isNaN(val)) {
+          alert("Please enter a valid number.");
+          return;
+        }
+        if (val < min || val > max) {
+          alert(
+            `Value out of range! Please enter between ${min} and ${max} ${unit}.`
+          );
+          return;
+        }
+        markCell(`${val} ${unit}`);
+      }
+
+      function openApprovalPopup() {
+        document.getElementById("approvalPopup").style.display = "block";
+      }
+
+      function closeApprovalPopup() {
+        document.getElementById("approvalPopup").style.display = "none";
+      }
+
+      function submitToApprover() {
+        approverEmail = document.getElementById("approver").value;
+        approverName = document.getElementById("approver").selectedOptions[0].text;
+        if (!approverEmail) {
+          alert("Please select an approver.");
+          return;
+        }
+        closeApprovalPopup();
+        putDataIntoServer({
+          data: checkSheetEdits,
+          approverEmail: approverEmail,
+          approverName: approverName,
+          machineId: getMachineIdFromUrl(),
+        });
+        // After approval, update the cell value and store the edit
+      }
+
+      // Replace the Submit Check Sheet button logic
+      document.addEventListener("DOMContentLoaded", () => {
+        populateMonthDropdown();
+        document.getElementById("month").addEventListener("change", onMonthYearChange);
+        document.getElementById("year").addEventListener("change", onMonthYearChange);
+        getData();
+        document.querySelector(".btn-m[onclick='openApprovalPopup()']").onclick = openApprovalPopup;
+      });
+
+      window.onclick = function (event) {
+        if (event.target === document.getElementById("markPopup")) {
+          document.getElementById("markPopup").style.display = "none";
+        }
+        if (event.target === document.getElementById("approvalPopup")) {
+          closeApprovalPopup();
+        }
+        if (event.target === document.getElementById("detailsPopup")) {
+          document.getElementById("detailsPopup").style.display = "none";
+        }
+      };
+
+      document.addEventListener("DOMContentLoaded", () => {
+        populateMonthDropdown();
+        // Attach listeners for month/year
+        document
+          .getElementById("month")
+          .addEventListener("change", onMonthYearChange);
+        document
+          .getElementById("year")
+          .addEventListener("change", onMonthYearChange);
+        getData();
+      });
+
+      function onMonthYearChange() {
+        getData();
+      }
+
+      // Add a function to show details popup
+      function showDetailsPopup(td) {
+  const checkpoint = td.dataset.checkpoint;
+  const day = td.dataset.day;
+  const shift = td.dataset.shift;
+  const month = document.getElementById("month").value;
+  const year = document.getElementById("year").value;
+  const checkpoint_id = checkpointData.find(cp => cp.name === checkpoint)?.id;
+
+  const entry = sheetData.find(
+    (entry) =>
+      entry.day === parseInt(day) &&
+      entry.month === parseInt(month) &&
+      entry.year === parseInt(year) &&
+      entry.shift === shift &&
+      entry.checkpoint_id === checkpoint_id
+  );
+
+  document.getElementById("details-checkpoint-name").textContent = checkpoint;
+  document.getElementById("details-day-number").textContent = day;
+  document.getElementById("details-shift-letter").textContent = shift;
+  document.getElementById("details-value").textContent = entry ? entry.value : "";
+
+  const statusSpan = document.getElementById("details-status");
+  const approvalRequestNote = document.getElementById("details-approval-request");
+
+  if (entry) {
+    if (entry.approved === 1) {
+      statusSpan.textContent = "Approved";
+      approvalRequestNote.style.display = "none";
+    } else if (entry.approved === -1) {
+      statusSpan.textContent = "Rejected";
+      approvalRequestNote.style.display = "none";
+    } else {
+      statusSpan.textContent = "Pending";
+      approvalRequestNote.style.display = "block";
+    }
+  } else {
+    statusSpan.textContent = "";
+    approvalRequestNote.style.display = "none";
+  }
+
+  document.getElementById("details-approver").textContent =
+    entry && entry.approver_name ? entry.approver_name : "";
+
+  document.getElementById("detailsPopup").style.display = "block";
+}
+
+    </script>
+  </body>
+</html>
