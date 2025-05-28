@@ -416,7 +416,7 @@
           .then((response) => {
             if (response.ok) {
               alert("Batch approved successfully!");
-              window.reload();
+              getData(); 
             } else {
               alert("Failed to approve batch.");
             }
@@ -440,7 +440,7 @@
           .then((response) => {
             if (response.ok) {
               alert("Batch rejected successfully!");
-              window.reload();
+              getData(); 
             } else {
               alert("Failed to reject batch.");
             }

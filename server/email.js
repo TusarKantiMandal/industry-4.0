@@ -27,7 +27,7 @@ async function sendEmail({ to, cc, subject, body }) {
     to,
     cc,
     subject,
-    html: body,
+    html: `${body}<br><br><div style="font-size:12px;color:#b9770e;background:#fffbe6;border-left:4px solid #f39c12;padding:6px 12px;margin-top:8px;border-radius:3px;"><strong>Note:</strong> This is an auto-generated email. Please do not reply to this message.</div>`
   });
   console.log(`Email sent to: ${to}${cc && cc.length ? ", cc: " + cc : ""}, subject: ${subject}`);
 }

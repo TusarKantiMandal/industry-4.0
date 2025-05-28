@@ -756,6 +756,10 @@
       }
 
       function putDataIntoServer(data) {
+        if (!data || !data.data || !data.approverEmail || !data.approverName || !data.machineId || !Array.isArray(data.data) || data.data.length === 0) {
+          alert("Invalid data for submission.");
+          return;
+        }
         showLoader();
         fetch(`/machine/${data.machineId}/updateData`, {
           method: "PUT",

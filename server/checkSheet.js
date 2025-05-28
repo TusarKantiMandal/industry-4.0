@@ -13,16 +13,24 @@ const {
 const router = express.Router();
 const db = new sqlite3.Database("./database.db");
 
-router.get("/checkSheet", (req, res) => {
+router.get("/checkSheet", async (req, res) => {
   const user = req.user;
   const machineId = req.machineId;
+
+  const machine = await getMatchineById(machineId);
 
   if (!user || !machineId) {
     return res.status(400).send("User or machine ID not provided");
   }
 
   // Serve the HTML file for the check sheet
-  res.sendFile(path.join(__dirname, "public/checkSheet.html"));
+  const filePath = path.join(__dirname, "public/checkSheet.html");
+  fs.readFile(filePath, "utf8", (err, html) => {
+    if (err) return res.redirect("/error.html?type=error&errorCode=500&details=Internal Server Error");
+    let rendered = html.replace("{{machineName}}", machine.name || machineId);
+    res.send(rendered);
+    return;
+  });
 });
 
 router.get("/api/checkSheet", async (req, res) => {
@@ -60,17 +68,21 @@ router.get("/api/checkSheet", async (req, res) => {
         approved = 1 OR (approved = 0 AND user_id = ?) OR (approved = -1 AND user_id = ?)
       )
     `;
-    db.all(dataQuery, [machineId, year, month, req.user.id, req.user.id], (err, rows) => {
-      if (err) {
-        return res.status(500).json({ error: "Database error" });
+    db.all(
+      dataQuery,
+      [machineId, year, month, req.user.id, req.user.id],
+      (err, rows) => {
+        if (err) {
+          return res.status(500).json({ error: "Database error" });
+        }
+        // Return checkpoints and data for UI rendering
+        res.json({
+          checkpoints,
+          data: rows,
+          machine: machine,
+        });
       }
-      // Return checkpoints and data for UI rendering
-      res.json({
-        checkpoints,
-        data: rows,
-        machine: machine,
-      });
-    });
+    );
   } catch (err) {
     res.status(500).json({ error: "Server error", details: err.message });
   }
@@ -97,7 +109,7 @@ router.put("/updateData", async (req, res) => {
   console.log("Received updateData request:", req.body);
 
   if (!userId) return res.status(401).json({ error: "User not authenticated" });
-  if (!machineId || !approverEmail || !approverName || !Array.isArray(data)) {
+  if (!machineId || !approverEmail || !approverName || !Array.isArray(data) || data.length === 0) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
@@ -214,7 +226,7 @@ router.put("/updateData", async (req, res) => {
   sendApprovalEmail(data[0], machineId, approverEmail, approverName, batchId);
   return res.json({ success: true, batchId });
 
-  function sendApprovalEmail(
+  async function sendApprovalEmail(
     firstItem,
     machineId,
     approverEmail,
@@ -223,7 +235,11 @@ router.put("/updateData", async (req, res) => {
   ) {
     const { year, month, day } = firstItem;
 
-    const machineName = getMatchineById(machineId) || { name: machineId };
+    const machineName = (await getMatchineById(machineId)) || {
+      name: machineId,
+    };
+
+    console.log("machine ", machineName);
 
     const approveLink = `${
       process.env.APPROVE_BASE_URL || "http://localhost:3000"
@@ -355,6 +371,7 @@ router.post("/batchData/:batchId/approve", async (req, res) => {
       return res.status(500).send("Database error");
     }
     res.send("Batch approved successfully");
+    sendBatchOwnerNotification(batchId, "approved");
   });
 });
 
@@ -391,7 +408,39 @@ router.post("/batchData/:batchId/reject", async (req, res) => {
       return res.status(500).send("Database error");
     }
     res.send("Batch rejected successfully");
+    sendBatchOwnerNotification(batchId, "rejected");
   });
 });
+
+function sendBatchOwnerNotification(batchId, status) {
+  // Find the owner (user who submitted the batch)
+  const ownerQuery = `SELECT user_id, machine_id, year, month, day, shift FROM data WHERE batch_id = ? LIMIT 1`;
+  db.get(ownerQuery, [batchId], (err, row) => {
+    if (err || !row || !row.user_id) return;
+    const userQuery = `SELECT email, fullname FROM users WHERE id = ?`;
+    db.get(userQuery, [row.user_id], async (err2, userRow) => {
+      if (err2 || !userRow) return;
+      const machineName = (await getMatchineById(row.machine_id)) || {
+        name: row.machine_id,
+      };
+
+      const url = `${
+        process.env.APPROVE_BASE_URL || "http://localhost:3000"
+      }/machine/${row.machine_id}/checkSheet?year=${row.year}&month=${
+        row.month
+      }`;
+      sendEmail({
+        to: userRow.email,
+        cc: [],
+        subject: `CheckSheet Entry ${
+          status === "approved" ? "Approved" : "Rejected"
+        }`,
+        body: `Hello ${userRow.fullname},<br><br>Your submitted check sheet entry for Machine: ${machineName.name}, Date: ${row.year}-${row.month}-${row.day}, Shift: ${row.shift} has been <b>${status}</b>.<br><br>View the check sheet: <a href='${url}'>Check Sheet</a><br><br>Regards,<br>CheckSheet System`,
+      }).catch((error) => {
+        console.error("Error sending batch owner notification email:", error);
+      });
+    });
+  });
+}
 
 module.exports = router;
