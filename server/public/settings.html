@@ -539,10 +539,10 @@
             </a>
           </li>
           <li class="sidebar-menu-item">
-            <a href="/" class="sidebar-link" onclick="logout()">
+            <div class="sidebar-link" onclick="logout()" style="cursor: pointer;">
               <span class="sidebar-icon"><i class="fas fa-sign-out"></i></span>
               <span>Logout</span>
-            </a>
+            </div>
           </li>
         </ul>
       </div>
@@ -1451,7 +1451,6 @@
         });
       });
       function logout() {
-        console.log("Logging out...");
         fetch("/logout", {
           method: "POST",
           credentials: "include",
