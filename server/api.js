@@ -557,7 +557,6 @@ router.post("/machines", (req, res) => {
           console.error("Error creating machine:", err.message);
           return res.status(500).json({ error: "Failed to create machine" });
         }
-
         res.status(201).json({
           id: this.lastID,
           name,
@@ -565,6 +564,81 @@ router.post("/machines", (req, res) => {
           plant_id,
           cell_id,
           message: "Machine created successfully",
+        });
+      });
+    });
+  });
+});
+
+// PUT /machines/:id - update machine data
+router.put("/machines/:id", (req, res) => {
+  const machineId = req.params.id;
+  const { name, minimum_skill, plant_id, cell_id, checkpoints } = req.body;
+
+  if (!name || !plant_id || !cell_id || !checkpoints || !Array.isArray(checkpoints)) {
+    return res.status(400).json({ error: "Machine name, plant ID, cell ID, and checkpoints are required" });
+  }
+
+  // Validate plant exists
+  db.get("SELECT id FROM plants WHERE id = ?", [plant_id], (err, plant) => {
+    if (err) {
+      console.error("Error checking plant:", err.message);
+      return res.status(500).json({ error: "Database error occurred" });
+    }
+    if (!plant) {
+      return res.status(400).json({ error: "Invalid plant ID" });
+    }
+    // Validate cell exists
+    db.get("SELECT id FROM cells WHERE id = ?", [cell_id], (err, cell) => {
+      if (err) {
+        console.error("Error checking cell:", err.message);
+        return res.status(500).json({ error: "Database error occurred" });
+      }
+      if (!cell) {
+        return res.status(400).json({ error: "Invalid cell ID" });
+      }
+      const query = `UPDATE machines SET name = ?, minimum_skill = ?, plant_id = ?, cell_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
+      const skill = minimum_skill || 1;
+      db.run(query, [name, skill, plant_id, cell_id, machineId], function (err) {
+        if (err) {
+          console.error("Error updating machine:", err.message);
+          return res.status(500).json({ error: "Failed to update machine" });
+        }
+        if (this.changes === 0) {
+          return res.status(404).json({ error: "Machine not found" });
+        }
+
+        const deleteQuery = `DELETE FROM machine_checkpoint WHERE machine_id = ?`;
+        const insertQuery = `INSERT INTO machine_checkpoint (machine_id, checkpoint_id) VALUES (?, ?)`;
+        db.run(deleteQuery, [machineId], function (err) {
+          if (err) {
+            console.error("Error deleting machine checkpoints:", err.message);
+            return res.status(500).json({ error: "Failed to delete machine checkpoints" });
+          }
+
+          const insertCheckpoints = (index) => {
+            if (index >= checkpoints.length) {
+              return res.json({
+                id: machineId,
+                name,
+                minimum_skill: skill,
+                plant_id,
+                cell_id,
+                message: "Machine updated successfully",
+              });
+            }
+
+            const checkpoint = checkpoints[index];
+            db.run(insertQuery, [machineId, checkpoint], function (err) {
+              if (err) {
+                console.error("Error inserting machine checkpoint:", err.message);
+                // return res.status(500).json({ error: "Failed to insert machine checkpoint" });
+              }
+              insertCheckpoints(index + 1);
+            });
+          };
+
+          insertCheckpoints(0);
         });
       });
     });

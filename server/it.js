@@ -10,7 +10,6 @@ router.get("/users/edit", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "editUser.html"));
 });
 
-
 router.get("/", (req, res) => {
   const tab = req.query.tab || "users";
 
@@ -22,7 +21,6 @@ router.get("/", (req, res) => {
     res.status(400).send("Invalid tab");
   }
 });
-
 
 function renderUsersPage(res) {
   const query = `
@@ -52,7 +50,7 @@ function renderUsersPage(res) {
 
     res.send(html);
   });
-};
+}
 
 function generateAdminHTML(users) {
   const adminTemplatePath = path.join(__dirname, "public", "admin.html");
@@ -454,6 +452,7 @@ function renderSettingsPage(res) {
   // Get plants data
   const plantsQuery = `SELECT id, name FROM plants ORDER BY name ASC`;
   const skillsQuery = `SELECT id, name FROM skills ORDER BY name ASC`;
+  const checkpointsQuery = `SELECT id, name FROM checkpoints ORDER BY name ASC`;
 
   db.all(plantsQuery, [], (err, plants) => {
     if (err) {
@@ -461,7 +460,7 @@ function renderSettingsPage(res) {
       return res.status(500).send("Database error occurred");
     }
 
-    // Get machines data
+    // Get machines data (no GROUP_CONCAT)
     const machinesQuery = `
       SELECT 
         m.id, 
@@ -479,45 +478,127 @@ function renderSettingsPage(res) {
       ORDER BY m.name ASC
     `;
 
-    db.all(machinesQuery, [], (err, machines) => {
+    db.all(machinesQuery, [], (err, machinesRaw) => {
       if (err) {
         console.error("Error retrieving machines:", err.message);
         return res.status(500).send("Database error occurred");
       }
 
-      // Get all cells
-      const cellsQuery = `
-      SELECT 
-        c.id,
-        c.name,
-        c.plant_id,
-        p.name as plant_name
-      FROM cells c
-      JOIN plants p ON c.plant_id = p.id
-      ORDER BY c.name ASC`;
+      // For each machine, get its checkpoints as arrays
+      const machineIds = machinesRaw.map(m => m.id);
+      if (machineIds.length === 0) {
+        // No machines found, render settings page with empty machines data
+        // Get all cells
+        const cellsQuery = `
+        SELECT 
+          c.id,
+          c.name,
+          c.plant_id,
+          p.name as plant_name
+        FROM cells c
+        JOIN plants p ON c.plant_id = p.id
+        ORDER BY c.name ASC`;
 
-      db.all(cellsQuery, [], (err, cells) => {
-        if (err) {
-          console.error("Error retrieving cells:", err.message);
-          return res.status(500).send("Database error occurred");
-        }
-
-        db.all(skillsQuery, [], (err, skills) => {
+        db.all(cellsQuery, [], (err, cells) => {
           if (err) {
-            console.error("Error retrieving skills:", err.message);
+            console.error("Error retrieving cells:", err.message);
             return res.status(500).send("Database error occurred");
           }
+          db.all(skillsQuery, [], (err, skills) => {
+            if (err) {
+              console.error("Error retrieving skills:", err.message);
+              return res.status(500).send("Database error occurred");
+            }
+            db.all(checkpointsQuery, [], (err, checkpoints) => {
+              if (err) {
+                console.error("Error retrieving checkpoints:", err.message);
+                return res.status(500).send("Database error occurred");
+              }
+              const html = generateSettingsHTML(
+                plants,
+                [],
+                cells,
+                skills,
+                checkpoints
+              );
+              res.send(html);
+            });
+          });
+        });
+        return;
+      }
+      const placeholders = machineIds.map(() => '?').join(',');
+      const checkpointsByMachineQuery = `
+        SELECT mc.machine_id, ch.id as checkpoint_id, ch.name as checkpoint_name
+        FROM machine_checkpoint mc
+        JOIN checkpoints ch ON mc.checkpoint_id = ch.id
+        WHERE mc.machine_id IN (${placeholders})
+        ORDER BY mc.machine_id, ch.id
+      `;
+      db.all(checkpointsByMachineQuery, machineIds, (err, checkpointRows) => {
+        if (err) {
+          console.error("Error retrieving machine checkpoints:", err.message);
+          return res.status(500).send("Database error occurred");
+        }
+        // Map machine_id to arrays
+        const checkpointMap = {};
+        checkpointRows.forEach(row => {
+          if (!checkpointMap[row.machine_id]) {
+            checkpointMap[row.machine_id] = { ids: [], names: [] };
+          }
+          checkpointMap[row.machine_id].ids.push(row.checkpoint_id);
+          checkpointMap[row.machine_id].names.push(row.checkpoint_name);
+        });
+        // Attach arrays to each machine
+        const machines = machinesRaw.map(m => ({
+          ...m,
+          checkpoint_ids: checkpointMap[m.id] ? checkpointMap[m.id].ids : [],
+          checkpoint_names: checkpointMap[m.id] ? checkpointMap[m.id].names : [],
+        }));
+        // Get all cells
+        const cellsQuery = `
+        SELECT 
+          c.id,
+          c.name,
+          c.plant_id,
+          p.name as plant_name
+        FROM cells c
+        JOIN plants p ON c.plant_id = p.id
+        ORDER BY c.name ASC`;
 
-          const html = generateSettingsHTML(plants, machines, cells, skills);
-          res.send(html);
+        db.all(cellsQuery, [], (err, cells) => {
+          if (err) {
+            console.error("Error retrieving cells:", err.message);
+            return res.status(500).send("Database error occurred");
+          }
+          db.all(skillsQuery, [], (err, skills) => {
+            if (err) {
+              console.error("Error retrieving skills:", err.message);
+              return res.status(500).send("Database error occurred");
+            }
+            db.all(checkpointsQuery, [], (err, checkpoints) => {
+              if (err) {
+                console.error("Error retrieving checkpoints:", err.message);
+                return res.status(500).send("Database error occurred");
+              }
+              const html = generateSettingsHTML(
+                plants,
+                machines,
+                cells,
+                skills,
+                checkpoints
+              );
+              res.send(html);
+            });
+          });
         });
       });
     });
   });
-};
+}
 
 // Function to generate settings HTML
-function generateSettingsHTML(plants, machines, cells, skills) {
+function generateSettingsHTML(plants, machines, cells, skills, checkpoints) {
   const settingsTemplatePath = path.join(__dirname, "public", "settings.html");
   let html = fs.readFileSync(settingsTemplatePath, "utf8");
 
@@ -550,6 +631,7 @@ function generateSettingsHTML(plants, machines, cells, skills) {
         <td><span class="minSkill minSkill-${machine.minimum_skill_id}">${machine.minimum_skill}</span></td>
         <td><span class="chip chip-${machine.plant_id}">${machine.plant_name}</span></td>
         <td><span class="chip chip-${machine.cell_id}">${machine.cell_name}</span></td>
+        <td style="display:none;"><span class="checkpoint" value="${machine.checkpoint_ids.join("///")}"> ${machine.checkpoint_names.join("///")}</span></td>
         <td class="actions-cell">
           <div class="dropdown">
             <button class="dropdown-toggle">
@@ -601,17 +683,24 @@ function generateSettingsHTML(plants, machines, cells, skills) {
     })
     .join("");
 
-    // Generate cells options for dropdown
+  // Generate cells options for dropdown
   const cellOptions = cells
-  .map((cell) => {
-    return `<option value="${cell.id}">${cell.name}</option>`;
-  })
-  .join("");
+    .map((cell) => {
+      return `<option value="${cell.id}">${cell.name}</option>`;
+    })
+    .join("");
+
+  const checkpointOptions = checkpoints
+    .map((checkpoint) => {
+      return `<label><input type="checkbox" value="${checkpoint.id}" data-name="${checkpoint.name}"> ${checkpoint.name}</label>`;
+    })
+    .join("");
 
   html = html.replace("<!-- PLANT_OPTIONS -->", plantOptions);
   html = html.replace("<!-- PLANT_OPTIONS_CELLS -->", plantOptions);
   html = html.replace("<!-- SKILL_OPTIONS -->", skillOptions);
   html = html.replace("<!-- CELL_OPTIONS -->", cellOptions);
+  html = html.replace("<!-- CHECKPOINT_OPTIONS -->", checkpointOptions);
 
   return html;
 }

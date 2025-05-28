@@ -419,7 +419,7 @@
         right: 0;
         bottom: 0;
         background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
+        /* display: flex; */
         align-items: center;
         justify-content: center;
         z-index: 100;
@@ -430,8 +430,9 @@
         background-color: white;
         border-radius: 0.5rem;
         padding: 1.5rem;
-        width: 100%;
-        max-width: 500px;
+        width: 70%;
+        max-width: none;
+        min-width: 350px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
@@ -512,6 +513,60 @@
           opacity: 0;
         }
       }
+
+      .custom-multiselect { position: relative; }
+      .multiselect-selected {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        background: #fff;
+        cursor: pointer;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        max-height: 90px; /* Show up to 2 lines, then scroll */
+        overflow-y: auto;
+      }
+      .multiselect-selected .chip {
+        margin-right: 0.5rem;
+        margin-bottom: 0.25rem;
+        background: #e0e7ef;
+        color: #1e293b;
+        border-radius: 9999px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8em;
+        display: inline-flex;
+        align-items: center;
+      }
+      .multiselect-selected .chip .remove-chip {
+        margin-left: 0.5em;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .multiselect-dropdown {
+        position: absolute;
+        top: 110%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        z-index: 20;
+        padding: 0.75rem;
+        max-height: 250px;
+        overflow-y: auto;
+      }
+      .multiselect-options label {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem 0;
+        cursor: pointer;
+      }
+      .multiselect-options input[type="checkbox"] {
+        margin-right: 0.5rem;
+      }
     </style>
   </head>
   <body>
@@ -560,6 +615,7 @@
             <div class="tab active" data-tab="plants">Plants</div>
             <div class="tab" data-tab="machines">Machines</div>
             <div class="tab" data-tab="cells">Cells</div>
+            <div class="tab" data-tab="checkpoints">Checkpoints</div>
           </div>
 
           <!-- Plants Tab -->
@@ -708,6 +764,51 @@
               </div>
             </div>
           </div>
+
+          <!-- Checkpoints Tab -->
+          <div class="tab-content" id="checkpoints-tab">
+            <div class="search-add">
+              <div class="search-container">
+                <span class="search-icon">
+                  <i class="fas fa-search"></i>
+                </span>
+                <input
+                  type="text"
+                  class="search-input"
+                  placeholder="Search checkpoints..."
+                  id="checkpoints-search"
+                />
+              </div>
+              <div>
+                <button class="btn btn-primary" id="add-checkpoint-btn">
+                  <i class="fas fa-plus"></i>
+                  <span>Add Checkpoint</span>
+                </button>
+              </div>
+            </div>
+            <div class="table-container">
+              <table id="checkpoints-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Min</th>
+                    <th>Max</th>
+                    <th>Unit</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- CHECKPOINTS_TABLE_ROWS -->
+                </tbody>
+              </table>
+              <div class="table-footer">
+                <div id="checkpoints-count">Showing all checkpoints</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -742,30 +843,54 @@
         </div>
         <form id="machine-form">
           <input type="hidden" id="machine-id" value="" />
-          <div class="form-group">
-            <label for="machine-name" class="form-label">Machine Name</label>
-            <input type="text" id="machine-name" class="form-control" required />
+          <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 220px;">
+              <div class="form-group">
+                <label for="machine-name" class="form-label">Machine Name</label>
+                <input type="text" id="machine-name" class="form-control" required />
+              </div>
+            </div>
+            <div style="flex: 1; min-width: 220px;">
+              <div class="form-group">
+                <label for="machine-plant" class="form-label">Plant</label>
+                <select id="machine-plant" class="form-control" required>
+                  <option value="">Select a plant</option>
+                  <!-- PLANT_OPTIONS -->
+                </select>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 220px;">
+              <div class="form-group">
+                <label for="machine-skill" class="form-label">Minimum Skill Level</label>
+                <select id="machine-skill" class="form-control" required>
+                  <option value="">Select a skill</option>
+                  <!-- SKILL_OPTIONS -->
+                </select>
+              </div>
+            </div>
+            <div style="flex: 1; min-width: 220px;">
+              <div class="form-group">
+                <label for="machine-cell" class="form-label">Cell</label>
+                <select id="machine-cell" class="form-control" required>
+                  <option value="">Select a cell</option>
+                  <!-- CELL_OPTIONS -->
+                </select>
+              </div>
+            </div>
           </div>
           <div class="form-group">
-            <label for="machine-plant" class="form-label">Plant</label>
-            <select id="machine-plant" class="form-control" required>
-              <option value="">Select a plant</option>
-              <!-- PLANT_OPTIONS -->
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="machine-skill" class="form-label">Minimum Skill Level</label>
-            <select id="machine-skill" class="form-control" required>
-              <option value="">Select a skill</option>
-              <!-- SKILL_OPTIONS -->
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="machine-cell" class="form-label">Cell</label>
-            <select id="machine-cell" class="form-control" required>
-              <option value="">Select a cell</option>
-              <!-- CELL_OPTIONS -->
-            </select>
+            <label for="machine-checkpoints" class="form-label">Checkpoints</label>
+            <div class="custom-multiselect" id="checkpoint-multiselect">
+              <div class="multiselect-selected" id="checkpoint-multiselect-selected">Select checkpoints</div>
+              <div class="multiselect-dropdown" id="checkpoint-multiselect-dropdown" style="display:none;">
+                <input type="text" id="checkpoint-search" class="form-control" placeholder="Search checkpoints..." style="margin-bottom: 0.5rem;" />
+                <div class="multiselect-options" id="checkpoint-options">
+                  <!-- CHECKPOINT_OPTIONS -->
+                </div>
+              </div>
+            </div>
           </div>
           <div class="modal-actions">
             <button type="button" class="btn btn-outline" id="machine-cancel-btn">Cancel</button>
@@ -802,6 +927,62 @@
       </div>
     </div>
 
+    <!-- Modal for Adding/Editing Checkpoints -->
+    <div class="modal" id="checkpoint-modal" style="display:flex;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title" id="checkpoint-modal-title">Add Checkpoint</h3>
+          <button class="modal-close" id="checkpoint-modal-close">&times;</button>
+        </div>
+        <form id="checkpoint-form">
+          <input type="hidden" id="checkpoint-id" value="" />
+          <div class="form-group">
+            <label for="checkpoint-name" class="form-label">Checkpoint Name</label>
+            <input type="text" id="checkpoint-name" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label for="checkpoint-category" class="form-label">Category</label>
+            <select id="checkpoint-category" class="form-control" required>
+              <option value="">Select category</option>
+              <option value="Safety">Safety</option>
+              <option value="Maintenance">Maintenance</option>
+              <option value="Hydraulic">Hydraulic</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="checkpoint-type" class="form-label">Type</label>
+            <select id="checkpoint-type" class="form-control" required>
+              <option value="">Select type</option>
+              <option value="passfail">Pass/Fail</option>
+              <option value="numeric">Numeric</option>
+              <option value="pressure">Pressure</option>
+              <option value="level">Level</option>
+              <option value="temperature">Temperature</option>
+              <option value="vibration">Vibration</option>
+            </select>
+          </div>
+          <div id="numeric-fields" style="display:none;">
+            <div class="form-group">
+              <label for="checkpoint-min" class="form-label">Min Value</label>
+              <input type="number" id="checkpoint-min" class="form-control" step="any" />
+            </div>
+            <div class="form-group">
+              <label for="checkpoint-max" class="form-label">Max Value</label>
+              <input type="number" id="checkpoint-max" class="form-control" step="any" />
+            </div>
+            <div class="form-group">
+              <label for="checkpoint-unit" class="form-label">Unit</label>
+              <input type="text" id="checkpoint-unit" class="form-control" />
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-outline" id="checkpoint-cancel-btn">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="checkpoint-submit-btn">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Confirmation Modal -->
     <div class="modal" id="confirm-modal">
       <div class="modal-content">
@@ -818,14 +999,11 @@
     </div>
 
     <script>
-      // Tab navigation
+      // Tab navigation (add checkpoints tab)
       document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', function() {
-          // Remove active class from all tabs and content
           document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
           document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-          // Add active class to clicked tab and corresponding content
           this.classList.add('active');
           document.getElementById(this.dataset.tab + '-tab').classList.add('active');
         });
@@ -889,7 +1067,10 @@
             const machineSkill = row.cells[2].querySelector('.minSkill').className.split('-')[1];
             const plantId = row.cells[3].querySelector('.chip').className.split('-')[1];
             const cellId = row.cells[4].querySelector('.chip').className.split('-')[1];
-
+            const cellName = row.cells[4].querySelector('.chip').textContent;
+            const checkpoints = row.cells[5].querySelector('.checkpoint');
+            const checkpointIds = checkpoints.getAttribute('value').trim().split('///');
+            const checkpointNames = checkpoints.textContent.trim().split('///');
             // Create dropdown menu if it doesn't exist
             let menu = this.nextElementSibling;
 
@@ -905,7 +1086,7 @@
               // Add event listeners to the newly created menu items
               menu.querySelector('.edit-machine').addEventListener('click', function(e) {
                 e.preventDefault();
-                openEditMachineModal(machineId, machineName, machineSkill, plantId);
+                openEditMachineModal(machineId, machineName, machineSkill, plantId, cellId, cellName, checkpointIds, checkpointNames);
               });
 
               menu.querySelector('.delete-machine').addEventListener('click', function(e) {
@@ -1002,22 +1183,40 @@
 
       // Machine modal functions
       function openAddMachineModal() {
+        const checked = optionsDiv.querySelectorAll('input[type="checkbox"]:checked');
+        checked.forEach(cb => {
+          cb.checked = false;
+        });
+        updateSelectedChips();
+
         document.getElementById('machine-modal-title').textContent = 'Add Machine';
         document.getElementById('machine-id').value = '';
         document.getElementById('machine-name').value = '';
         document.getElementById('machine-skill').value = '1';
         document.getElementById('machine-plant').value = '';
+        document.getElementById('machine-cell').value = '';
         document.getElementById('machine-modal').style.display = 'flex';
-        document.getElementById('cell-plant').value = '';
       }
 
-      function openEditMachineModal(machineId, machineName, machineSkill, plantId, cellId) {
+      function openEditMachineModal(machineId, machineName, machineSkill, plantId, cellId, cellName, checkpointIds, checkpointNames) {
+        const checked = optionsDiv.querySelectorAll('input[type="checkbox"]');
+        checked.forEach(cb => {
+          if (checkpointIds.includes(cb.value)) {
+            cb.checked = true;
+          } else {
+            cb.checked = false;
+          }
+        });
+
+        updateSelectedChips();
+
         document.getElementById('machine-modal-title').textContent = 'Edit Machine';
         document.getElementById('machine-id').value = machineId;
         document.getElementById('machine-name').value = machineName;
         document.getElementById('machine-skill').value = machineSkill;
         document.getElementById('machine-plant').value = plantId;
-        document.getElementById('cell-plant').value = cellId;
+        document.getElementById('machine-cell').value = cellId;
+        document.getElementById('machine-cell').querySelector('option[value="' + cellId + '"]').textContent = cellName;
         document.getElementById('machine-modal').style.display = 'flex';
       }
 
@@ -1042,6 +1241,35 @@
 
       function closeCellModal() {
         document.getElementById('cell-modal').style.display = 'none';
+      }
+
+      // Checkpoint modal logic
+      document.getElementById('add-checkpoint-btn').addEventListener('click', openAddCheckpointModal);
+      document.getElementById('checkpoint-modal-close').addEventListener('click', closeCheckpointModal);
+      document.getElementById('checkpoint-cancel-btn').addEventListener('click', closeCheckpointModal);
+      document.getElementById('checkpoint-type').addEventListener('change', function() {
+        if (this.value === 'numeric') {
+          document.getElementById('numeric-fields').style.display = '';
+        } else {
+          document.getElementById('numeric-fields').style.display = 'none';
+        }
+      });
+      function openAddCheckpointModal() {
+        console.log("OPENING CHECKPOINT MODAL");
+        document.getElementById('checkpoint-modal-title').textContent = 'Add Checkpoint';
+        document.getElementById('checkpoint-id').value = '';
+        document.getElementById('checkpoint-name').value = '';
+        document.getElementById('checkpoint-category').value = '';
+        document.getElementById('checkpoint-type').value = '';
+        document.getElementById('checkpoint-min').value = '';
+        document.getElementById('checkpoint-max').value = '';
+        document.getElementById('checkpoint-unit').value = '';
+        document.getElementById('numeric-fields').style.display = 'none';
+        document.getElementById('checkpoint-modal').style.display = 'flex';
+        console.log( document.getElementById('checkpoint-modal').style.display)
+      }
+      function closeCheckpointModal() {
+        document.getElementById('checkpoint-modal').style.display = 'none';
       }
 
       // Confirmation modal functions
@@ -1155,6 +1383,18 @@
         const plantId = document.getElementById('machine-plant').value;
         const cellId = document.getElementById('machine-cell').value;
 
+        const checked = optionsDiv.querySelectorAll('input[type="checkbox"]:checked');
+
+        var selectedCheckpoints = [];
+
+        checked.forEach(cb => {
+          if (cb.checked) {
+            selectedCheckpoints.push(Number(cb.value));
+          }
+        });
+
+        console.log("Selected checkpoints: ", selectedCheckpoints);
+
         if (!machineName || !plantId || !cellId) {
           showNotification('Machine name, plant, and cell are required', 'error');
           return;
@@ -1173,7 +1413,8 @@
             name: machineName,
             minimum_skill: machineSkill,
             plant_id: plantId,
-            cell_id: cellId
+            cell_id: cellId,
+            checkpoints: selectedCheckpoints
           })
         })
         .then(response => {
@@ -1188,12 +1429,13 @@
           showNotification(data.message, 'success');
           closeMachineModal();
           // Reload the page to reflect changes
-          window.location.reload();
+          // window.location.reload();
         })
         .catch(error => {
           showNotification(error.message, 'error');
         });
       }
+    
 
       function deleteMachine(machineId) {
         fetch(`/api/machines/${machineId}`, {
@@ -1288,6 +1530,90 @@
         });
       }
 
+      function saveCheckpoint() {
+        const checkpointId = document.getElementById('checkpoint-id').value;
+        const checkpointName = document.getElementById('checkpoint-name').value;
+        const checkpointCategory = document.getElementById('checkpoint-category').value;
+        const checkpointType = document.getElementById('checkpoint-type').value;
+        const checkpointMin = document.getElementById('checkpoint-min').value;
+        const checkpointMax = document.getElementById('checkpoint-max').value;
+        const checkpointUnit = document.getElementById('checkpoint-unit').value;
+
+        if (!checkpointName || !checkpointCategory || !checkpointType) {
+          showNotification('Name, category, and type are required', 'error');
+          return;
+        }
+
+        // For numeric type, min and max values are required
+        if (checkpointType === 'numeric' && (!checkpointMin || !checkpointMax)) {
+          showNotification('Min and max values are required for numeric type', 'error');
+          return;
+        }
+
+        const isEdit = checkpointId !== '';
+        const url = isEdit ? `/api/checkpoints/${checkpointId}` : '/api/checkpoints';
+        const method = isEdit ? 'PUT' : 'POST';
+
+        fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: checkpointName,
+            category: checkpointCategory,
+            type: checkpointType,
+            min: checkpointMin,
+            max: checkpointMax,
+            unit: checkpointUnit
+          })
+        })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(data => {
+              throw new Error(data.error || 'Failed to save checkpoint');
+            });
+          }
+          return response.json();
+        })
+        .then(data => {
+          showNotification(data.message, 'success');
+          closeCheckpointModal();
+          // Reload the page to reflect changes
+          window.location.reload();
+        })
+        .catch(error => {
+          showNotification(error.message, 'error');
+        });
+      }
+
+      function deleteCheckpoint(checkpointId) {
+        fetch(`/api/checkpoints/${checkpointId}`, {
+          method: 'DELETE'
+        })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(data => {
+              throw new Error(data.error || 'Failed to delete checkpoint');
+            });
+          }
+          return response.json();
+        })
+        .then(data => {
+          showNotification(data.message, 'success');
+          // Remove the row from the table
+          const row = document.querySelector(`#checkpoints-table tr[data-id="${checkpointId}"]`);
+          if (row) {
+            row.remove();
+          }
+          // Update the count
+          updateTableCount('checkpoints');
+        })
+        .catch(error => {
+          showNotification(error.message, 'error');
+        });
+      }
+
       // Search functionality
       function setupSearch(entityType) {
         const searchInput = document.getElementById(`${entityType}-search`);
@@ -1349,7 +1675,7 @@
               const aValue = a.cells[index].textContent.trim();
               const bValue = b.cells[index].textContent.trim();
 
-              // Handle numeric sorting
+              // Handle
               if (!isNaN(aValue) && !isNaN(bValue)) {
                 return isAscending ? aValue - bValue : bValue - aValue;
               }
@@ -1421,6 +1747,68 @@
       document.getElementById('confirm-close').addEventListener('click', closeConfirmModal);
       document.getElementById('confirm-cancel').addEventListener('click', closeConfirmModal);
 
+      // Custom multiselect for checkpoints
+      const multiselect = document.getElementById('checkpoint-multiselect');
+      const selectedDiv = document.getElementById('checkpoint-multiselect-selected');
+      const dropdown = document.getElementById('checkpoint-multiselect-dropdown');
+      const searchInput = document.getElementById('checkpoint-search');
+      const optionsDiv = document.getElementById('checkpoint-options');
+
+      // Open/close dropdown
+      selectedDiv.addEventListener('click', function(e) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        if (dropdown.style.display === 'block') {
+          searchInput.focus();
+        }
+        e.stopPropagation();
+      });
+      document.addEventListener('click', function(e) {
+        if (!multiselect.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
+      });
+
+      // Filter options on search
+      searchInput.addEventListener('input', function() {
+        const search = this.value.toLowerCase();
+        Array.from(optionsDiv.querySelectorAll('label')).forEach(label => {
+          label.style.display = label.textContent.toLowerCase().includes(search) ? '' : 'none';
+        });
+      });
+
+      // Update selected chips
+      function updateSelectedChips() {
+        const checked = optionsDiv.querySelectorAll('input[type="checkbox"]:checked');
+        selectedDiv.innerHTML = '';
+        if (checked.length === 0) {
+          selectedDiv.textContent = 'Select checkpoints';
+        } else {
+          checked.forEach(cb => {
+            const chip = document.createElement('span');
+            chip.className = 'chip';
+            chip.textContent = cb.dataset.name;
+            chip.value = cb.value;
+            const remove = document.createElement('span');
+            remove.className = 'remove-chip';
+            remove.textContent = '×';
+            remove.onclick = function(e) {
+              cb.checked = false;
+              updateSelectedChips();
+              e.stopPropagation();
+            };
+            chip.appendChild(remove);
+            selectedDiv.appendChild(chip);
+          });
+        }
+      }
+      optionsDiv.addEventListener('change', function(e) {
+        if (e.target.type === 'checkbox') {
+          updateSelectedChips();
+        }
+      });
+      // Initial update
+      updateSelectedChips();
+
       // Initialize everything when the DOM is loaded
       document.addEventListener('DOMContentLoaded', function() {
         // Initialize dropdowns
@@ -1432,16 +1820,19 @@
         setupSearch('plants');
         setupSearch('machines');
         setupSearch('cells');
+        setupSearch('checkpoints');
 
         // Setup sorting
         setupSorting('plants');
         setupSorting('machines');
         setupSorting('cells');
+        setupSorting('checkpoints');
 
         // Update table counts
         updateTableCount('plants');
         updateTableCount('machines');
         updateTableCount('cells');
+        updateTableCount('checkpoints');
 
         // Close modals when clicking outside
         window.addEventListener('click', function(event) {
@@ -1449,6 +1840,19 @@
             event.target.style.display = 'none';
           }
         });
+
+        // Checkpoint search for multi-select
+        const checkpointSearch = document.getElementById('checkpoint-search');
+        const checkpointSelect = document.getElementById('machine-checkpoints');
+        if (checkpointSearch && checkpointSelect) {
+          checkpointSearch.addEventListener('input', function() {
+            const search = this.value.toLowerCase();
+            Array.from(checkpointSelect.options).forEach(opt => {
+              if (!opt.value) return; // skip placeholder
+              opt.style.display = opt.textContent.toLowerCase().includes(search) ? '' : 'none';
+            });
+          });
+        }
       });
       function logout() {
         fetch("/logout", {
