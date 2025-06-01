@@ -20,6 +20,22 @@
       background-color: #f9f9f9;
       color: #333;
     }
+    #datetime-display {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+
 
     .container {
       max-width: 1200px;
@@ -164,9 +180,11 @@
 </head>
 <body>
   <div class="container">
+    <div id="datetime-display"></div>
+
     <h2>Autonomous Machine Check Sheet</h2>
     <div class="header-info">
-      <div class="header-item"><strong>Machine Name:</strong><input value="GP200-2"></div>
+      <div class="header-item"><strong>Machine Name:</strong><input value="GP200-1"></div>
       <div class="header-item"><strong>Cell:</strong><input value="E.V Gear"></div>
       <div class="header-item">
         <strong>Month:</strong>
@@ -187,8 +205,13 @@
         <tbody id="checkpointRows"></tbody>
       </table>
     </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+      <button class="popup-button btn-m" onclick="openApprovalPopup()">Submit Check Sheet</button>
+    </div>
   </div>
 
+  <!-- Popups -->
   <div id="markPopup" class="popup">
     <div class="popup-content">
       <div class="popup-header">
@@ -199,13 +222,52 @@
     </div>
   </div>
 
+  <div id="approvalPopup" class="popup">
+    <div class="popup-content">
+      <div class="popup-header">
+        <h3>Submit for Approval</h3>
+      </div>
+      <div style="text-align: center; margin-bottom: 10px;">
+        <label for="approver">Select Approver:</label>
+        <select id="approver" style="margin: 10px; padding: 8px;">
+          <option value="">-- Choose --</option>
+          <option value="Tusar Manager">Tusar</option>
+          <option value="Gyana Supervisor">Gyana</option>
+          <option value="Mustafa Lead">Mustafa</option>
+        </select>
+      </div>
+      <div class="popup-buttons">
+        <button class="popup-button btn-tick" onclick="submitToApprover()">Confirm</button>
+        <button class="popup-button btn-clear" onclick="closeApprovalPopup()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+  function updateDateTime() {
+  const now = new Date();
+  const options = {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  };
+  const formatted = now.toLocaleString('en-US', options);
+  document.getElementById('datetime-display').textContent = formatted;
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+
     const checkpointNames = [
       "Emergency switch woking of operatig panel", "front safety door interlook checking", 
       "Check bur cleaning of machine bed", "Check machine light woking ", "Central lubrication oil level", 
-      "Central lubrication pressure 1-3 kg/cm²", "Pneumatic pressue checking", "Hydraulic oil level checking", 
-      "Lubrication oil level", "W/P pressure 20-40 kg/cm²", "system pressure 50-70 kg/cm²", 
-      "T/S pressure 20-40 kg/cm²", "Light curtain working", "Check conveyor working", 
+      "Central lubrication pressure 1-3 kg/cm^2", "Pneumatic pressue checking", "Hydraulic oil level checking", 
+      "Lubrication oil level", "W/P pressure 20-40 kg/cm^2", "system pressure 50-70 kg/cm^2", 
+      "T/S pressure 20-40 kg/cm^2", "Light curtain working", "Check conveyor working", 
       "Emergency switch working of conveyor side", "Check locknut tightenning ", "Electrical panel locking", 
       "Check air coming out fom AC blower", "Air leckages", "Abnormal noise", "Check PM due date"
     ];
@@ -216,6 +278,18 @@
       10: { min: 20, max: 40, unit: 'kg/cm²' },
       11: { min: 50, max: 70, unit: 'kg/cm²' },
       12: { min: 20, max: 40, unit: 'kg/cm²' }
+    };
+
+    const checkpointCategories = {
+      1: "Safety", 2: "Safety", 4: "Safety", 13: "Safety", 15: "Safety",
+      5: "Maintenance", 6: "Maintenance", 7: "Maintenance", 8: "Maintenance", 9: "Maintenance",
+      10: "Hydraulic", 11: "Hydraulic", 12: "Hydraulic"
+    };
+
+    const categoryContacts = {
+      Safety: "safety_team@example.com",
+      Maintenance: "maintenance@example.com",
+      Hydraulic: "hydraulic_team@example.com"
     };
 
     let currentCell = null;
@@ -322,7 +396,15 @@
         currentCell.textContent = value;
         currentCell.className = 'day-cell';
         if (value === '✓') currentCell.classList.add('tick');
-        else if (value === '✗') currentCell.classList.add('cross');
+        else if (value === '✗') {
+          currentCell.classList.add('cross');
+          const index = parseInt(currentCell.dataset.checkpointIndex);
+          const category = checkpointCategories[index];
+          const contact = categoryContacts[category];
+          if (contact) {
+            alert(`❗ Alert sent to ${category} team: ${contact}\nCheckpoint "${currentCell.dataset.checkpoint}" failed on Day ${currentCell.dataset.day}, Shift ${currentCell.dataset.shift}.`);
+          }
+        }
         else if (value === 'NA') currentCell.classList.add('na');
       }
       document.getElementById('markPopup').style.display = 'none';
@@ -341,9 +423,30 @@
       markCell(`${val} ${unit}`);
     }
 
+    function openApprovalPopup() {
+      document.getElementById('approvalPopup').style.display = 'block';
+    }
+
+    function closeApprovalPopup() {
+      document.getElementById('approvalPopup').style.display = 'none';
+    }
+
+    function submitToApprover() {
+      const approver = document.getElementById('approver').value;
+      if (!approver) {
+        alert("Please select an approver.");
+        return;
+      }
+      closeApprovalPopup();
+      alert(`Check Sheet submitted to ${approver} for approval.`);
+    }
+
     window.onclick = function(event) {
       if (event.target === document.getElementById('markPopup')) {
         document.getElementById('markPopup').style.display = 'none';
+      }
+      if (event.target === document.getElementById('approvalPopup')) {
+        closeApprovalPopup();
       }
     };
 

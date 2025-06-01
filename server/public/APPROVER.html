@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Approver Portal</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      padding: 20px;
+      color: #2c3e50;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #34495e;
+      margin-bottom: 30px;
+    }
+
+    .info-block {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .info-item {
+      flex: 1 1 45%;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    .info-item strong {
+      display: inline-block;
+      width: 150px;
+      color: #2980b9;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .action-buttons {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 0 10px;
+    }
+
+    .btn-approve {
+      background-color: #2ecc71;
+      color: white;
+    }
+
+    .btn-decline {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    .timestamp {
+      text-align: right;
+      color: #7f8c8d;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="timestamp">
+      Submitted on: <span id="submittedTimestamp">--</span>
+    </div>
+    <h2>Check Sheet Approval</h2>
+
+    <div class="info-block">
+      <div class="info-item"><strong>Submitted By:</strong> <span id="submittedBy">John Doe</span></div>
+      <div class="info-item"><strong>Machine Name:</strong> <span id="machineName">GP200-1</span></div>
+      <div class="info-item"><strong>Cell:</strong> <span id="cellName">E.V Gear</span></div>
+      <div class="info-item"><strong>Month:</strong> <span id="month">June</span></div>
+      <div class="info-item"><strong>Year:</strong> <span id="year">2025</span></div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Checkpoint</th>
+          <th>Day</th>
+          <th>Shift</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="checkData">
+        <!-- Sample row -->
+        <tr>
+          <td>Emergency switch</td>
+          <td>5</td>
+          <td>A</td>
+          <td>✓</td>
+        </tr>
+        <!-- More rows will be dynamically inserted -->
+      </tbody>
+    </table>
+
+    <div class="action-buttons">
+      <button class="btn btn-approve" onclick="approveCheckSheet()">Approve</button>
+      <button class="btn btn-decline" onclick="declineCheckSheet()">Decline</button>
+    </div>
+  </div>
+
+  <script>
+    // Simulate receiving data
+    document.getElementById('submittedTimestamp').textContent = new Date().toLocaleString();
+
+    function approveCheckSheet() {
+      alert("✅ Check Sheet Approved!");
+      // Further backend/API action can be added here
+    }
+
+    function declineCheckSheet() {
+      alert("❌ Check Sheet Declined!");
+      // Further backend/API action can be added here
+    }
+    function submitToApprover() {
+    const approver = document.getElementById('approver').value;
+    if (!approver) {
+      alert("Please select an approver.");
+      return;
+    }
+  
+    const data = {
+      machine: document.querySelector('input[value="GP200-1"]').value,
+      cell: document.querySelector('input[value="E.V Gear"]').value,
+      year: document.getElementById('year').value,
+      month: document.getElementById('month').value,
+      approver: approver,
+      submittedBy: "John Doe", // Replace with real user info from session/login
+      timestamp: new Date().toISOString()
+    };
+  
+    fetch('/api/submit-checksheet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(res => {
+      if (res.ok) {
+        alert(`Check Sheet submitted to ${approver} for approval.`);
+        closeApprovalPopup();
+      } else {
+        alert("Submission failed.");
+      }
+    });
+  }
+  
+  </script>
+</body>
+</html>
+
+</body>
+</html>

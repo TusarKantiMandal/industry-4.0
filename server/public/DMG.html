@@ -12,7 +12,6 @@
       --light-color: #ecf0f1;
       --dark-color: #34495e;
     }
-    
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       font-size: 14px;
@@ -20,7 +19,6 @@
       background-color: #f9f9f9;
       color: #333;
     }
-
     .container {
       max-width: 1200px;
       margin: 0 auto;
@@ -29,7 +27,6 @@
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-
     h2 {
       color: var(--primary-color);
       text-align: center;
@@ -37,7 +34,6 @@
       border-bottom: 2px solid var(--secondary-color);
       padding-bottom: 10px;
     }
-
     .header-info {
       display: flex;
       justify-content: space-between;
@@ -47,84 +43,61 @@
       padding: 15px;
       border-radius: 5px;
     }
-
     .header-item {
       margin-bottom: 10px;
       display: flex;
       align-items: center;
     }
-
     .header-item strong {
       margin-right: 10px;
       color: var(--primary-color);
     }
-
     select, input {
       padding: 8px;
       border: 1px solid #ddd;
       border-radius: 4px;
       font-size: 14px;
     }
-
     table {
       border-collapse: collapse;
       width: 100%;
       margin-bottom: 30px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-
     th, td {
       border: 1px solid #ddd;
       padding: 8px;
       text-align: center;
       font-size: 12px;
     }
-
     th {
       background-color: var(--secondary-color);
       color: white;
       position: sticky;
       top: 0;
     }
-
     .wide {
       width: 200px;
       text-align: left;
       font-weight: normal;
     }
-
     .day-cell {
       min-width: 30px;
       cursor: pointer;
       background-color: white;
       transition: background-color 0.2s;
     }
-
     .day-cell:hover {
       background-color: #f0f0f0;
     }
-
     .day-header {
       background-color: var(--dark-color);
       color: white;
     }
-
-    .tick {
-      color: green;
-      font-weight: bold;
-    }
-
-    .cross {
-      color: red;
-      font-weight: bold;
-    }
-
-    .na {
-      color: orange;
-      font-weight: bold;
-    }
-
-    /* Popup styles */
+    .tick { color: green; font-weight: bold; }
+    .cross { color: red; font-weight: bold; }
+    .na { color: orange; font-weight: bold; }
+    .level { font-weight: bold; }
     .popup {
       display: none;
       position: fixed;
@@ -135,7 +108,6 @@
       height: 100%;
       background-color: rgba(0,0,0,0.5);
     }
-
     .popup-content {
       background-color: white;
       position: absolute;
@@ -149,7 +121,6 @@
       left: 50%;
       top: 50%;
     }
-
     .popup-header {
       width: 100%;
       text-align: center;
@@ -158,14 +129,13 @@
       border-bottom: 1px solid #eee;
       color: var(--primary-color);
     }
-
     .popup-buttons {
       display: flex;
       justify-content: center;
       gap: 10px;
       margin-top: 15px;
+      flex-wrap: wrap;
     }
-
     .popup-button {
       padding: 10px 20px;
       border: none;
@@ -174,75 +144,34 @@
       font-weight: bold;
       transition: all 0.2s;
     }
-
     .popup-button:hover {
       transform: translateY(-2px);
     }
-
-    .btn-tick {
-      background-color: #2ecc71;
-      color: white;
-    }
-
-    .btn-cross {
-      background-color: #e74c3c;
-      color: white;
-    }
-
-    .btn-na {
-      background-color: #f39c12;
-      color: white;
-    }
-
-    .btn-clear {
-      background-color: #95a5a6;
-      color: white;
-    }
+    .btn-tick { background-color: #2ecc71; color: white; }
+    .btn-cross { background-color: #e74c3c; color: white; }
+    .btn-na { background-color: #f39c12; color: white; }
+    .btn-clear { background-color: #95a5a6; color: white; }
+    .btn-h { background-color: #e67e22; color: white; }
+    .btn-m { background-color: #f1c40f; color: white; }
+    .btn-l { background-color: #3498db; color: white; }
 
     @media (max-width: 768px) {
-      .header-info {
-        flex-direction: column;
-      }
-      
-      .table-container {
-        overflow-x: auto;
-      }
+      .header-info { flex-direction: column; }
+      .table-container { overflow-x: auto; }
     }
-    
-    /* Print style adjustments */
     @media print {
-      body {
-        font-size: 11px;
-        padding: 0;
-      }
-      
-      .container {
-        max-width: 100%;
-        padding: 10px;
-        box-shadow: none;
-      }
-      
-      .popup, select, input, .day-cell:hover {
-        display: none !important;
-      }
+      body { font-size: 11px; padding: 0; }
+      .container { max-width: 100%; padding: 10px; box-shadow: none; }
+      .popup, select, input, .day-cell:hover { display: none !important; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Autonomous Machine Check Sheet</h2>
-    
     <div class="header-info">
-      <div class="header-item">
-        <strong>Machine Name:</strong>
-        <input type="text" id="machineName" value="DMG">
-      </div>
-      
-      <div class="header-item">
-        <strong>Cell:</strong>
-        <input type="text" id="cellName" value="E.V Gear">
-      </div>
-      
+      <div class="header-item"><strong>Machine Name:</strong><input type="text" id="machineName" value="DMG"></div>
+      <div class="header-item"><strong>Cell:</strong><input type="text" id="cellName" value="E.V Gear"></div>
       <div class="header-item">
         <strong>Month:</strong>
         <select id="month" onchange="updateDays()">
@@ -260,11 +189,7 @@
           <option value="12">December</option>
         </select>
       </div>
-      
-      <div class="header-item">
-        <strong>Year:</strong>
-        <input type="number" id="year" value="2025" min="2000" max="2100" onchange="updateDays()">
-      </div>
+      <div class="header-item"><strong>Year:</strong><input type="number" id="year" value="2025" min="2000" max="2100" onchange="updateDays()"></div>
     </div>
 
     <div class="table-container">
@@ -273,24 +198,19 @@
           <tr id="headerRow">
             <th rowspan="2">S.No</th>
             <th rowspan="2" class="wide">Check Point</th>
-            <th rowspan="2">Time<br>Sec</th>
+            <th rowspan="2">Time<br>(Sec)</th>
             <th rowspan="2">CLIT</th>
             <th rowspan="2">How</th>
             <th rowspan="2">Shift</th>
-            <!-- Day headers will be added dynamically -->
           </tr>
-          <tr id="dayRow">
-            <!-- Day numbers will be added dynamically -->
-          </tr>
+          <tr id="dayRow"></tr>
         </thead>
-        <tbody id="checkpointRows">
-          <!-- Checkpoint rows will be generated dynamically -->
-        </tbody>
+        <tbody id="checkpointRows"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- Popup for marking cells -->
+  <!-- Standard Popup -->
   <div id="markPopup" class="popup">
     <div class="popup-content">
       <div class="popup-header">
@@ -306,131 +226,131 @@
     </div>
   </div>
 
+  <!-- H/M/L Popup -->
+  <div id="levelPopup" class="popup">
+    <div class="popup-content">
+      <div class="popup-header">
+        <h3>Mark Level</h3>
+        <p id="level-popup-info">Checkpoint: <span id="level-checkpoint-name"></span>, Day: <span id="level-day-number"></span>, Shift: <span id="level-shift-letter"></span></p>
+      </div>
+      <div class="popup-buttons">
+        <button class="popup-button btn-h" onclick="markLevel('H')">High (H)</button>
+        <button class="popup-button btn-m" onclick="markLevel('M')">Medium (M)</button>
+        <button class="popup-button btn-l" onclick="markLevel('L')">Low (L)</button>
+        <button class="popup-button btn-clear" onclick="markLevel('')">Clear</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const checkpointNames = [
-      "Coolant Level", "Hydraulic Pressure", "Sensor Calibration", 
-      "Tool Change Check", "Air Filter Inspection", "Oil Leak", 
-      "Belt Tension", "Emergency Stop Check", "Alignment", 
-      "Backup Battery", "Wiring Check", "Temperature Reading", 
-      "Lubrication", "Pressure Valve", "Cycle Time Test"
+      "Check Emergency switch working", "Machine light working", "Indication lamp working",
+      "Check front saftety door", "Insert & tool holders properly locked", "Check lubication oil level(H/M/L)",
+      "Check conveyor working", "Air pressure(4-6bar)", "Check clamping pressure(3.0-4.0)", 
+      "Hydraulic Level(H/M/L)", "Elecrical panel lock", "Air leackages", "Oil leackages",
+      "Slide functioning properly no Abnormal noise", "Check centre condition", "Check PM due date", 
+      "Check all tools wear & Tear(Allenkeys,spanner,mallet,torque wrench)"
     ];
-  
+
+    const timeValues = [10, 5, 5, 10, 10, 6];
+    const howValues = [
+      "👁️✋", "👁️✋", "👁️✋", "👁️✋", "👁️✋", "👁️", "👁️", "👁️", "👁️", "👁️", "👁️", "👂", "👁️", "👂", "👁️", "👁️", "✋👁️"
+    ];
+
     let currentCell = null;
     let currentCheckpoint = '';
     let currentDay = '';
     let currentShift = '';
-  
+
     document.addEventListener('DOMContentLoaded', function() {
-      updateDays(); // calls generateCheckpointRows inside
+      updateDays();
     });
-  
+
     function generateCheckpointRows(daysInMonth) {
       const tbody = document.getElementById('checkpointRows');
       tbody.innerHTML = '';
       const shifts = ['A', 'B', 'C'];
-  
+
       checkpointNames.forEach((checkpointName, i) => {
+        const timeValue = i < 6 ? timeValues[i] : 10;
+        const howValue = howValues[i];
         shifts.forEach((shift, j) => {
           const row = document.createElement('tr');
-  
           if (j === 0) {
-            const snoCell = document.createElement('td');
-            snoCell.rowSpan = 3;
-            snoCell.textContent = i + 1;
-            row.appendChild(snoCell);
-  
-            const nameCell = document.createElement('td');
-            nameCell.rowSpan = 3;
-            nameCell.className = 'wide';
-            nameCell.textContent = checkpointName;
-            row.appendChild(nameCell);
-  
-            const timeCell = document.createElement('td');
-            timeCell.rowSpan = 3;
-            timeCell.textContent = '15';
-            row.appendChild(timeCell);
-  
-            const clitCell = document.createElement('td');
-            clitCell.rowSpan = 3;
-            clitCell.textContent = 'D';
-            row.appendChild(clitCell);
-  
-            const howCell = document.createElement('td');
-            howCell.rowSpan = 3;
-            howCell.textContent = 'Visual';
-            row.appendChild(howCell);
+            row.innerHTML += `<td rowspan="3">${i + 1}</td><td rowspan="3" class="wide">${checkpointName}</td><td rowspan="3">${timeValue}</td><td rowspan="3">1</td><td rowspan="3">${howValue}</td>`;
           }
-  
-          const shiftCell = document.createElement('td');
-          shiftCell.textContent = shift;
-          row.appendChild(shiftCell);
-  
+          row.innerHTML += `<td>${shift}</td>`;
           for (let d = 1; d <= daysInMonth; d++) {
             const cell = document.createElement('td');
             cell.className = 'day-cell';
+            cell.setAttribute('data-checkpoint-index', i);
             cell.setAttribute('data-checkpoint', checkpointName);
             cell.setAttribute('data-day', d);
             cell.setAttribute('data-shift', shift);
-            cell.addEventListener('click', function() {
+            cell.addEventListener('click', function () {
               openPopup(this);
             });
             row.appendChild(cell);
           }
-  
           tbody.appendChild(row);
         });
       });
     }
-  
+
     function updateDays() {
       const month = parseInt(document.getElementById('month').value);
       const year = parseInt(document.getElementById('year').value);
       const daysInMonth = new Date(year, month, 0).getDate();
-  
+
       document.querySelector('h2').textContent = `Autonomous Machine Check Sheet - ${getMonthName(month)} ${year}`;
-  
+
       const dayRow = document.getElementById('dayRow');
       dayRow.innerHTML = '';
-  
+
       const headerRow = document.getElementById('headerRow');
       while (headerRow.children.length > 6) {
         headerRow.removeChild(headerRow.lastChild);
       }
-  
+
       for (let i = 1; i <= daysInMonth; i++) {
         const th = document.createElement('th');
         th.className = 'day-header';
         th.textContent = i;
         dayRow.appendChild(th);
-  
+
         const thFirstRow = document.createElement('th');
         headerRow.appendChild(thFirstRow);
       }
-  
+
       generateCheckpointRows(daysInMonth);
     }
-  
+
     function getMonthName(monthNumber) {
-      const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-      ];
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
       return monthNames[monthNumber - 1];
     }
-  
+
     function openPopup(cell) {
       currentCell = cell;
       currentCheckpoint = cell.getAttribute('data-checkpoint');
       currentDay = cell.getAttribute('data-day');
       currentShift = cell.getAttribute('data-shift');
-  
-      document.getElementById('checkpoint-name').textContent = currentCheckpoint;
-      document.getElementById('day-number').textContent = currentDay;
-      document.getElementById('shift-letter').textContent = currentShift;
-  
-      document.getElementById('markPopup').style.display = 'block';
+      const index = parseInt(cell.getAttribute('data-checkpoint-index'));
+
+      if (index === 5 || index === 9) {
+        document.getElementById('level-checkpoint-name').textContent = currentCheckpoint;
+        document.getElementById('level-day-number').textContent = currentDay;
+        document.getElementById('level-shift-letter').textContent = currentShift;
+        document.getElementById('levelPopup').style.display = 'block';
+      } else {
+        document.getElementById('checkpoint-name').textContent = currentCheckpoint;
+        document.getElementById('day-number').textContent = currentDay;
+        document.getElementById('shift-letter').textContent = currentShift;
+        document.getElementById('markPopup').style.display = 'block';
+      }
     }
-  
+
     function markCell(status) {
       if (currentCell) {
         currentCell.innerHTML = status;
@@ -441,14 +361,21 @@
       }
       document.getElementById('markPopup').style.display = 'none';
     }
-  
-    window.onclick = function(event) {
-      const popup = document.getElementById('markPopup');
-      if (event.target === popup) {
-        popup.style.display = 'none';
+
+    function markLevel(level) {
+      if (currentCell) {
+        currentCell.innerHTML = level;
+        currentCell.className = 'day-cell level';
       }
+      document.getElementById('levelPopup').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      const markPopup = document.getElementById('markPopup');
+      const levelPopup = document.getElementById('levelPopup');
+      if (event.target === markPopup) markPopup.style.display = 'none';
+      if (event.target === levelPopup) levelPopup.style.display = 'none';
     };
   </script>
-  
 </body>
 </html>
