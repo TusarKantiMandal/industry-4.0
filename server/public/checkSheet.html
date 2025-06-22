@@ -415,6 +415,7 @@
     </div>
 
     <script>
+
       let approverEmail = "";
       let approverName = "";
       let pendingCellValue = null;
@@ -447,12 +448,22 @@
         )
           .then((response) => response.json())
           .then((data) => {
+            console.log("Fetched data:", data);
             checkpointNames = data.checkpoints.map(
               (checkpoint) => checkpoint.name
             );
             checkpointData = data.checkpoints.map((checkpoint) => ({
               id: checkpoint.id,
               name: checkpoint.name,
+              category: checkpoint.category,
+              type: checkpoint.type,
+              alert_email: checkpoint.alert_email,
+              how: checkpoint.how,
+              time: checkpoint.time,
+              clit: checkpoint.clit,
+              unit: checkpoint.unit,
+              max_value: checkpoint.max_value,
+              min_value: checkpoint.min_value
             }));
             sheetData = data.data || [];
 
@@ -507,29 +518,29 @@
       ];
       var checkpointData = [];
 
-      const specialCheckpoints = [5, 8, 9]; // L/M/H
-      const numericCheckpoints = {
-        6: { min: 1, max: 3, unit: "bar" },
-        10: { min: 20, max: 40, unit: "kg/cm²" },
-        11: { min: 50, max: 70, unit: "kg/cm²" },
-        12: { min: 20, max: 40, unit: "kg/cm²" },
-      };
+      // const specialCheckpoints = [5, 8, 9]; // L/M/H
+      // const numericCheckpoints = {
+      //   6: { min: 1, max: 3, unit: "bar" },
+      //   10: { min: 20, max: 40, unit: "kg/cm²" },
+      //   11: { min: 50, max: 70, unit: "kg/cm²" },
+      //   12: { min: 20, max: 40, unit: "kg/cm²" },
+      // };
 
-      const checkpointCategories = {
-        1: "Safety",
-        2: "Safety",
-        4: "Safety",
-        13: "Safety",
-        15: "Safety",
-        5: "Maintenance",
-        6: "Maintenance",
-        7: "Maintenance",
-        8: "Maintenance",
-        9: "Maintenance",
-        10: "Hydraulic",
-        11: "Hydraulic",
-        12: "Hydraulic",
-      };
+      // const checkpointCategories = {
+      //   1: "Safety",
+      //   2: "Safety",
+      //   4: "Safety",
+      //   13: "Safety",
+      //   15: "Safety",
+      //   5: "Maintenance",
+      //   6: "Maintenance",
+      //   7: "Maintenance",
+      //   8: "Maintenance",
+      //   9: "Maintenance",
+      //   10: "Hydraulic",
+      //   11: "Hydraulic",
+      //   12: "Hydraulic",
+      // };
 
       const categoryContacts = {
         Safety: "safety_team@example.com",
@@ -594,13 +605,13 @@
         const tbody = document.getElementById("checkpointRows");
         tbody.innerHTML = "";
         const shifts = ["A", "B", "C"];
-        checkpointNames.forEach((name, i) => {
+        checkpointData.forEach((checkpoint, i) => {
           shifts.forEach((shift, j) => {
             const row = document.createElement("tr");
             if (j === 0) {
               row.innerHTML += `<td rowspan="3">${
                 i + 1
-              }</td><td rowspan="3" class="wide">${name}</td><td rowspan="3">15</td><td rowspan="3">D</td><td rowspan="3">V</td>`;
+              }</td><td rowspan="3" class="wide">${checkpoint.name}</td><td rowspan="3">${checkpoint.time}</td><td rowspan="3">${checkpoint.clit}</td><td rowspan="3">${checkpoint.how}</td>`;
             }
             row.innerHTML += `<td>${shift}</td>`;
             for (let d = 1; d <= days; d++) {
@@ -610,6 +621,7 @@
               td.dataset.checkpoint = name;
               td.dataset.day = d;
               td.dataset.shift = shift;
+              td.dataset.checkpointId = checkpoint.id;
               // td.dataset.checkpointId = checkpointData.find(
               //   (cp) => cp.name === name
               // )?.id;
@@ -631,8 +643,14 @@
                 clearTimeout(pressTimer);
               };
 
-              // Normal click still opens the mark popup
-              td.onclick = () => openPopup(td);
+              // Normal click still opens the mark popup (only if not already approved)
+              td.onclick = () => {
+                // Don't open popup if cell is already approved
+                if (td.classList.contains('approve-success')) {
+                  return;
+                }
+                openPopup(td);
+              };
               row.appendChild(td);
             }
             tbody.appendChild(row);
@@ -647,9 +665,11 @@
         const shift = td.dataset.shift;
         const checkpoint = td.dataset.checkpoint.trim();
 
-        const checkpoint_id = checkpointData.find(
-          (cp) => cp.name === checkpoint
-        )?.id;
+        const checkpoint_id = td.dataset.checkpointId;
+        
+        // checkpointData.find(
+        //   (cp) => cp.name === checkpoint
+        // )?.id;
         if (!checkpoint_id) {
           console.error("Checkpoint ID not found for:", checkpoint);
           return;
@@ -683,6 +703,11 @@
       }
 
       function openPopup(cell) {
+        // Check if the cell is already approved - if so, don't open the popup
+        if (cell.classList.contains("approve-success")) {
+          return;
+        }
+        
         currentCell = cell;
         const dataset = cell.dataset;
         const index = parseInt(cell.dataset.checkpointIndex);
@@ -692,19 +717,27 @@
         document.getElementById("shift-letter").textContent =
           cell.dataset.shift;
 
+        const checkpointId = dataset.checkpointId;
+        const checkpoint = checkpointData.find(
+          (cp) => cp.id === parseInt(checkpointId)
+        );
+
         const popupButtons = document.getElementById("popup-buttons");
         popupButtons.innerHTML = "";
 
-        if (numericCheckpoints[index]) {
-          const { min, max, unit } = numericCheckpoints[index];
+        const type = checkpoint.type;
+
+        if (type === "numeric") {
+          const { min_value, max_value, unit } = checkpoint;
+          console.log("Numeric checkpoint: max:", max_value, "min:", min_value, "unit:", unit);
           popupButtons.innerHTML = `
-          <label>Enter value (${min}–${max} ${unit}): 
-            <input type="number" id="numericValue" min="${min}" max="${max}" step="0.1" style="padding: 5px; margin: 5px;">
+          <label>Enter value (${min_value}–${max_value} ${unit}): 
+            <input type="number" id="numericValue" min="${min_value}" max="${max_value}" step="0.1" style="padding: 5px; margin: 5px;">
           </label>
-          <button class="popup-button btn-m" onclick="submitNumeric(${min}, ${max}, '${unit}')">Submit</button>
+          <button class="popup-button btn-m" onclick="submitNumeric(${min_value}, ${max_value}, '${unit}')">Submit</button>
           <button class="popup-button btn-clear" onclick="markCell('')">Clear</button>
         `;
-        } else if (specialCheckpoints.includes(index)) {
+        } else if (type === "level") {
           popupButtons.innerHTML = `
           <button class="popup-button btn-l" onclick="markCell('L')">Low</button>
           <button class="popup-button btn-m" onclick="markCell('M')">Medium</button>
@@ -731,16 +764,7 @@
           if (value === "✓") currentCell.classList.add("tick");
           else if (value === "✗") {
             currentCell.classList.add("cross");
-            const index = parseInt(currentCell.dataset.checkpointIndex);
-            const category = checkpointCategories[index];
-            const contact = categoryContacts[category];
-            // if (contact) {
-            //   alert(
-            //     `❗ Alert sent to ${category} team: ${contact}\nCheckpoint "${currentCell.dataset.checkpoint}" failed on Day ${currentCell.dataset.day}, Shift ${currentCell.dataset.shift}.`
-            //   );
-            // }
           } else if (value === "NA") currentCell.classList.add("na");
-
           // Store the edit in the array
           checkSheetEdits.push({
             month: parseInt(document.getElementById("month").value),
@@ -748,7 +772,7 @@
             day: parseInt(currentCell.dataset.day),
             shift: currentCell.dataset.shift,
             value: value,
-            checkpoint: currentCell.dataset.checkpoint.trim(),
+            checkpoint: currentCell.dataset.checkpointId,
           });
           currentCell = null;
         }

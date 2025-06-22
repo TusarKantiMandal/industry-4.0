@@ -60,10 +60,27 @@ const adminRoutes = require("./admin");
 const apiRoutes = require("./api");
 const openRoutes = require("./openRoutes");
 const checkSheetRoutes = require("./checkSheet");
-app.use("/admin", adminRoutes);
+const { sendEmail } = require("./email");
+app.use("/admin", adminRoutes); // TODO: add verifyAdmin middleware
 app.use("/api", verifyItAdmin, apiRoutes);
 app.use("/open", openRoutes);
 app.use("/machine/:machineId", verifyMachineAccess, checkSheetRoutes);
+
+app.post("/service/send-email", (req, res) => {
+  const { email, subject, message, cc } = req.body;
+  const user = req.user;
+  if (!email || !subject || !message) {
+    return res.status(400).json({ error: "Email, subject, and message are required" });
+  }
+  sendEmail(email, subject, message, cc || [], user.fullname)
+    .then(() => {
+      res.json({ success: true, message: "Emails sent successfully" });
+    })
+    .catch((error) => {
+      console.error("Error sending emails:", error);
+      res.status(500).json({ error: "Failed to send emails" });
+    });
+});
 
 app.get("/page1.html", verifyToken, (req, res) => {
   const usersPlant = req.user.plant_id;
@@ -211,6 +228,15 @@ const db = new sqlite3.Database("./database.db", (err) => {
         `CREATE TABLE IF NOT EXISTS checkpoints (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,
+          category TEXT,
+          type TEXT,
+          min_value REAL,
+          max_value REAL,
+          unit TEXT,
+          alert_email TEXT,
+          time TEXT,
+          clit TEXT,
+          how TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );`
@@ -345,7 +371,7 @@ app.post("/logout", (req, res) => {
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
   const loginQuery = `
-    SELECT * FROM users WHERE username = ? AND password = ?
+    SELECT * FROM users WHERE (username = ? OR email = ?) AND password = ?
   `;
 
   db.get(loginQuery, [username, password], (err, row) => {

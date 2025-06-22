@@ -132,12 +132,12 @@ router.put("/updateData", async (req, res) => {
         .json({ error: `Missing fields in data item: ${checkpoint}` });
     }
 
-    const checkpointId = await getCheckpointIdByName(checkpoint);
-    if (!checkpointId) {
-      return res
-        .status(400)
-        .json({ error: `Invalid checkpoint name: ${checkpoint}` });
-    }
+    // const checkpointId = await getCheckpointIdByName(checkpoint);
+    // if (!checkpointId) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: `Invalid checkpoint name: ${checkpoint}` });
+    // }
 
     const result = await new Promise((resolve, reject) => {
       const selectQuery = `
@@ -146,7 +146,7 @@ router.put("/updateData", async (req, res) => {
       `;
       db.get(
         selectQuery,
-        [machineId, year, month, day, shift, checkpointId],
+        [machineId, year, month, day, shift, checkpoint],
         function (err, row) {
           if (err) return reject(new Error("Database error on SELECT"));
           if (row && row.approved === 1) {
@@ -160,7 +160,7 @@ router.put("/updateData", async (req, res) => {
           if (row) {
             const updateQuery = `
               UPDATE data
-              SET value = ?, approver_email = ?, approver_name = ?, user_id = ?, batch_id = ?, updated_at = CURRENT_TIMESTAMP
+              SET value = ?, approver_email = ?, approver_name = ?, user_id = ?, batch_id = ?, updated_at = CURRENT_TIMESTAMP, approved = 0
               WHERE machine_id = ? AND year = ? AND month = ? AND day = ? AND shift = ? AND checkpoint_id = ?
             `;
             dbOps.push({
@@ -176,7 +176,7 @@ router.put("/updateData", async (req, res) => {
                 month,
                 day,
                 shift,
-                checkpointId,
+                checkpoint,
               ],
             });
             resolve();
@@ -196,7 +196,7 @@ router.put("/updateData", async (req, res) => {
                 value,
                 approverEmail,
                 approverName,
-                checkpointId,
+                checkpoint,
                 userId,
                 batchId,
               ],

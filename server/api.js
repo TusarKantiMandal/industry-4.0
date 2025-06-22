@@ -800,4 +800,103 @@ router.delete("/cells/:id", (req, res) => {
   });
 });
 
+// Checkpoint API endpoints
+
+// Get all checkpoints
+router.get("/checkpoints", (req, res) => {
+  const query = `
+    SELECT id, name, category, type, min_value, max_value, unit, alert_email, time, clit, how, created_at, updated_at
+    FROM checkpoints 
+    ORDER BY name ASC
+  `;
+
+  db.all(query, [], (err, checkpoints) => {
+    if (err) {
+      console.error("Error retrieving checkpoints:", err.message);
+      return res.status(500).json({ error: "Database error occurred" });
+    }
+
+    res.json(checkpoints);
+  });
+});
+
+// Create new checkpoint
+router.post("/checkpoints", (req, res) => {
+  const { name, category, type, min, max, unit, alertEmail, time, clit, how } = req.body;
+
+  if (!name || !category || !type) {
+    return res.status(400).json({ error: "Name, category, and type are required" });
+  }
+
+  const query = `
+    INSERT INTO checkpoints (name, category, type, min_value, max_value, unit, alert_email, time, clit, how)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  db.run(query, [name, category, type, min || null, max || null, unit || null, alertEmail || null, time || null, clit || null, how || null], function(err) {
+    if (err) {
+      console.error("Error creating checkpoint:", err.message);
+      return res.status(500).json({ error: "Failed to create checkpoint" });
+    }
+
+    res.json({
+      message: "Checkpoint created successfully",
+      checkpointId: this.lastID
+    });
+  });
+});
+
+// Update checkpoint
+router.put("/checkpoints/:id", (req, res) => {
+  const checkpointId = req.params.id;
+  const { name, category, type, min, max, unit, alertEmail, time, clit, how } = req.body;
+
+  if (!name || !category || !type) {
+    return res.status(400).json({ error: "Name, category, and type are required" });
+  }
+
+  const query = `
+    UPDATE checkpoints 
+    SET name = ?, category = ?, type = ?, min_value = ?, max_value = ?, unit = ?, alert_email = ?, time = ?, clit = ?, how = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `;
+
+  db.run(query, [name, category, type, min || null, max || null, unit || null, alertEmail || null, time || null, clit || null, how || null, checkpointId], function(err) {
+    if (err) {
+      console.error("Error updating checkpoint:", err.message);
+      return res.status(500).json({ error: "Failed to update checkpoint" });
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).json({ error: "Checkpoint not found" });
+    }
+
+    res.json({
+      message: "Checkpoint updated successfully"
+    });
+  });
+});
+
+// Delete checkpoint
+router.delete("/checkpoints/:id", (req, res) => {
+  const checkpointId = req.params.id;
+
+  const query = "DELETE FROM checkpoints WHERE id = ?";
+
+  db.run(query, [checkpointId], function(err) {
+    if (err) {
+      console.error("Error deleting checkpoint:", err.message);
+      return res.status(500).json({ error: "Failed to delete checkpoint" });
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).json({ error: "Checkpoint not found" });
+    }
+
+    res.json({
+      message: "Checkpoint deleted successfully"
+    });
+  });
+});
+
 module.exports = router;

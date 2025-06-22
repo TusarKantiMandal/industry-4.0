@@ -452,7 +452,7 @@ function renderSettingsPage(res) {
   // Get plants data
   const plantsQuery = `SELECT id, name FROM plants ORDER BY name ASC`;
   const skillsQuery = `SELECT id, name FROM skills ORDER BY name ASC`;
-  const checkpointsQuery = `SELECT id, name FROM checkpoints ORDER BY name ASC`;
+  const checkpointsQuery = `SELECT id, name, category, type, min_value, max_value, unit, alert_email, time, clit, how FROM checkpoints ORDER BY name ASC`;
 
   db.all(plantsQuery, [], (err, plants) => {
     if (err) {
@@ -664,10 +664,39 @@ function generateSettingsHTML(plants, machines, cells, skills, checkpoints) {
     })
     .join("");
 
+  // Generate checkpoints table rows
+  const checkpointRows = checkpoints
+    .map((checkpoint) => {
+      return `
+      <tr data-id="${checkpoint.id}">
+        <td>${checkpoint.id}</td>
+        <td>${checkpoint.name}</td>
+        <td>${checkpoint.category || ''}</td>
+        <td>${checkpoint.type || ''}</td>
+        <td>${checkpoint.time || ''}</td>
+        <td>${checkpoint.clit || ''}</td>
+        <td>${checkpoint.how || ''}</td>
+        <td>${checkpoint.min_value || ''}</td>
+        <td>${checkpoint.max_value || ''}</td>
+        <td>${checkpoint.unit || ''}</td>
+        <td>${checkpoint.alert_email || ''}</td>
+        <td class="actions-cell">
+          <div class="dropdown">
+            <button class="dropdown-toggle">
+              Actions <i class="fas fa-chevron-down"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+    })
+    .join("");
+
   // Replace placeholders in the template
   html = html.replace("<!-- PLANTS_TABLE_ROWS -->", plantRows);
   html = html.replace("<!-- MACHINES_TABLE_ROWS -->", machineRows);
   html = html.replace("<!-- CELLS_TABLE_ROWS -->", cellRows);
+  html = html.replace("<!-- CHECKPOINTS_TABLE_ROWS -->", checkpointRows);
 
   // Generate plant options for dropdown
   const plantOptions = plants
