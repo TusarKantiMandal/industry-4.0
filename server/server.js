@@ -374,7 +374,7 @@ app.post("/login", (req, res) => {
     SELECT * FROM users WHERE (username = ? OR email = ?) AND password = ?
   `;
 
-  db.get(loginQuery, [username, password], (err, row) => {
+  db.get(loginQuery, [username, username, password], (err, row) => {
     if (err) {
       console.error("Login error", err.message);
       // Return error as JSON
