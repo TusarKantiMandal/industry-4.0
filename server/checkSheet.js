@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const sqlite3 = require("sqlite3").verbose();
 const { sendEmail } = require("./email");
+const { sendToPLC, evaluateCheckpoints } = require("./plc");
 const {
   getCheckpointIdByName,
   getNextBatchId,
@@ -264,48 +265,112 @@ router.put("/updateData", async (req, res) => {
   }
 });
 
-router.post("/approve", (req, res) => {
-  const { machineId, year, month, day, shift, id } = req.body;
+// router.post("/approve", async (req, res) => {
+//   const { machineId, year, month, day, shift, id } = req.body;
 
-  const query = `
-    SELECT approver_email FROM data
-    WHERE id = ? AND machine_id = ? AND year = ? AND month = ? AND day = ? AND shift = ?
-  `;
-  db.get(query, [id, machineId, year, month, day, shift], (err, row) => {
-    if (err) {
-      return res.status(500).send("Database error");
-    }
+//   const query = `
+//     SELECT approver_email FROM data
+//     WHERE id = ? AND machine_id = ? AND year = ? AND month = ? AND day = ? AND shift = ?
+//   `;
+  
+//   try {
+//     const row = await new Promise((resolve, reject) => {
+//       db.get(query, [id, machineId, year, month, day, shift], (err, row) => {
+//         if (err) reject(err);
+//         else resolve(row);
+//       });
+//     });
 
-    const approverEmail = row ? row.approver_email : null;
+//     const approverEmail = row ? row.approver_email : null;
 
-    if (req.user.email != approverEmail) {
-      return res
-        .status(403)
-        .send("You are not authorized to approve this data");
-    }
+//     if (req.user.email != approverEmail) {
+//       return res
+//         .status(403)
+//         .send("You are not authorized to approve this data");
+//     }
 
-    if (!machineId || !year || !month || !day || !shift || !id) {
-      return res.status(400).send("Missing required parameters");
-    }
+//     if (!machineId || !year || !month || !day || !shift || !id) {
+//       return res.status(400).send("Missing required parameters");
+//     }
 
-    // Update the data row to mark it as approved
-    const updateQuery = `
-    UPDATE data
-    SET approved = 1
-    WHERE id = ? AND machine_id = ? AND year = ? AND month = ? AND day = ? AND shift = ?
-  `;
-    db.run(
-      updateQuery,
-      [id, machineId, year, month, day, shift],
-      function (err) {
-        if (err) {
-          return res.status(500).send("Database error");
-        }
-        res.send("Data approved successfully");
-      }
-    );
-  });
-});
+//     // Get checkpoint details for this specific approval
+//     const checkpointQuery = `
+//       SELECT d.*, c.type, c.min_value, c.max_value, c.name as checkpoint_name
+//       FROM data d
+//       JOIN checkpoints c ON d.checkpoint_id = c.id
+//       WHERE d.id = ?
+//     `;
+
+//     const checkpointData = await new Promise((resolve, reject) => {
+//       db.get(checkpointQuery, [id], (err, row) => {
+//         if (err) reject(err);
+//         else resolve(row);
+//       });
+//     });
+
+//     // Update the data row to mark it as approved
+//     const updateQuery = `
+//       UPDATE data
+//       SET approved = 1
+//       WHERE id = ? AND machine_id = ? AND year = ? AND month = ? AND day = ? AND shift = ?
+//     `;
+    
+//     await new Promise((resolve, reject) => {
+//       db.run(updateQuery, [id, machineId, year, month, day, shift], function (err) {
+//         if (err) reject(err);
+//         else resolve(this);
+//       });
+//     });
+
+//     // For individual approvals, we need to check if this affects the overall machine status
+//     // Get all approved checkpoints for this machine on this date/shift
+//     const allCheckpointsQuery = `
+//       SELECT d.*, c.type, c.min_value, c.max_value, c.name as checkpoint_name
+//       FROM data d
+//       JOIN checkpoints c ON d.checkpoint_id = c.id
+//       WHERE d.machine_id = ? AND d.year = ? AND d.month = ? AND d.day = ? AND d.shift = ? AND d.approved = 1
+//     `;
+
+//     const allApprovedData = await new Promise((resolve, reject) => {
+//       db.all(allCheckpointsQuery, [machineId, year, month, day, shift], (err, rows) => {
+//         if (err) reject(err);
+//         else resolve(rows);
+//       });
+//     });
+
+//     if (allApprovedData.length > 0) {
+//       // Evaluate all approved checkpoints
+//       const checkpointsWithDetails = allApprovedData.map(data => ({
+//         checkpoint: {
+//           type: data.type,
+//           min_value: data.min_value,
+//           max_value: data.max_value,
+//           name: data.checkpoint_name
+//         },
+//         value: data.value
+//       }));
+
+//       const allCheckpointsOk = evaluateCheckpoints(checkpointsWithDetails);
+      
+//       console.log(`Individual approval for machine ${machineId}: All checkpoints OK = ${allCheckpointsOk}`);
+      
+//       try {
+//         // Send result to PLC
+//         await sendToPLC(machineId, allCheckpointsOk);
+//         res.send("Data approved successfully and sent to PLC");
+//       } catch (plcError) {
+//         console.error("Error sending data to PLC:", plcError);
+//         res.send("Data approved successfully, but PLC communication failed");
+//       }
+//     } else {
+//       res.send("Data approved successfully");
+//     }
+    
+//   } catch (error) {
+//     console.error("Error in individual approval:", error);
+//     res.status(500).send("Database error");
+//   }
+// });
 
 router.get("/batchData/:batchId", (req, res) => {
   const batchId = req.params.batchId;
@@ -360,19 +425,71 @@ router.post("/batchData/:batchId/approve", async (req, res) => {
     return res.status(403).send("You are not authorized to approve this batch");
   }
 
-  const query = `
-    UPDATE data
-    SET approved = 1, updated_at = CURRENT_TIMESTAMP
-    WHERE batch_id = ? AND approver_email = ?
-  `;
+  try {
+    // Get all data for this batch with checkpoint details before approval
+    const batchDataQuery = `
+      SELECT d.*, c.type, c.min_value, c.max_value, c.name as checkpoint_name
+      FROM data d
+      JOIN checkpoints c ON d.checkpoint_id = c.id
+      WHERE d.batch_id = ? AND d.approver_email = ?
+    `;
 
-  db.run(query, [batchId, email], function (err) {
-    if (err) {
-      return res.status(500).send("Database error");
+    const batchData = await new Promise((resolve, reject) => {
+      db.all(batchDataQuery, [batchId, email], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
+
+    if (batchData.length === 0) {
+      return res.status(404).send("No data found for this batch");
     }
-    res.send("Batch approved successfully");
+
+    const machineId = batchData[0].machine_id;
+
+    // Approve the batch
+    const updateQuery = `
+      UPDATE data
+      SET approved = 1, updated_at = CURRENT_TIMESTAMP
+      WHERE batch_id = ? AND approver_email = ?
+    `;
+
+    await new Promise((resolve, reject) => {
+      db.run(updateQuery, [batchId, email], function (err) {
+        if (err) reject(err);
+        else resolve(this);
+      });
+    });
+
+    // Evaluate checkpoints according to the business rules
+    const checkpointsWithDetails = batchData.map(data => ({
+      checkpoint: {
+        type: data.type,
+        min_value: data.min_value,
+        max_value: data.max_value,
+        name: data.checkpoint_name
+      },
+      value: data.value
+    }));
+
+    const allCheckpointsOk = evaluateCheckpoints(checkpointsWithDetails);
+    
+    console.log(`Batch ${batchId} approval result: All checkpoints OK = ${allCheckpointsOk}`);
+    
+    try {
+      await sendToPLC(machineId, allCheckpointsOk);
+      res.send("Batch approved successfully and sent to PLC");
+    } catch (plcError) {
+      console.error("Error sending data to PLC:", plcError);
+      res.send("Batch approved successfully, but PLC communication failed");
+    }
+    
     sendBatchOwnerNotification(batchId, "approved");
-  });
+    
+  } catch (error) {
+    console.error("Error in batch approval:", error);
+    res.status(500).send("Database error");
+  }
 });
 
 router.post("/batchData/:batchId/reject", async (req, res) => {

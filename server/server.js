@@ -157,9 +157,12 @@ const db = new sqlite3.Database("./database.db", (err) => {
         CREATE TABLE IF NOT EXISTS machines (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,
+          unique_id TEXT NOT NULL UNIQUE,
           minimum_skill INTEGER DEFAULT 1,
           plant_id INTEGER NOT NULL,
           cell_id INTEGER NOT NULL,
+          ip_address TEXT DEFAULT "192.168.10.2",
+          port INTEGER DEFAULT 102,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE CASCADE,
