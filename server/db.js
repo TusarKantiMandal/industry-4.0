@@ -1,8 +1,8 @@
-import express from "express";
-import path from "path";
-import fs from "fs";
-import sqlite3 from "sqlite3";
-import { Router } from "express";
+const express = require("express");
+const path = require("path");
+const fs = require("fs");
+const sqlite3 = require("sqlite3").verbose();
+const { Router } = require("express");
 const router = Router();
 const db = new sqlite3.Database("./database.db");
 
@@ -83,4 +83,4 @@ function getApproverEmail(batchId) {
     });
 }
 
-export { getUserById, getCheckpointIdByName, getNextBatchId, getMatchineById, getMachineWithCellAndPlant, getApproverEmail };
+module.exports = { getUserById, getCheckpointIdByName, getNextBatchId, getMatchineById, getMachineWithCellAndPlant, getApproverEmail };
