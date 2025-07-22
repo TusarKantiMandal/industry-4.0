@@ -519,12 +519,17 @@ router.delete("/plants/:id", (req, res) => {
 
 // API routes for machines
 router.post("/machines", (req, res) => {
-  const { name, minimum_skill, plant_id, cell_id } = req.body;
+  const { name, minimum_skill, plant_id, cell_id, checksheets_count, checkpoints } = req.body;
 
-  if (!name || !plant_id || !cell_id) {
+  if (!name || !plant_id || !cell_id || !checksheets_count) {
     return res
       .status(400)
-      .json({ error: "Machine name, plant ID, and cell ID are required" });
+      .json({ error: "Machine name, plant ID, cell ID, and checksheets count are required" });
+  }
+
+  // Validate checkpoints structure - should be an object with keys as checksheet numbers
+  if (!checkpoints || typeof checkpoints !== 'object') {
+    return res.status(400).json({ error: "Checkpoints data is required" });
   }
 
   // Validate plant exists
@@ -549,22 +554,57 @@ router.post("/machines", (req, res) => {
         return res.status(400).json({ error: "Invalid cell ID" });
       }
 
-      const query = `INSERT INTO machines (name, minimum_skill, plant_id, cell_id) VALUES (?, ?, ?, ?)`;
+      // Generate unique_id from name (replace spaces with underscores, convert to lowercase)
+      const unique_id = name.toLowerCase().replace(/\s+/g, '_');
+      const query = `INSERT INTO machines (name, unique_id, minimum_skill, plant_id, cell_id, checksheets_count) VALUES (?, ?, ?, ?, ?, ?)`;
       const skill = minimum_skill || 1;
 
-      db.run(query, [name, skill, plant_id, cell_id], function (err) {
+      db.run(query, [name, unique_id, skill, plant_id, cell_id, checksheets_count], function (err) {
         if (err) {
           console.error("Error creating machine:", err.message);
           return res.status(500).json({ error: "Failed to create machine" });
         }
-        res.status(201).json({
-          id: this.lastID,
-          name,
-          minimum_skill: skill,
-          plant_id,
-          cell_id,
-          message: "Machine created successfully",
-        });
+
+        const machineId = this.lastID;
+        
+        // Insert checkpoints for each checksheet
+        const insertCheckpointPromises = [];
+        
+        for (let checksheetNum = 1; checksheetNum <= checksheets_count; checksheetNum++) {
+          const checksheetCheckpoints = checkpoints[checksheetNum] || [];
+          
+          checksheetCheckpoints.forEach(checkpointId => {
+            insertCheckpointPromises.push(new Promise((resolve, reject) => {
+              const insertQuery = `INSERT INTO machine_checkpoint (machine_id, checkpoint_id, page) VALUES (?, ?, ?)`;
+              db.run(insertQuery, [machineId, checkpointId, checksheetNum], function(err) {
+                if (err) {
+                  console.error("Error inserting machine checkpoint:", err.message);
+                  reject(err);
+                } else {
+                  resolve();
+                }
+              });
+            }));
+          });
+        }
+        
+        Promise.all(insertCheckpointPromises)
+          .then(() => {
+            res.status(201).json({
+              id: machineId,
+              name,
+              unique_id,
+              minimum_skill: skill,
+              plant_id,
+              cell_id,
+              checksheets_count,
+              message: "Machine created successfully",
+            });
+          })
+          .catch(err => {
+            console.error("Error inserting machine checkpoints:", err.message);
+            res.status(500).json({ error: "Failed to create machine checkpoints" });
+          });
       });
     });
   });
@@ -573,10 +613,15 @@ router.post("/machines", (req, res) => {
 // PUT /machines/:id - update machine data
 router.put("/machines/:id", (req, res) => {
   const machineId = req.params.id;
-  const { name, minimum_skill, plant_id, cell_id, checkpoints } = req.body;
+  const { name, minimum_skill, plant_id, cell_id, checksheets_count, checkpoints } = req.body;
 
-  if (!name || !plant_id || !cell_id || !checkpoints || !Array.isArray(checkpoints)) {
-    return res.status(400).json({ error: "Machine name, plant ID, cell ID, and checkpoints are required" });
+  if (!name || !plant_id || !cell_id || !checksheets_count) {
+    return res.status(400).json({ error: "Machine name, plant ID, cell ID, and checksheets count are required" });
+  }
+
+  // Validate checkpoints structure
+  if (!checkpoints || typeof checkpoints !== 'object') {
+    return res.status(400).json({ error: "Checkpoints data is required" });
   }
 
   // Validate plant exists
@@ -588,6 +633,7 @@ router.put("/machines/:id", (req, res) => {
     if (!plant) {
       return res.status(400).json({ error: "Invalid plant ID" });
     }
+    
     // Validate cell exists
     db.get("SELECT id FROM cells WHERE id = ?", [cell_id], (err, cell) => {
       if (err) {
@@ -597,9 +643,13 @@ router.put("/machines/:id", (req, res) => {
       if (!cell) {
         return res.status(400).json({ error: "Invalid cell ID" });
       }
-      const query = `UPDATE machines SET name = ?, minimum_skill = ?, plant_id = ?, cell_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
+      
+      // Generate unique_id from name
+      const unique_id = name.toLowerCase().replace(/\s+/g, '_');
+      const query = `UPDATE machines SET name = ?, unique_id = ?, minimum_skill = ?, plant_id = ?, cell_id = ?, checksheets_count = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
       const skill = minimum_skill || 1;
-      db.run(query, [name, skill, plant_id, cell_id, machineId], function (err) {
+      
+      db.run(query, [name, unique_id, skill, plant_id, cell_id, checksheets_count, machineId], function (err) {
         if (err) {
           console.error("Error updating machine:", err.message);
           return res.status(500).json({ error: "Failed to update machine" });
@@ -608,37 +658,52 @@ router.put("/machines/:id", (req, res) => {
           return res.status(404).json({ error: "Machine not found" });
         }
 
+        // Delete all existing checkpoints for this machine
         const deleteQuery = `DELETE FROM machine_checkpoint WHERE machine_id = ?`;
-        const insertQuery = `INSERT INTO machine_checkpoint (machine_id, checkpoint_id) VALUES (?, ?)`;
         db.run(deleteQuery, [machineId], function (err) {
           if (err) {
             console.error("Error deleting machine checkpoints:", err.message);
             return res.status(500).json({ error: "Failed to delete machine checkpoints" });
           }
 
-          const insertCheckpoints = (index) => {
-            if (index >= checkpoints.length) {
-              return res.json({
+          // Insert new checkpoints for each checksheet
+          const insertCheckpointPromises = [];
+          
+          for (let checksheetNum = 1; checksheetNum <= checksheets_count; checksheetNum++) {
+            const checksheetCheckpoints = checkpoints[checksheetNum] || [];
+            
+            checksheetCheckpoints.forEach(checkpointId => {
+              insertCheckpointPromises.push(new Promise((resolve, reject) => {
+                const insertQuery = `INSERT INTO machine_checkpoint (machine_id, checkpoint_id, page) VALUES (?, ?, ?)`;
+                db.run(insertQuery, [machineId, checkpointId, checksheetNum], function(err) {
+                  if (err) {
+                    console.error("Error inserting machine checkpoint:", err.message);
+                    reject(err);
+                  } else {
+                    resolve();
+                  }
+                });
+              }));
+            });
+          }
+          
+          Promise.all(insertCheckpointPromises)
+            .then(() => {
+              res.json({
                 id: machineId,
                 name,
+                unique_id,
                 minimum_skill: skill,
                 plant_id,
                 cell_id,
+                checksheets_count,
                 message: "Machine updated successfully",
               });
-            }
-
-            const checkpoint = checkpoints[index];
-            db.run(insertQuery, [machineId, checkpoint], function (err) {
-              if (err) {
-                console.error("Error inserting machine checkpoint:", err.message);
-                // return res.status(500).json({ error: "Failed to insert machine checkpoint" });
-              }
-              insertCheckpoints(index + 1);
+            })
+            .catch(err => {
+              console.error("Error inserting machine checkpoints:", err.message);
+              res.status(500).json({ error: "Failed to update machine checkpoints" });
             });
-          };
-
-          insertCheckpoints(0);
         });
       });
     });

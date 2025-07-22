@@ -59,8 +59,8 @@ router.get("/api/checkSheet", async (req, res) => {
   }
 
   try {
-    // Get all checkpoints for this machine
-    const checkpoints = await getCheckPoints(machineId);
+    // Get all checkpoints for this machine with page information
+    const checkpoints = await getCheckPointsWithPages(machineId);
 
     // Get all data for this machine, year, month
     const dataQuery = `
@@ -76,9 +76,24 @@ router.get("/api/checkSheet", async (req, res) => {
         if (err) {
           return res.status(500).json({ error: "Database error" });
         }
-        // Return checkpoints and data for UI rendering
+        
+        // Group checkpoints by page/checksheet
+        const checkpointsByPage = {};
+        checkpoints.forEach(checkpoint => {
+          const page = checkpoint.page || 1;
+          if (!checkpointsByPage[page]) {
+            checkpointsByPage[page] = [];
+          }
+          checkpointsByPage[page].push(checkpoint);
+        });
+
+        const totalChecksheets = Object.keys(checkpointsByPage).length;
+        
+        // Return checkpoints grouped by page and data for UI rendering
         res.json({
           checkpoints,
+          checkpointsByPage,
+          totalChecksheets,
           data: rows,
           machine: machine,
         });
@@ -93,6 +108,21 @@ function getCheckPoints(machineId) {
   query = `SELECT c.* FROM checkpoints c
     JOIN machine_checkpoint mc ON c.id = mc.checkpoint_id
     WHERE mc.machine_id = ?`;
+  return new Promise((resolve, reject) => {
+    db.all(query, [machineId], (err, rows) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(rows);
+    });
+  });
+}
+
+function getCheckPointsWithPages(machineId) {
+  query = `SELECT c.*, mc.page FROM checkpoints c
+    JOIN machine_checkpoint mc ON c.id = mc.checkpoint_id
+    WHERE mc.machine_id = ?
+    ORDER BY mc.page, c.id`;
   return new Promise((resolve, reject) => {
     db.all(query, [machineId], (err, rows) => {
       if (err) {
@@ -125,7 +155,7 @@ router.put("/updateData", async (req, res) => {
   const dbOps = [];
 
   for (const item of data) {
-    const { year, month, day, shift, value, checkpoint } = item;
+    const { year, month, day, shift, value, checkpoint, page } = item;
 
     if (!year || !month || !day || !shift || !value || !checkpoint) {
       return res
@@ -161,7 +191,7 @@ router.put("/updateData", async (req, res) => {
           if (row) {
             const updateQuery = `
               UPDATE data
-              SET value = ?, approver_email = ?, approver_name = ?, user_id = ?, batch_id = ?, updated_at = CURRENT_TIMESTAMP, approved = 0
+              SET value = ?, approver_email = ?, approver_name = ?, user_id = ?, batch_id = ?, page = ?, updated_at = CURRENT_TIMESTAMP, approved = 0
               WHERE machine_id = ? AND year = ? AND month = ? AND day = ? AND shift = ? AND checkpoint_id = ?
             `;
             dbOps.push({
@@ -172,6 +202,7 @@ router.put("/updateData", async (req, res) => {
                 approverName,
                 userId,
                 batchId,
+                page || 1, // Default to page 1 if not provided
                 machineId,
                 year,
                 month,
@@ -183,8 +214,8 @@ router.put("/updateData", async (req, res) => {
             resolve();
           } else {
             const insertQuery = `
-              INSERT INTO data (machine_id, year, month, day, shift, value, approver_email, approver_name, checkpoint_id, user_id, batch_id)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              INSERT INTO data (machine_id, year, month, day, shift, value, approver_email, approver_name, checkpoint_id, user_id, batch_id, page)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
             dbOps.push({
               query: insertQuery,
@@ -200,6 +231,7 @@ router.put("/updateData", async (req, res) => {
                 checkpoint,
                 userId,
                 batchId,
+                page || 1, // Default to page 1 if not provided
               ],
             });
             resolve();
@@ -467,7 +499,8 @@ router.post("/batchData/:batchId/approve", async (req, res) => {
         type: data.type,
         min_value: data.min_value,
         max_value: data.max_value,
-        name: data.checkpoint_name
+        name: data.checkpoint_name,
+        page: data.page
       },
       value: data.value
     }));
