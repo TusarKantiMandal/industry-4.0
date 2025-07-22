@@ -272,10 +272,10 @@
       <h2>Autonomous Machine Check Sheet</h2>
       <div class="header-info">
         <div class="header-item">
-          <strong>Machine Name:</strong><input value="" class="machine-name"/>
+          <strong>Machine Name:</strong><input readonly value="" class="machine-name"/>
         </div>
         <div class="header-item">
-          <strong>Cell:</strong><input value="" class="cell-name"/>
+          <strong>Cell:</strong><input readonly value="" class="cell-name"/>
         </div>
         <div class="header-item">
           <strong>Month:</strong>
@@ -681,7 +681,7 @@
             entry.month === month &&
             entry.year === year &&
             entry.shift === shift &&
-            entry.checkpoint_id === checkpoint_id
+            String(entry.checkpoint_id) === checkpoint_id
         );
 
         if (existingEntry) {
@@ -888,13 +888,13 @@
       }
 
       // Add a function to show details popup
-      function showDetailsPopup(td) {
-  const checkpoint = td.dataset.checkpoint;
+function showDetailsPopup(td) {
+  const checkpoint_id = td.dataset.checkpointId;
   const day = td.dataset.day;
   const shift = td.dataset.shift;
   const month = document.getElementById("month").value;
   const year = document.getElementById("year").value;
-  const checkpoint_id = checkpointData.find(cp => cp.name === checkpoint)?.id;
+  const checkpoint = checkpointData.find(cp => cp.id === parseInt(checkpoint_id))?.name;
 
   const entry = sheetData.find(
     (entry) =>
@@ -902,7 +902,7 @@
       entry.month === parseInt(month) &&
       entry.year === parseInt(year) &&
       entry.shift === shift &&
-      entry.checkpoint_id === checkpoint_id
+      entry.checkpoint_id === parseInt(checkpoint_id)
   );
 
   document.getElementById("details-checkpoint-name").textContent = checkpoint;
