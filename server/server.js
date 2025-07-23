@@ -161,6 +161,7 @@ const db = new sqlite3.Database("./database.db", (err) => {
           minimum_skill INTEGER DEFAULT 1,
           plant_id INTEGER NOT NULL,
           cell_id INTEGER NOT NULL,
+          checksheets_count INTEGER DEFAULT 1,
           ip_address TEXT DEFAULT "192.168.10.2",
           port INTEGER DEFAULT 102,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -249,12 +250,13 @@ const db = new sqlite3.Database("./database.db", (err) => {
         `CREATE TABLE IF NOT EXISTS machine_checkpoint (
           checkpoint_id INTEGER NOT NULL,
           machine_id INTEGER NOT NULL,
+          page INTEGER NOT NULL DEFAULT 1,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (checkpoint_id) REFERENCES checkpoints(id) ON DELETE CASCADE,
           FOREIGN KEY (machine_id) REFERENCES machines(id) ON DELETE CASCADE,
-          PRIMARY KEY (checkpoint_id, machine_id),
-          UNIQUE(checkpoint_id, machine_id)
+          PRIMARY KEY (checkpoint_id, machine_id, page),
+          UNIQUE(checkpoint_id, machine_id, page)
         );`
       );
 
@@ -274,6 +276,7 @@ const db = new sqlite3.Database("./database.db", (err) => {
           approver_email TEXT,
           approver_name TEXT,
           batch_id INTEGER,
+          page INTEGER NOT NULL DEFAULT 1,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (machine_id) REFERENCES machines(id) ON DELETE CASCADE,

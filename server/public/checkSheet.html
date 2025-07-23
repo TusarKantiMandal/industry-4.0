@@ -265,6 +265,67 @@
         margin-top: 8px;
         border-radius: 3px;
       }
+
+      .checksheet-navigation {
+        background: var(--light-color);
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        border: 2px solid var(--secondary-color);
+      }
+
+      .checksheet-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+
+      .checksheet-header h3 {
+        margin: 0;
+        color: var(--primary-color);
+        font-size: 18px;
+      }
+
+      .navigation-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .nav-button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        transition: background-color 0.3s;
+      }
+
+      .nav-button:enabled {
+        background: var(--secondary-color);
+        color: white;
+      }
+
+      .nav-button:disabled {
+        background: #bdc3c7;
+        color: #7f8c8d;
+        cursor: not-allowed;
+      }
+
+      .nav-button:enabled:hover {
+        background: var(--primary-color);
+      }
+
+      .submit-button {
+        background: #27ae60 !important;
+      }
+
+      .submit-button:hover {
+        background: #229954 !important;
+      }
     </style>
   </head>
   <body>
@@ -272,10 +333,10 @@
       <h2>Autonomous Machine Check Sheet</h2>
       <div class="header-info">
         <div class="header-item">
-          <strong>Machine Name:</strong><input value="" class="machine-name"/>
+          <strong>Machine Name:</strong><input readonly value="" class="machine-name"/>
         </div>
         <div class="header-item">
-          <strong>Cell:</strong><input value="" class="cell-name"/>
+          <strong>Cell:</strong><input readonly value="" class="cell-name"/>
         </div>
         <div class="header-item">
           <strong>Month:</strong>
@@ -289,6 +350,17 @@
             value="2025"
             onchange="updateDays()"
           />
+        </div>
+      </div>
+
+      <div class="checksheet-navigation" id="checksheet-navigation" style="display: none;">
+        <div class="checksheet-header">
+          <h3 id="checksheet-title">Checksheet 1 of 1</h3>
+          <div class="navigation-buttons">
+            <button id="prev-btn" class="nav-button" onclick="previousChecksheet()" disabled>Previous</button>
+            <button id="next-btn" class="nav-button" onclick="nextChecksheet()">Next</button>
+            <button id="submit-btn" class="nav-button submit-button" onclick="openApprovalPopup()" style="display: none;">Submit</button>
+          </div>
         </div>
       </div>
 
@@ -309,7 +381,7 @@
         </table>
       </div>
 
-      <div style="text-align: center; margin-top: 20px">
+      <div style="text-align: center; margin-top: 20px; display: none;" id="single-submit-container">
         <button class="popup-button btn-m" onclick="openApprovalPopup()">
           Submit Check Sheet
         </button>
@@ -421,6 +493,12 @@
       let pendingCellValue = null;
       let checkSheetEdits = [];
 
+      // Multi-checksheet variables
+      let currentChecksheet = 1;
+      let totalChecksheets = 1;
+      let checkpointsByPage = {};
+      let currentChecksheetData = [];
+
       function getMachineIdFromUrl() {
         const match = window.location.pathname.match(
           /\/machine\/(\d+)\/checkSheet/
@@ -449,6 +527,8 @@
           .then((response) => response.json())
           .then((data) => {
             console.log("Fetched data:", data);
+            
+            // Store all checkpoints data
             checkpointNames = data.checkpoints.map(
               (checkpoint) => checkpoint.name
             );
@@ -463,23 +543,35 @@
               clit: checkpoint.clit,
               unit: checkpoint.unit,
               max_value: checkpoint.max_value,
-              min_value: checkpoint.min_value
+              min_value: checkpoint.min_value,
+              page: checkpoint.page || 1
             }));
+            
+            // Store checksheets data
+            checkpointsByPage = data.checkpointsByPage || {};
+            totalChecksheets = data.totalChecksheets || 1;
             sheetData = data.data || [];
-
+            
+            // Initialize checksheet navigation
+            initializeChecksheetNavigation();
+            
             updateSheetMetaData(
               data.machine.name,
               data.machine.cell_name
             );
-            // Regenerate table after checkpointNames is updated
-            updateDays();
+            
+            // Show the current checksheet
+            showChecksheet(currentChecksheet);
           })
           .catch((error) => {
             console.error("Error fetching data:", error);
             // Optionally clear table on error
             checkpointNames = [];
             checkpointData = [];
-            updateDays();
+            checkpointsByPage = {};
+            totalChecksheets = 1;
+            currentChecksheet = 1;
+            showChecksheet(1);
           })
           .finally(() => {
             hideLoader();
@@ -491,6 +583,65 @@
         const cellNameDOM = document.querySelector(".cell-name");
         machineNameDOM.value = machineName;
         cellNameDOM.value = cellName;
+      }
+
+      function initializeChecksheetNavigation() {
+        const navigation = document.getElementById("checksheet-navigation");
+        const singleSubmitContainer = document.getElementById("single-submit-container");
+        
+        if (totalChecksheets > 1) {
+          navigation.style.display = "block";
+          singleSubmitContainer.style.display = "none";
+          updateNavigationButtons();
+        } else {
+          navigation.style.display = "none";
+          singleSubmitContainer.style.display = "block";
+        }
+        
+        currentChecksheet = 1;
+      }
+
+      function updateNavigationButtons() {
+        const prevBtn = document.getElementById("prev-btn");
+        const nextBtn = document.getElementById("next-btn");
+        const submitBtn = document.getElementById("submit-btn");
+        const title = document.getElementById("checksheet-title");
+        
+        title.textContent = `Checksheet ${currentChecksheet} of ${totalChecksheets}`;
+        
+        prevBtn.disabled = currentChecksheet === 1;
+        
+        if (currentChecksheet === totalChecksheets) {
+          nextBtn.style.display = "none";
+          submitBtn.style.display = "inline-block";
+        } else {
+          nextBtn.style.display = "inline-block";
+          submitBtn.style.display = "none";
+        }
+      }
+
+      function previousChecksheet() {
+        if (currentChecksheet > 1) {
+          currentChecksheet--;
+          showChecksheet(currentChecksheet);
+          updateNavigationButtons();
+        }
+      }
+
+      function nextChecksheet() {
+        if (currentChecksheet < totalChecksheets) {
+          currentChecksheet++;
+          showChecksheet(currentChecksheet);
+          updateNavigationButtons();
+        }
+      }
+
+      function showChecksheet(pageNumber) {
+        // Get checkpoints for current page
+        currentChecksheetData = checkpointsByPage[pageNumber] || [];
+        
+        // Update the days display for this checksheet
+        updateDays();
       }
 
       var checkpointNames = [
@@ -605,7 +756,11 @@
         const tbody = document.getElementById("checkpointRows");
         tbody.innerHTML = "";
         const shifts = ["A", "B", "C"];
-        checkpointData.forEach((checkpoint, i) => {
+        
+        // Use current checksheet data instead of all checkpoints
+        const checkpointsToShow = currentChecksheetData.length > 0 ? currentChecksheetData : checkpointData;
+        
+        checkpointsToShow.forEach((checkpoint, i) => {
           shifts.forEach((shift, j) => {
             const row = document.createElement("tr");
             if (j === 0) {
@@ -618,13 +773,10 @@
               const td = document.createElement("td");
               td.className = "day-cell";
               td.dataset.checkpointIndex = i + 1;
-              td.dataset.checkpoint = name;
+              td.dataset.checkpoint = checkpoint.name;
               td.dataset.day = d;
               td.dataset.shift = shift;
               td.dataset.checkpointId = checkpoint.id;
-              // td.dataset.checkpointId = checkpointData.find(
-              //   (cp) => cp.name === name
-              // )?.id;
               
               setIntialValue(td);
 
@@ -681,7 +833,7 @@
             entry.month === month &&
             entry.year === year &&
             entry.shift === shift &&
-            entry.checkpoint_id === checkpoint_id
+            String(entry.checkpoint_id) === checkpoint_id
         );
 
         if (existingEntry) {
@@ -718,7 +870,10 @@
           cell.dataset.shift;
 
         const checkpointId = dataset.checkpointId;
-        const checkpoint = checkpointData.find(
+        
+        // Find checkpoint in current checksheet data or fallback to all checkpoints
+        const checkpointsToSearch = currentChecksheetData.length > 0 ? currentChecksheetData : checkpointData;
+        const checkpoint = checkpointsToSearch.find(
           (cp) => cp.id === parseInt(checkpointId)
         );
 
@@ -765,7 +920,7 @@
           else if (value === "✗") {
             currentCell.classList.add("cross");
           } else if (value === "NA") currentCell.classList.add("na");
-          // Store the edit in the array
+          // Store the edit in the array with page number
           checkSheetEdits.push({
             month: parseInt(document.getElementById("month").value),
             year: parseInt(document.getElementById("year").value),
@@ -773,6 +928,7 @@
             shift: currentCell.dataset.shift,
             value: value,
             checkpoint: currentCell.dataset.checkpointId,
+            page: currentChecksheet // Add current checksheet page
           });
           currentCell = null;
         }
@@ -847,6 +1003,7 @@
           approverName: approverName,
           machineId: getMachineIdFromUrl(),
         });
+        // window.location.reload()
         // After approval, update the cell value and store the edit
       }
 
@@ -889,51 +1046,54 @@
 
       // Add a function to show details popup
       function showDetailsPopup(td) {
-  const checkpoint = td.dataset.checkpoint;
-  const day = td.dataset.day;
-  const shift = td.dataset.shift;
-  const month = document.getElementById("month").value;
-  const year = document.getElementById("year").value;
-  const checkpoint_id = checkpointData.find(cp => cp.name === checkpoint)?.id;
+        const checkpoint_id = td.dataset.checkpointId;
+        const day = td.dataset.day;
+        const shift = td.dataset.shift;
+        const month = document.getElementById("month").value;
+        const year = document.getElementById("year").value;
+        
+        // Find checkpoint in current checksheet data or fallback to all checkpoints
+        const checkpointsToSearch = currentChecksheetData.length > 0 ? currentChecksheetData : checkpointData;
+        const checkpoint = checkpointsToSearch.find(cp => cp.id === parseInt(checkpoint_id))?.name;
 
-  const entry = sheetData.find(
-    (entry) =>
-      entry.day === parseInt(day) &&
-      entry.month === parseInt(month) &&
-      entry.year === parseInt(year) &&
-      entry.shift === shift &&
-      entry.checkpoint_id === checkpoint_id
-  );
+        const entry = sheetData.find(
+          (entry) =>
+            entry.day === parseInt(day) &&
+            entry.month === parseInt(month) &&
+            entry.year === parseInt(year) &&
+            entry.shift === shift &&
+            entry.checkpoint_id === parseInt(checkpoint_id)
+        );
 
-  document.getElementById("details-checkpoint-name").textContent = checkpoint;
-  document.getElementById("details-day-number").textContent = day;
-  document.getElementById("details-shift-letter").textContent = shift;
-  document.getElementById("details-value").textContent = entry ? entry.value : "";
+        document.getElementById("details-checkpoint-name").textContent = checkpoint;
+        document.getElementById("details-day-number").textContent = day;
+        document.getElementById("details-shift-letter").textContent = shift;
+        document.getElementById("details-value").textContent = entry ? entry.value : "";
 
-  const statusSpan = document.getElementById("details-status");
-  const approvalRequestNote = document.getElementById("details-approval-request");
+        const statusSpan = document.getElementById("details-status");
+        const approvalRequestNote = document.getElementById("details-approval-request");
 
-  if (entry) {
-    if (entry.approved === 1) {
-      statusSpan.textContent = "Approved";
-      approvalRequestNote.style.display = "none";
-    } else if (entry.approved === -1) {
-      statusSpan.textContent = "Rejected";
-      approvalRequestNote.style.display = "none";
-    } else {
-      statusSpan.textContent = "Pending";
-      approvalRequestNote.style.display = "block";
-    }
-  } else {
-    statusSpan.textContent = "";
-    approvalRequestNote.style.display = "none";
-  }
+        if (entry) {
+          if (entry.approved === 1) {
+            statusSpan.textContent = "Approved";
+            approvalRequestNote.style.display = "none";
+          } else if (entry.approved === -1) {
+            statusSpan.textContent = "Rejected";
+            approvalRequestNote.style.display = "none";
+          } else {
+            statusSpan.textContent = "Pending";
+            approvalRequestNote.style.display = "block";
+          }
+        } else {
+          statusSpan.textContent = "";
+          approvalRequestNote.style.display = "none";
+        }
 
-  document.getElementById("details-approver").textContent =
-    entry && entry.approver_name ? entry.approver_name : "";
+        document.getElementById("details-approver").textContent =
+          entry && entry.approver_name ? entry.approver_name : "";
 
-  document.getElementById("detailsPopup").style.display = "block";
-}
+        document.getElementById("detailsPopup").style.display = "block";
+      }
 
     </script>
   </body>

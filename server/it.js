@@ -469,6 +469,7 @@ function renderSettingsPage(res) {
         m.minimum_skill as minimum_skill_id,
         m.plant_id,
         m.cell_id,
+        m.checksheets_count,
         c.name as cell_name,
         p.name as plant_name
       FROM machines m
@@ -631,6 +632,7 @@ function generateSettingsHTML(plants, machines, cells, skills, checkpoints) {
         <td><span class="minSkill minSkill-${machine.minimum_skill_id}">${machine.minimum_skill}</span></td>
         <td><span class="chip chip-${machine.plant_id}">${machine.plant_name}</span></td>
         <td><span class="chip chip-${machine.cell_id}">${machine.cell_name}</span></td>
+        <td>${machine.checksheets_count || 1}</td>
         <td style="display:none;"><span class="checkpoint" value="${machine.checkpoint_ids.join("///")}"> ${machine.checkpoint_names.join("///")}</span></td>
         <td class="actions-cell">
           <div class="dropdown">
@@ -719,19 +721,86 @@ function generateSettingsHTML(plants, machines, cells, skills, checkpoints) {
     })
     .join("");
 
-  const checkpointOptions = checkpoints
-    .map((checkpoint) => {
-      return `<label><input type="checkbox" value="${checkpoint.id}" data-name="${checkpoint.name}"> ${checkpoint.name}</label>`;
-    })
-    .join("");
-
   html = html.replace("<!-- PLANT_OPTIONS -->", plantOptions);
   html = html.replace("<!-- PLANT_OPTIONS_CELLS -->", plantOptions);
   html = html.replace("<!-- SKILL_OPTIONS -->", skillOptions);
   html = html.replace("<!-- CELL_OPTIONS -->", cellOptions);
-  html = html.replace("<!-- CHECKPOINT_OPTIONS -->", checkpointOptions);
 
   return html;
 }
+
+// API endpoint to get checkpoints for the multiselect
+router.get("/checkpoints", (req, res) => {
+  const query = `SELECT id, name, category FROM checkpoints ORDER BY name ASC`;
+  
+  db.all(query, [], (err, checkpoints) => {
+    if (err) {
+      console.error("Error retrieving checkpoints:", err.message);
+      return res.status(500).json({ error: "Database error occurred" });
+    }
+    
+    res.json(checkpoints);
+  });
+});
+
+// API endpoint to get machine details with checkpoints by checksheet
+router.get("/machines/:id", (req, res) => {
+  const machineId = req.params.id;
+  
+  // Get machine basic info
+  const machineQuery = `
+    SELECT m.*, p.name as plant_name, c.name as cell_name, s.name as skill_name
+    FROM machines m
+    JOIN plants p ON m.plant_id = p.id
+    JOIN cells c ON m.cell_id = c.id
+    JOIN skills s ON m.minimum_skill = s.id
+    WHERE m.id = ?
+  `;
+  
+  db.get(machineQuery, [machineId], (err, machine) => {
+    if (err) {
+      console.error("Error retrieving machine:", err.message);
+      return res.status(500).json({ error: "Database error occurred" });
+    }
+    
+    if (!machine) {
+      return res.status(404).json({ error: "Machine not found" });
+    }
+    
+    // Get machine checkpoints organized by checksheet (page)
+    const checkpointsQuery = `
+      SELECT mc.page, mc.checkpoint_id, cp.name, cp.category
+      FROM machine_checkpoint mc
+      JOIN checkpoints cp ON mc.checkpoint_id = cp.id
+      WHERE mc.machine_id = ?
+      ORDER BY mc.page, cp.name
+    `;
+    
+    db.all(checkpointsQuery, [machineId], (err, checkpoints) => {
+      if (err) {
+        console.error("Error retrieving machine checkpoints:", err.message);
+        return res.status(500).json({ error: "Database error occurred" });
+      }
+      
+      // Organize checkpoints by checksheet
+      const checkpointsByChecksheet = {};
+      checkpoints.forEach(cp => {
+        if (!checkpointsByChecksheet[cp.page]) {
+          checkpointsByChecksheet[cp.page] = [];
+        }
+        checkpointsByChecksheet[cp.page].push({
+          id: cp.checkpoint_id,
+          name: cp.name,
+          category: cp.category
+        });
+      });
+      
+      res.json({
+        machine,
+        checkpointsByChecksheet
+      });
+    });
+  });
+});
 
 module.exports = router;
