@@ -62,6 +62,33 @@ const openRoutes = require("./openRoutes");
 const checkSheetRoutes = require("./checkSheet");
 const { sendEmail } = require("./email");
 app.use("/admin", adminRoutes); // TODO: add verifyAdmin middleware
+
+// PTT Users Endpoint (Accessible to all logged-in users)
+app.get("/api/users/ptt", verifyToken, (req, res) => {
+  const query = "SELECT id, fullname, email FROM users WHERE role = 'ptt' AND active = 1 ORDER BY fullname ASC";
+
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      console.error("Error fetching PTT users:", err.message);
+      return res.status(500).json({ error: "Database error occurred" });
+    }
+    res.json(rows);
+  });
+});
+
+// Approvers Endpoint (PTT + Admins)
+app.get("/api/users/approvers", verifyToken, (req, res) => {
+  const query = "SELECT id, fullname, email FROM users WHERE role IN ('ptt', 'admin', 'itAdmin') AND active = 1 ORDER BY fullname ASC";
+
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      console.error("Error fetching approvers:", err.message);
+      return res.status(500).json({ error: "Database error occurred" });
+    }
+    res.json(rows);
+  });
+});
+
 app.use("/api", verifyItAdmin, apiRoutes);
 app.use("/open", openRoutes);
 app.use("/machine/:machineId", verifyMachineAccess, checkSheetRoutes);
@@ -241,6 +268,7 @@ const db = new sqlite3.Database("./database.db", (err) => {
           time TEXT,
           clit TEXT,
           how TEXT,
+          photo_url TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );`
@@ -462,7 +490,7 @@ app.get("/me", verifyToken, (req, res) => {
     WHERE u.id = ?
     ORDER BY m.id
   `;
-  
+
   db.all(query, [userId], (err, rows) => {
     if (err) return res.status(500).send("DB error");
 
@@ -473,25 +501,25 @@ app.get("/me", verifyToken, (req, res) => {
     console.log("User found:", rows);
 
     if (user.role === "itAdmin" || user.role === "ptt") {
-       // Read HTML file
-    const filePath = path.join(__dirname, "public", "profileAdmin.html");
-    fs.readFile(filePath, "utf8", (err, html) => {
-      if (err) return res.status(500).send("Could not load profile template");
+      // Read HTML file
+      const filePath = path.join(__dirname, "public", "profileAdmin.html");
+      fs.readFile(filePath, "utf8", (err, html) => {
+        if (err) return res.status(500).send("Could not load profile template");
 
-      let rendered = html
-        .replace(/{{username}}/g, user.username)
-        .replace(/{{fullname}}/g, user.fullname)
-        .replace(/{{email}}/g, user.email)
-        .replace(/{{cell}}/g, user.cell)
-        .replace(/{{userId}}/g, user.id)
-        .replace(/{{plantName}}/g, user.plant_name)
-        .replace(
-          /{{username.charAt\(0\).toUpperCase\(\)}}/g,
-          user.fullname.charAt(0).toUpperCase()
-        )
-      res.send(rendered);
-    });
-    return;
+        let rendered = html
+          .replace(/{{username}}/g, user.username)
+          .replace(/{{fullname}}/g, user.fullname)
+          .replace(/{{email}}/g, user.email)
+          .replace(/{{cell}}/g, user.cell)
+          .replace(/{{userId}}/g, user.id)
+          .replace(/{{plantName}}/g, user.plant_name)
+          .replace(
+            /{{username.charAt\(0\).toUpperCase\(\)}}/g,
+            user.fullname.charAt(0).toUpperCase()
+          )
+        res.send(rendered);
+      });
+      return;
     }
 
     const skillCards = rows
@@ -504,8 +532,8 @@ app.get("/me", verifyToken, (req, res) => {
           level === 3
             ? "fa-robot"
             : level === 2
-            ? "fa-microchip"
-            : "fa-drafting-compass";
+              ? "fa-microchip"
+              : "fa-drafting-compass";
 
         return `
           <div class="skill-card ${levelClass}">

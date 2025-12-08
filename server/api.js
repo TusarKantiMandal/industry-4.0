@@ -35,9 +35,8 @@ router.put("/users/:id/status", (req, res) => {
 
       res.json({
         success: true,
-        message: `User ${
-          newStatus === 1 ? "activated" : "deactivated"
-        } successfully`,
+        message: `User ${newStatus === 1 ? "activated" : "deactivated"
+          } successfully`,
         newStatus,
       });
     });
@@ -99,52 +98,31 @@ router.get("/users/:id", (req, res) => {
 
     data.user = user;
 
-    db.all(skillsQuery, [userId], (err, skills) => {
+    // Fetch plants
+    db.all(plantsQuery, [], (err, plants) => {
       if (err) {
-        console.error("Error retrieving skills:", err.message);
+        console.error("Error retrieving plants:", err.message);
         return res.status(500).json({ error: "Database error occurred" });
       }
+      data.plants = plants;
 
-      data.user.skills = skills || [];
-
-      db.all(plantsQuery, [], (err, plants) => {
+      // Fetch cells
+      db.all(cellsQuery, [], (err, cells) => {
         if (err) {
-          console.error("Error retrieving plants:", err.message);
+          console.error("Error retrieving cells:", err.message);
           return res.status(500).json({ error: "Database error occurred" });
         }
+        data.cells = cells;
 
-        data.plants = plants;
-
-        db.all(cellsQuery, [], (err, cells) => {
+        // Fetch user skills
+        db.all(skillsQuery, [userId], (err, skills) => {
           if (err) {
-            console.error("Error retrieving cells:", err.message);
+            console.error("Error retrieving user skills:", err.message);
             return res.status(500).json({ error: "Database error occurred" });
           }
+          data.machines = skills;
 
-          data.cells = cells;
-
-          const machinesQuery = `
-            SELECT id, name, cell_id, plant_id 
-            FROM machines 
-            WHERE plant_id = ? AND cell_id = ?
-          `;
-
-          db.all(
-            machinesQuery,
-            [user.plant_id, user.cell_id],
-            (err, machines) => {
-              if (err) {
-                console.error("Error retrieving machines:", err.message);
-                return res
-                  .status(500)
-                  .json({ error: "Database error occurred" });
-              }
-
-              data.machines = machines || [];
-
-              res.json(data);
-            }
-          );
+          res.json(data);
         });
       });
     });
@@ -566,17 +544,17 @@ router.post("/machines", (req, res) => {
         }
 
         const machineId = this.lastID;
-        
+
         // Insert checkpoints for each checksheet
         const insertCheckpointPromises = [];
-        
+
         for (let checksheetNum = 1; checksheetNum <= checksheets_count; checksheetNum++) {
           const checksheetCheckpoints = checkpoints[checksheetNum] || [];
-          
+
           checksheetCheckpoints.forEach(checkpointId => {
             insertCheckpointPromises.push(new Promise((resolve, reject) => {
               const insertQuery = `INSERT INTO machine_checkpoint (machine_id, checkpoint_id, page) VALUES (?, ?, ?)`;
-              db.run(insertQuery, [machineId, checkpointId, checksheetNum], function(err) {
+              db.run(insertQuery, [machineId, checkpointId, checksheetNum], function (err) {
                 if (err) {
                   console.error("Error inserting machine checkpoint:", err.message);
                   reject(err);
@@ -587,7 +565,7 @@ router.post("/machines", (req, res) => {
             }));
           });
         }
-        
+
         Promise.all(insertCheckpointPromises)
           .then(() => {
             res.status(201).json({
@@ -633,7 +611,7 @@ router.put("/machines/:id", (req, res) => {
     if (!plant) {
       return res.status(400).json({ error: "Invalid plant ID" });
     }
-    
+
     // Validate cell exists
     db.get("SELECT id FROM cells WHERE id = ?", [cell_id], (err, cell) => {
       if (err) {
@@ -643,12 +621,12 @@ router.put("/machines/:id", (req, res) => {
       if (!cell) {
         return res.status(400).json({ error: "Invalid cell ID" });
       }
-      
+
       // Generate unique_id from name
       const unique_id = name.toLowerCase().replace(/\s+/g, '_');
       const query = `UPDATE machines SET name = ?, unique_id = ?, minimum_skill = ?, plant_id = ?, cell_id = ?, checksheets_count = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
       const skill = minimum_skill || 1;
-      
+
       db.run(query, [name, unique_id, skill, plant_id, cell_id, checksheets_count, machineId], function (err) {
         if (err) {
           console.error("Error updating machine:", err.message);
@@ -668,14 +646,14 @@ router.put("/machines/:id", (req, res) => {
 
           // Insert new checkpoints for each checksheet
           const insertCheckpointPromises = [];
-          
+
           for (let checksheetNum = 1; checksheetNum <= checksheets_count; checksheetNum++) {
             const checksheetCheckpoints = checkpoints[checksheetNum] || [];
-            
+
             checksheetCheckpoints.forEach(checkpointId => {
               insertCheckpointPromises.push(new Promise((resolve, reject) => {
                 const insertQuery = `INSERT INTO machine_checkpoint (machine_id, checkpoint_id, page) VALUES (?, ?, ?)`;
-                db.run(insertQuery, [machineId, checkpointId, checksheetNum], function(err) {
+                db.run(insertQuery, [machineId, checkpointId, checksheetNum], function (err) {
                   if (err) {
                     console.error("Error inserting machine checkpoint:", err.message);
                     reject(err);
@@ -686,7 +664,7 @@ router.put("/machines/:id", (req, res) => {
               }));
             });
           }
-          
+
           Promise.all(insertCheckpointPromises)
             .then(() => {
               res.json({
@@ -710,24 +688,7 @@ router.put("/machines/:id", (req, res) => {
   });
 });
 
-router.delete("/machines/:id", (req, res) => {
-  const machineId = req.params.id;
 
-  db.run("DELETE FROM machines WHERE id = ?", [machineId], function (err) {
-    if (err) {
-      console.error("Error deleting machine:", err.message);
-      return res.status(500).json({ error: "Failed to delete machine" });
-    }
-
-    if (this.changes === 0) {
-      return res.status(404).json({ error: "Machine not found" });
-    }
-
-    res.json({
-      message: "Machine and related user skills deleted successfully.",
-    });
-  });
-});
 
 router.delete("/machines/:id", (req, res) => {
   const machineId = req.params.id;
@@ -865,12 +826,27 @@ router.delete("/cells/:id", (req, res) => {
   });
 });
 
+const multer = require("multer");
+
+// Configure multer storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage: storage });
+
 // Checkpoint API endpoints
 
 // Get all checkpoints
 router.get("/checkpoints", (req, res) => {
   const query = `
-    SELECT id, name, category, type, min_value, max_value, unit, alert_email, time, clit, how, created_at, updated_at
+    SELECT id, name, category, type, min_value, max_value, unit, alert_email, time, clit, how, photo_url, created_at, updated_at
     FROM checkpoints 
     ORDER BY name ASC
   `;
@@ -886,19 +862,20 @@ router.get("/checkpoints", (req, res) => {
 });
 
 // Create new checkpoint
-router.post("/checkpoints", (req, res) => {
+router.post("/checkpoints", upload.single("image"), (req, res) => {
   const { name, category, type, min, max, unit, alertEmail, time, clit, how } = req.body;
+  const photoUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
   if (!name || !category || !type) {
     return res.status(400).json({ error: "Name, category, and type are required" });
   }
 
   const query = `
-    INSERT INTO checkpoints (name, category, type, min_value, max_value, unit, alert_email, time, clit, how)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO checkpoints (name, category, type, min_value, max_value, unit, alert_email, time, clit, how, photo_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.run(query, [name, category, type, min || null, max || null, unit || null, alertEmail || null, time || null, clit || null, how || null], function(err) {
+  db.run(query, [name, category, type, min || null, max || null, unit || null, alertEmail || null, time || null, clit || null, how || null, photoUrl], function (err) {
     if (err) {
       console.error("Error creating checkpoint:", err.message);
       return res.status(500).json({ error: "Failed to create checkpoint" });
@@ -906,27 +883,38 @@ router.post("/checkpoints", (req, res) => {
 
     res.json({
       message: "Checkpoint created successfully",
-      checkpointId: this.lastID
+      checkpointId: this.lastID,
+      photoUrl
     });
   });
 });
 
 // Update checkpoint
-router.put("/checkpoints/:id", (req, res) => {
+router.put("/checkpoints/:id", upload.single("image"), (req, res) => {
   const checkpointId = req.params.id;
   const { name, category, type, min, max, unit, alertEmail, time, clit, how } = req.body;
+  const photoUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
 
   if (!name || !category || !type) {
     return res.status(400).json({ error: "Name, category, and type are required" });
   }
 
-  const query = `
+  let query = `
     UPDATE checkpoints 
     SET name = ?, category = ?, type = ?, min_value = ?, max_value = ?, unit = ?, alert_email = ?, time = ?, clit = ?, how = ?, updated_at = CURRENT_TIMESTAMP
-    WHERE id = ?
   `;
 
-  db.run(query, [name, category, type, min || null, max || null, unit || null, alertEmail || null, time || null, clit || null, how || null, checkpointId], function(err) {
+  const params = [name, category, type, min || null, max || null, unit || null, alertEmail || null, time || null, clit || null, how || null];
+
+  if (photoUrl) {
+    query += `, photo_url = ?`;
+    params.push(photoUrl);
+  }
+
+  query += ` WHERE id = ?`;
+  params.push(checkpointId);
+
+  db.run(query, params, function (err) {
     if (err) {
       console.error("Error updating checkpoint:", err.message);
       return res.status(500).json({ error: "Failed to update checkpoint" });
@@ -937,7 +925,8 @@ router.put("/checkpoints/:id", (req, res) => {
     }
 
     res.json({
-      message: "Checkpoint updated successfully"
+      message: "Checkpoint updated successfully",
+      photoUrl
     });
   });
 });
@@ -948,7 +937,7 @@ router.delete("/checkpoints/:id", (req, res) => {
 
   const query = "DELETE FROM checkpoints WHERE id = ?";
 
-  db.run(query, [checkpointId], function(err) {
+  db.run(query, [checkpointId], function (err) {
     if (err) {
       console.error("Error deleting checkpoint:", err.message);
       return res.status(500).json({ error: "Failed to delete checkpoint" });

@@ -1,1496 +1,1503 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Settings</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <link rel="stylesheet" href="./admin.css" />
-    <style>
-      :root {
-        --primary-color: #3b82f6;
-        --primary-hover: #2563eb;
-        --sidebar-bg: #1e293b;
-        --sidebar-text: #f8fafc;
-        --border-color: #e2e8f0;
-        --hover-bg: #f1f5f9;
-        --header-bg: #ffffff;
-        --body-bg: #f8fafc;
-        --text-primary: #1e293b;
-        --text-secondary: #64748b;
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
-
-      body {
-        background-color: var(--body-bg);
-        color: var(--text-primary);
-      }
-
-      .container {
-        display: flex;
-        min-height: 100vh;
-      }
-
-      .sidebar {
-        width: 250px;
-        background-color: var(--sidebar-bg);
-        color: var(--sidebar-text);
-        padding: 1.5rem;
-        position: fixed;
-        height: 100vh;
-        overflow-y: auto;
-      }
-
-      .sidebar-header {
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .sidebar-menu {
-        list-style: none;
-      }
-
-      .sidebar-menu-item {
-        margin-bottom: 0.5rem;
-      }
-
-      .sidebar-link {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem 1rem;
-        text-decoration: none;
-        color: var(--sidebar-text);
-        border-radius: 0.5rem;
-        transition: all 0.2s ease;
-      }
-
-      .sidebar-link:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-      }
-
-      .sidebar-link.active {
-        background-color: rgba(255, 255, 255, 0.2);
-        font-weight: 600;
-      }
-
-      .sidebar-icon {
-        margin-right: 0.75rem;
-      }
-
-      .main-content {
-        flex: 1;
-        margin-left: 250px;
-      }
-
-      .header {
-        padding: 1rem 2rem;
-        background-color: var(--header-bg);
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .header h2 {
-        font-weight: 600;
-        color: var(--text-primary);
-      }
-
-      .content {
-        padding: 2rem;
-      }
-
-      .content-header {
-        margin-bottom: 2rem;
-      }
-
-      .content-title {
-        font-size: 1.75rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-      }
-
-      .search-add {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 1.5rem;
-      }
-
-      .search-container {
-        position: relative;
-        width: 300px;
-      }
-
-      .search-icon {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-secondary);
-      }
-
-      .search-input {
-        padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-        width: 100%;
-        font-size: 0.875rem;
-      }
-
-      .search-input:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-      }
-
-      .btn {
-        padding: 0.75rem 1.25rem;
-        border-radius: 0.5rem;
-        border: none;
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s ease;
-      }
-
-      .btn-primary {
-        background-color: var(--primary-color);
-        color: white;
-      }
-
-      .btn-primary:hover {
-        background-color: var(--primary-hover);
-      }
-
-      .btn-outline {
-        background-color: transparent;
-        border: 1px solid var(--border-color);
-        color: var(--text-primary);
-      }
-
-      .btn-outline:hover {
-        background-color: var(--hover-bg);
-      }
-
-      .table-container {
-        background-color: white;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        overflow: hidden;
-        margin-bottom: 2rem;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      th,
-      td {
-        padding: 1rem;
-        text-align: left;
-        border-bottom: 1px solid var(--border-color);
-        font-size: 0.875rem;
-      }
-
-      th {
-        font-weight: 600;
-        color: var(--text-secondary);
-        background-color: #f8fafc;
-      }
-
-      th button {
-        background: none;
-        border: none;
-        color: inherit;
-        font: inherit;
-        cursor: pointer;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-      }
-
-      .sort-icon {
-        font-size: 0.75rem;
-      }
-
-      tbody tr:hover {
-        background-color: var(--hover-bg);
-      }
-
-      .actions-cell {
-        text-align: right;
-      }
-
-      .dropdown {
-        position: relative;
-        display: inline-block;
-      }
-
-      .dropdown-toggle {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0.5rem;
-        border-radius: 0.25rem;
-      }
-
-      .dropdown-toggle:hover {
-        background-color: var(--hover-bg);
-      }
-
-      .dropdown-menu {
-        position: absolute;
-        right: 0;
-        top: 100%;
-        background-color: white;
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        min-width: 150px;
-        z-index: 10;
-        display: none;
-      }
-
-      .dropdown-item {
-        display: block;
-        padding: 0.75rem 1rem;
-        text-decoration: none;
-        color: var(--text-primary);
-        transition: all 0.2s ease;
-      }
-
-      .dropdown-item:hover {
-        background-color: var(--hover-bg);
-      }
-
-      .badge {
-        display: inline-block;
-        padding: 0.25rem 0.5rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        background-color: #e2e8f0;
-      }
-
-      .table-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        color: var(--text-secondary);
-        font-size: 0.875rem;
-      }
-
-      .pagination {
-        display: flex;
-        gap: 0.5rem;
-      }
-
-      .pagination-btn {
-        padding: 0.5rem 0.75rem;
-        border: 1px solid var(--border-color);
-        border-radius: 0.25rem;
-        background-color: white;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-
-      .pagination-btn:hover {
-        background-color: var(--hover-bg);
-      }
-
-      .pagination-btn.active {
-        background-color: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-      }
-
-      .chip {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 500;
-      }
-
-      .chip-1 {
-        background-color: #e0f2fe;
-        color: #0369a1;
-      }
-
-      .chip-2 {
-        background-color: #fef3c7;
-        color: #92400e;
-      }
-
-      .chip-3 {
-        background-color: #dcfce7;
-        color: #166534;
-      }
-
-      .chip-4 {
-        background-color: #f3e8ff;
-        color: #7e22ce;
-      }
-
-      .chip-5 {
-        background-color: #fee2e2;
-        color: #b91c1c;
-      }
-
-      .tabs {
-        display: flex;
-        border-bottom: 1px solid var(--border-color);
-        margin-bottom: 2rem;
-      }
-
-      .tab {
-        padding: 1rem 1.5rem;
-        font-weight: 500;
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-        transition: all 0.2s ease;
-      }
-
-      .tab:hover {
-        color: var(--primary-color);
-      }
-
-      .tab.active {
-        color: var(--primary-color);
-        border-bottom-color: var(--primary-color);
-      }
-
-      .tab-content {
-        display: none;
-      }
-
-      .tab-content.active {
-        display: block;
-      }
-
-      /* Form styles */
-      .form-group {
-        margin-bottom: 1.5rem;
-      }
-
-      .form-label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        color: var(--text-primary);
-      }
-
-      .form-control {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-        font-size: 0.875rem;
-        transition: all 0.2s ease;
-      }
-
-      .form-control:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-      }
-
-      .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        /* display: flex; */
-        align-items: center;
-        justify-content: center;
-        z-index: 100;
-        display: none;
-      }
-
-      .modal-content {
-        background-color: white;
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        width: 70%;
-        max-width: none;
-        min-width: 350px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      }
-
-      .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-      }
-
-      .modal-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-      }
-
-      .modal-close {
-        background: none;
-        border: none;
-        font-size: 1.25rem;
-        cursor: pointer;
-        color: var(--text-secondary);
-      }
-
-      .modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-        margin-top: 1.5rem;
-      }
-
-      /* Notification styles */
-      .notification {
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        padding: 1rem 1.5rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        z-index: 50;
-        animation: slide-in 0.3s ease forwards;
-        max-width: 350px;
-      }
-
-      .notification-success {
-        background-color: #dcfce7;
-        color: #166534;
-        border-left: 4px solid #16a34a;
-      }
-
-      .notification-error {
-        background-color: #fee2e2;
-        color: #991b1b;
-        border-left: 4px solid #dc2626;
-      }
-
-      .notification-hide {
-        animation: slide-out 0.3s ease forwards;
-      }
 
-      @keyframes slide-in {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
-      }
-
-      @keyframes slide-out {
-        from {
-          transform: translateX(0);
-          opacity: 1;
-        }
-        to {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-      }
-
-      .custom-multiselect { position: relative; }
-      .multiselect-selected {
-        border: 1px solid #e2e8f0;
-        border-radius: 0.5rem;
-        padding: 0.75rem;
-        background: #fff;
-        cursor: pointer;
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        max-height: 90px; /* Show up to 2 lines, then scroll */
-        overflow-y: auto;
-      }
-      .multiselect-selected .chip {
-        margin-right: 0.5rem;
-        margin-bottom: 0.25rem;
-        background: #e0e7ef;
-        color: #1e293b;
-        border-radius: 9999px;
-        padding: 0.25rem 0.75rem;
-        font-size: 0.8em;
-        display: inline-flex;
-        align-items: center;
-      }
-      .multiselect-selected .chip .remove-chip {
-        margin-left: 0.5em;
-        cursor: pointer;
-        font-weight: bold;
-      }
-      .multiselect-dropdown {
-        position: absolute;
-        top: 110%;
-        left: 0;
-        right: 0;
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        z-index: 20;
-        padding: 0.75rem;
-        max-height: 250px;
-        overflow-y: auto;
-      }
-      .multiselect-options label {
-        display: flex;
-        align-items: center;
-        padding: 0.25rem 0;
-        cursor: pointer;
-      }
-      .multiselect-options input[type="checkbox"] {
-        margin-right: 0.5rem;
-      }
-
-      /* Checksheets tabs styles */
-      .checksheets-tabs {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
-      }
-      
-      .checksheet-tab {
-        padding: 0.5rem 1rem;
-        background: transparent;
-        border: none;
-        border-bottom: 2px solid transparent;
-        cursor: pointer;
-        font-weight: 500;
-        color: var(--text-secondary);
-        transition: all 0.2s ease;
-      }
-      
-      .checksheet-tab:hover {
-        color: var(--primary-color);
-      }
-      
-      .checksheet-tab.active {
-        color: var(--primary-color);
-        border-bottom-color: var(--primary-color);
-      }
-      
-      .checksheet-content {
-        display: none;
-        padding: 1rem;
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-        background: #fff;
-      }
-      
-      .checksheet-content.active {
-        display: block;
-      }
-      
-      .checksheet-multiselect {
-        margin-top: 0.5rem;
-      }
-      
-      .checksheet-multiselect .custom-multiselect {
-        position: relative;
-      }
-      
-      .checksheet-multiselect .multiselect-selected {
-        padding: 0.75rem;
-        border: 1px solid var(--border-color);
-        border-radius: 0.375rem;
-        background: white;
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      
-      .checksheet-multiselect .multiselect-selected:after {
-        content: '▼';
-        font-size: 0.75rem;
-        color: var(--text-secondary);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <!-- Sidebar -->
-      <div class="sidebar">
-        <div class="sidebar-header">Admin Dashboard</div>
-        <ul class="sidebar-menu">
-          <li class="sidebar-menu-item">
-            <a href="/admin/it?tab=users" class="sidebar-link">
-              <span class="sidebar-icon"><i class="fas fa-users"></i></span>
-              <span>Users</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a href="/admin/it?tab=settings" class="sidebar-link active">
-              <span class="sidebar-icon"><i class="fas fa-cog"></i></span>
-              <span>Settings</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a href="/" class="sidebar-link">
-              <span class="sidebar-icon"><i class="fas fa-home"></i></span>
-              <span>Go Back To Home</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <div class="sidebar-link" onclick="logout()" style="cursor: pointer;">
-              <span class="sidebar-icon"><i class="fas fa-sign-out"></i></span>
-              <span>Logout</span>
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Main Content -->
-      <div class="main-content">
-        <!-- Content -->
-        <div class="content">
-          <div class="content-header">
-            <h1 class="content-title">System Settings</h1>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Settings</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <link rel="stylesheet" href="./admin.css" />
+  <style>
+    :root {
+      --primary-color: #3b82f6;
+      --primary-hover: #2563eb;
+      --sidebar-bg: #1e293b;
+      --sidebar-text: #f8fafc;
+      --border-color: #e2e8f0;
+      --hover-bg: #f1f5f9;
+      --header-bg: #ffffff;
+      --body-bg: #f8fafc;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--body-bg);
+      color: var(--text-primary);
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 250px;
+      background-color: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      padding: 1.5rem;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-menu {
+      list-style: none;
+    }
+
+    .sidebar-menu-item {
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      text-decoration: none;
+      color: var(--sidebar-text);
+      border-radius: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar-link:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-link.active {
+      background-color: rgba(255, 255, 255, 0.2);
+      font-weight: 600;
+    }
+
+    .sidebar-icon {
+      margin-right: 0.75rem;
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: 250px;
+    }
+
+    .header {
+      padding: 1rem 2rem;
+      background-color: var(--header-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header h2 {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .content {
+      padding: 2rem;
+    }
+
+    .content-header {
+      margin-bottom: 2rem;
+    }
+
+    .content-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-add {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-container {
+      position: relative;
+      width: 300px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+    }
+
+    .search-input {
+      padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      width: 100%;
+      font-size: 0.875rem;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn {
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.5rem;
+      border: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .btn-outline:hover {
+      background-color: var(--hover-bg);
+    }
+
+    .table-container {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.875rem;
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--text-secondary);
+      background-color: #f8fafc;
+    }
+
+    th button {
+      background: none;
+      border: none;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .sort-icon {
+      font-size: 0.75rem;
+    }
+
+    tbody tr:hover {
+      background-color: var(--hover-bg);
+    }
+
+    .actions-cell {
+      text-align: right;
+    }
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+    }
+
+    .dropdown-toggle:hover {
+      background-color: var(--hover-bg);
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background-color: white;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      min-width: 150px;
+      z-index: 10;
+      display: none;
+    }
+
+    .dropdown-item {
+      display: block;
+      padding: 0.75rem 1rem;
+      text-decoration: none;
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+      background-color: var(--hover-bg);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background-color: #e2e8f0;
+    }
+
+    .table-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .pagination {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .pagination-btn {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.25rem;
+      background-color: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .pagination-btn:hover {
+      background-color: var(--hover-bg);
+    }
+
+    .pagination-btn.active {
+      background-color: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .chip-1 {
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .chip-2 {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .chip-3 {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .chip-4 {
+      background-color: #f3e8ff;
+      color: #7e22ce;
+    }
+
+    .chip-5 {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 2rem;
+    }
+
+    .tab {
+      padding: 1rem 1.5rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .tab:hover {
+      color: var(--primary-color);
+    }
+
+    .tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Form styles */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      /* display: flex; */
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      display: none;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      width: 70%;
+      max-width: none;
+      min-width: 350px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    /* Notification styles */
+    .notification {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      z-index: 50;
+      animation: slide-in 0.3s ease forwards;
+      max-width: 350px;
+    }
+
+    .notification-success {
+      background-color: #dcfce7;
+      color: #166534;
+      border-left: 4px solid #16a34a;
+    }
+
+    .notification-error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border-left: 4px solid #dc2626;
+    }
+
+    .notification-hide {
+      animation: slide-out 0.3s ease forwards;
+    }
+
+    @keyframes slide-in {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slide-out {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+
+    .custom-multiselect {
+      position: relative;
+    }
+
+    .multiselect-selected {
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      background: #fff;
+      cursor: pointer;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      max-height: 90px;
+      /* Show up to 2 lines, then scroll */
+      overflow-y: auto;
+    }
+
+    .multiselect-selected .chip {
+      margin-right: 0.5rem;
+      margin-bottom: 0.25rem;
+      background: #e0e7ef;
+      color: #1e293b;
+      border-radius: 9999px;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.8em;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .multiselect-selected .chip .remove-chip {
+      margin-left: 0.5em;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .multiselect-dropdown {
+      position: absolute;
+      top: 110%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      z-index: 20;
+      padding: 0.75rem;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .multiselect-options label {
+      display: flex;
+      align-items: center;
+      padding: 0.25rem 0;
+      cursor: pointer;
+    }
+
+    .multiselect-options input[type="checkbox"] {
+      margin-right: 0.5rem;
+    }
+
+    /* Checksheets tabs styles */
+    .checksheets-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .checksheet-tab {
+      padding: 0.5rem 1rem;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+
+    .checksheet-tab:hover {
+      color: var(--primary-color);
+    }
+
+    .checksheet-tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+
+    .checksheet-content {
+      display: none;
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      background: #fff;
+    }
+
+    .checksheet-content.active {
+      display: block;
+    }
+
+    .checksheet-multiselect {
+      margin-top: 0.5rem;
+    }
+
+    .checksheet-multiselect .custom-multiselect {
+      position: relative;
+    }
+
+    .checksheet-multiselect .multiselect-selected {
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.375rem;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .checksheet-multiselect .multiselect-selected:after {
+      content: '▼';
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">Admin Dashboard</div>
+      <ul class="sidebar-menu">
+        <li class="sidebar-menu-item">
+          <a href="/admin/it?tab=users" class="sidebar-link">
+            <span class="sidebar-icon"><i class="fas fa-users"></i></span>
+            <span>Users</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <a href="/admin/it?tab=settings" class="sidebar-link active">
+            <span class="sidebar-icon"><i class="fas fa-cog"></i></span>
+            <span>Settings</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <a href="/" class="sidebar-link">
+            <span class="sidebar-icon"><i class="fas fa-home"></i></span>
+            <span>Go Back To Home</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <div class="sidebar-link" onclick="logout()" style="cursor: pointer;">
+            <span class="sidebar-icon"><i class="fas fa-sign-out"></i></span>
+            <span>Logout</span>
           </div>
+        </li>
+      </ul>
+    </div>
 
-          <!-- Tabs -->
-          <div class="tabs">
-            <div class="tab active" data-tab="plants">Plants</div>
-            <div class="tab" data-tab="machines">Machines</div>
-            <div class="tab" data-tab="cells">Cells</div>
-            <div class="tab" data-tab="checkpoints">Checkpoints</div>
-          </div>
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Content -->
+      <div class="content">
+        <div class="content-header">
+          <h1 class="content-title">System Settings</h1>
+        </div>
 
-          <!-- Plants Tab -->
-          <div class="tab-content active" id="plants-tab">
-            <div class="search-add">
-              <div class="search-container">
-                <span class="search-icon">
-                  <i class="fas fa-search"></i>
-                </span>
-                <input
-                  type="text"
-                  class="search-input"
-                  placeholder="Search plants..."
-                  id="plants-search"
-                />
-              </div>
-              <div>
-                <button class="btn btn-primary" id="add-plant-btn">
-                  <i class="fas fa-plus"></i>
-                  <span>Add Plant</span>
-                </button>
-              </div>
+        <!-- Tabs -->
+        <div class="tabs">
+          <div class="tab active" data-tab="plants">Plants</div>
+          <div class="tab" data-tab="machines">Machines</div>
+          <div class="tab" data-tab="cells">Cells</div>
+          <div class="tab" data-tab="checkpoints">Checkpoints</div>
+        </div>
+
+        <!-- Plants Tab -->
+        <div class="tab-content active" id="plants-tab">
+          <div class="search-add">
+            <div class="search-container">
+              <span class="search-icon">
+                <i class="fas fa-search"></i>
+              </span>
+              <input type="text" class="search-input" placeholder="Search plants..." id="plants-search" />
             </div>
-
-            <div class="table-container">
-              <table id="plants-table">
-                <thead>
-                  <tr>
-                    <th>
-                      <button>ID <i class="fas fa-sort sort-icon"></i></button>
-                    </th>
-                    <th>
-                      <button>Name <i class="fas fa-sort sort-icon"></i></button>
-                    </th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- PLANTS_TABLE_ROWS -->
-                </tbody>
-              </table>
-              <div class="table-footer">
-                <div id="plants-count">Showing all plants</div>
-              </div>
+            <div>
+              <button class="btn btn-primary" id="add-plant-btn">
+                <i class="fas fa-plus"></i>
+                <span>Add Plant</span>
+              </button>
             </div>
           </div>
 
-          <!-- Machines Tab -->
-          <div class="tab-content" id="machines-tab">
-            <div class="search-add">
-              <div class="search-container">
-                <span class="search-icon">
-                  <i class="fas fa-search"></i>
-                </span>
-                <input
-                  type="text"
-                  class="search-input"
-                  placeholder="Search machines..."
-                  id="machines-search"
-                />
-              </div>
-              <div>
-                <button class="btn btn-primary" id="add-machine-btn">
-                  <i class="fas fa-plus"></i>
-                  <span>Add Machine</span>
-                </button>
-              </div>
+          <div class="table-container">
+            <table id="plants-table">
+              <thead>
+                <tr>
+                  <th>
+                    <button>ID <i class="fas fa-sort sort-icon"></i></button>
+                  </th>
+                  <th>
+                    <button>Name <i class="fas fa-sort sort-icon"></i></button>
+                  </th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- PLANTS_TABLE_ROWS -->
+              </tbody>
+            </table>
+            <div class="table-footer">
+              <div id="plants-count">Showing all plants</div>
             </div>
+          </div>
+        </div>
 
-            <div class="table-container">
-              <table id="machines-table">
-                <thead>
-                  <tr>
-                    <th>
-                      <button>ID <i class="fas fa-sort sort-icon"></i></button>
-                    </th>
-                    <th>
-                      <button>Name <i class="fas fa-sort sort-icon"></i></button>
-                    </th>
-                    <th>
-                      <button>Min. Skill <i class="fas fa-sort sort-icon"></i></button>
-                    </th>
-                    <th>
-                      <button>Plant <i class="fas fa-sort sort-icon"></i></button>
-                    </th>
-                    <th>
-                      <button>Cell <i class="fas fa-sort sort-icon"></i></button>
-                    </th>
-                    <th>
-                      <button>Checksheets <i class="fas fa-sort sort-icon"></i></button>
-                    </th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- MACHINES_TABLE_ROWS -->
-                </tbody>
-              </table>
-              <div class="table-footer">
-                <div id="machines-count">Showing all machines</div>
-              </div>
+        <!-- Machines Tab -->
+        <div class="tab-content" id="machines-tab">
+          <div class="search-add">
+            <div class="search-container">
+              <span class="search-icon">
+                <i class="fas fa-search"></i>
+              </span>
+              <input type="text" class="search-input" placeholder="Search machines..." id="machines-search" />
+            </div>
+            <div>
+              <button class="btn btn-primary" id="add-machine-btn">
+                <i class="fas fa-plus"></i>
+                <span>Add Machine</span>
+              </button>
             </div>
           </div>
 
-          <!-- Cells Tab -->
-          <div class="tab-content" id="cells-tab">
-            <div class="search-add">
-              <div class="search-container">
-                <span class="search-icon">
-                  <i class="fas fa-search"></i>
-                </span>
-                <input
-                  type="text"
-                  class="search-input"
-                  placeholder="Search cells..."
-                  id="cells-search"
-                />
-              </div>
-              <div>
-                <button class="btn btn-primary" id="add-cell-btn">
-                  <i class="fas fa-plus"></i>
-                  <span>Add Cell</span>
-                </button>
-              </div>
+          <div class="table-container">
+            <table id="machines-table">
+              <thead>
+                <tr>
+                  <th>
+                    <button>ID <i class="fas fa-sort sort-icon"></i></button>
+                  </th>
+                  <th>
+                    <button>Name <i class="fas fa-sort sort-icon"></i></button>
+                  </th>
+                  <th>
+                    <button>Min. Skill <i class="fas fa-sort sort-icon"></i></button>
+                  </th>
+                  <th>
+                    <button>Plant <i class="fas fa-sort sort-icon"></i></button>
+                  </th>
+                  <th>
+                    <button>Cell <i class="fas fa-sort sort-icon"></i></button>
+                  </th>
+                  <th>
+                    <button>Checksheets <i class="fas fa-sort sort-icon"></i></button>
+                  </th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- MACHINES_TABLE_ROWS -->
+              </tbody>
+            </table>
+            <div class="table-footer">
+              <div id="machines-count">Showing all machines</div>
             </div>
+          </div>
+        </div>
 
-            <div class="table-container">
-              <table id="cells-table">
-                <thead>
-                  <tr>
-                    <th>
-                      <button>ID <i class="fas fa-sort sort-icon"></i></button>
-                    </th>
-                    <th>
-                      <button>Name <i class="fas fa-sort sort-icon"></i></button>
-                    </th>
-                    <th>
-                      <button>Plant <i class="fas fa-sort sort-icon"></i></button>
-                    </th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- CELLS_TABLE_ROWS -->
-                </tbody>
-              </table>
-              <div class="table-footer">
-                <div id="cells-count">Showing all cells</div>
-              </div>
+        <!-- Cells Tab -->
+        <div class="tab-content" id="cells-tab">
+          <div class="search-add">
+            <div class="search-container">
+              <span class="search-icon">
+                <i class="fas fa-search"></i>
+              </span>
+              <input type="text" class="search-input" placeholder="Search cells..." id="cells-search" />
+            </div>
+            <div>
+              <button class="btn btn-primary" id="add-cell-btn">
+                <i class="fas fa-plus"></i>
+                <span>Add Cell</span>
+              </button>
             </div>
           </div>
 
-          <!-- Checkpoints Tab -->
-          <div class="tab-content" id="checkpoints-tab">
-            <div class="search-add">
-              <div class="search-container">
-                <span class="search-icon">
-                  <i class="fas fa-search"></i>
-                </span>
-                <input
-                  type="text"
-                  class="search-input"
-                  placeholder="Search checkpoints..."
-                  id="checkpoints-search"
-                />
-              </div>
-              <div>
-                <button class="btn btn-primary" id="add-checkpoint-btn">
-                  <i class="fas fa-plus"></i>
-                  <span>Add Checkpoint</span>
-                </button>
-              </div>
+          <div class="table-container">
+            <table id="cells-table">
+              <thead>
+                <tr>
+                  <th>
+                    <button>ID <i class="fas fa-sort sort-icon"></i></button>
+                  </th>
+                  <th>
+                    <button>Name <i class="fas fa-sort sort-icon"></i></button>
+                  </th>
+                  <th>
+                    <button>Plant <i class="fas fa-sort sort-icon"></i></button>
+                  </th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- CELLS_TABLE_ROWS -->
+              </tbody>
+            </table>
+            <div class="table-footer">
+              <div id="cells-count">Showing all cells</div>
             </div>
-            <div class="table-container">
-              <table id="checkpoints-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Type</th>
-                    <th>Time</th>
-                    <th>CLIT</th>
-                    <th>How</th>
-                    <th>Min</th>
-                    <th>Max</th>
-                    <th>Unit</th>
-                    <th>Alert Email</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- CHECKPOINTS_TABLE_ROWS -->
-                </tbody>
-              </table>
-              <div class="table-footer">
-                <div id="checkpoints-count">Showing all checkpoints</div>
-              </div>
+          </div>
+        </div>
+
+        <!-- Checkpoints Tab -->
+        <div class="tab-content" id="checkpoints-tab">
+          <div class="search-add">
+            <div class="search-container">
+              <span class="search-icon">
+                <i class="fas fa-search"></i>
+              </span>
+              <input type="text" class="search-input" placeholder="Search checkpoints..." id="checkpoints-search" />
+            </div>
+            <div>
+              <button class="btn btn-primary" id="add-checkpoint-btn">
+                <i class="fas fa-plus"></i>
+                <span>Add Checkpoint</span>
+              </button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table id="checkpoints-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Type</th>
+                  <th>Time</th>
+                  <th>CLIT</th>
+                  <th>How</th>
+                  <th>Min</th>
+                  <th>Max</th>
+                  <th>Unit</th>
+                  <th>Alert Email</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- CHECKPOINTS_TABLE_ROWS -->
+              </tbody>
+            </table>
+            <div class="table-footer">
+              <div id="checkpoints-count">Showing all checkpoints</div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Modal for Adding/Editing Plants -->
-    <div class="modal" id="plant-modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title" id="plant-modal-title">Add Plant</h3>
-          <button class="modal-close" id="plant-modal-close">&times;</button>
-        </div>
-        <form id="plant-form">
-          <input type="hidden" id="plant-id" value="" />
-          <div class="form-group">
-            <label for="plant-name" class="form-label">Plant Name</label>
-            <input type="text" id="plant-name" class="form-control" required />
-          </div>
-          <div class="modal-actions">
-            <button type="button" class="btn btn-outline" id="plant-cancel-btn">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="plant-submit-btn">Save</button>
-          </div>
-        </form>
+  <!-- Modal for Adding/Editing Plants -->
+  <div class="modal" id="plant-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="plant-modal-title">Add Plant</h3>
+        <button class="modal-close" id="plant-modal-close">&times;</button>
       </div>
-    </div>
-
-    <!-- Modal for Adding/Editing Checkpoints -->
-    <div class="modal" id="checkpoint-modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title" id="checkpoint-modal-title">Add Checkpoint</h3>
-          <button class="modal-close" id="checkpoint-modal-close">&times;</button>
+      <form id="plant-form">
+        <input type="hidden" id="plant-id" value="" />
+        <div class="form-group">
+          <label for="plant-name" class="form-label">Plant Name</label>
+          <input type="text" id="plant-name" class="form-control" required />
         </div>
-        <form id="checkpoint-form">
-          <input type="hidden" id="checkpoint-id" value="" />
-          
-          <!-- Row 1: Checkpoint Name and Category -->
-          <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 220px;">
-              <div class="form-group">
-                <label for="checkpoint-name" class="form-label">Checkpoint Name</label>
-                <input type="text" id="checkpoint-name" class="form-control" required />
-              </div>
-            </div>
-            <div style="flex: 1; min-width: 220px;">
-              <div class="form-group">
-                <label for="checkpoint-category" class="form-label">Category</label>
-                <select id="checkpoint-category" class="form-control" required>
-                  <option value="">Select category</option>
-                  <option value="Safety">Safety</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Hydraulic">Hydraulic</option>
-                  <option value="Tooling">Tooling</option>
-                  <option value="Machines">Machines</option>
-                </select>
-              </div>
-            </div>
-          </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="plant-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="plant-submit-btn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-          <!-- Row 2: Alert Email, Time, and CLIT -->
-          <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 200px;">
-              <div class="form-group">
-                <label for="checkpoint-alert-email" class="form-label">Alert Email</label>
-                <small style="color: #64748b; display: block; margin-bottom: 0.25rem;">
-                  (Optional) Enter an email to receive alerts for this checkpoint.
-                </small>
-                <input type="email" id="checkpoint-alert-email" class="form-control" />
-              </div>
-            </div>
-            <div style="flex: 0 0 140px;">
-              <div class="form-group">
-                <label for="checkpoint-time" class="form-label">Time</label>
-                <small style="color: #64748b; display: block; margin-bottom: 0.25rem;">
-                  Time description
-                </small>
-                <input type="text" id="checkpoint-time" class="form-control" required/>
-              </div>
-            </div>
-            <div style="flex: 0 0 140px;">
-              <div class="form-group">
-                <label for="checkpoint-clit" class="form-label">CLIT</label>
-                <small style="color: #64748b; display: block; margin-bottom: 0.25rem;">
-                  CLIT?
-                </small>
-                <input type="text" id="checkpoint-clit" class="form-control" required />
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="checkpoint-how" class="form-label">How to check?</label>
-            <textarea id="checkpoint-how" class="form-control" rows="3" placeholder="Describe the process or method..." required></textarea>
-          </div>
-          <div class="form-group">
-            <label for="checkpoint-type" class="form-label">Type</label>
-            <select id="checkpoint-type" class="form-control" required>
-              <option value="">Select type</option>
-              <option value="passfail">Pass/Fail</option>
-              <option value="numeric">Numeric</option>
-              <option value="level">Level</option>
-            </select>
-          </div>
-          <div id="numeric-fields" style="display:none;">
+  <!-- Modal for Adding/Editing Checkpoints -->
+  <div class="modal" id="checkpoint-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="checkpoint-modal-title">Add Checkpoint</h3>
+        <button class="modal-close" id="checkpoint-modal-close">&times;</button>
+      </div>
+      <form id="checkpoint-form">
+        <input type="hidden" id="checkpoint-id" value="" />
+
+        <!-- Row 1: Checkpoint Name and Category -->
+        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 220px;">
             <div class="form-group">
-              <label for="checkpoint-min" class="form-label">Min Value</label>
-              <input type="number" id="checkpoint-min" class="form-control" step="any" />
+              <label for="checkpoint-name" class="form-label">Checkpoint Name</label>
+              <input type="text" id="checkpoint-name" class="form-control" required />
             </div>
+          </div>
+          <div style="flex: 1; min-width: 220px;">
             <div class="form-group">
-              <label for="checkpoint-max" class="form-label">Max Value</label>
-              <input type="number" id="checkpoint-max" class="form-control" step="any" />
+              <label for="checkpoint-category" class="form-label">Category</label>
+              <select id="checkpoint-category" class="form-control" required>
+                <option value="">Select category</option>
+                <option value="Safety">Safety</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Hydraulic">Hydraulic</option>
+                <option value="Tooling">Tooling</option>
+                <option value="Machines">Machines</option>
+              </select>
             </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Alert Email, Time, and CLIT -->
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 200px;">
             <div class="form-group">
-              <label for="checkpoint-unit" class="form-label">Unit</label>
-              <input type="text" id="checkpoint-unit" class="form-control" />
+              <label for="checkpoint-alert-email" class="form-label">Alert Email</label>
+              <small style="color: #64748b; display: block; margin-bottom: 0.25rem;">
+                (Optional) Enter an email to receive alerts for this checkpoint.
+              </small>
+              <input type="email" id="checkpoint-alert-email" class="form-control" />
             </div>
           </div>
-          <div class="modal-actions">
-            <button type="button" class="btn btn-outline" id="checkpoint-cancel-btn">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="checkpoint-submit-btn">Save</button>
+          <div style="flex: 0 0 140px;">
+            <div class="form-group">
+              <label for="checkpoint-time" class="form-label">Time</label>
+              <small style="color: #64748b; display: block; margin-bottom: 0.25rem;">
+                Time description
+              </small>
+              <input type="text" id="checkpoint-time" class="form-control" required />
+            </div>
           </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Modal for Adding/Editing Machines -->
-    <div class="modal" id="machine-modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title" id="machine-modal-title">Add Machine</h3>
-          <button class="modal-close" id="machine-modal-close">&times;</button>
+          <div style="flex: 0 0 140px;">
+            <div class="form-group">
+              <label for="checkpoint-clit" class="form-label">CLIT</label>
+              <small style="color: #64748b; display: block; margin-bottom: 0.25rem;">
+                CLIT?
+              </small>
+              <input type="text" id="checkpoint-clit" class="form-control" required />
+            </div>
+          </div>
         </div>
-        <form id="machine-form">
-          <input type="hidden" id="machine-id" value="" />
-          <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 220px;">
-              <div class="form-group">
-                <label for="machine-name" class="form-label">Machine Name</label>
-                <input type="text" id="machine-name" class="form-control" required />
-              </div>
-            </div>
-            <div style="flex: 1; min-width: 220px;">
-              <div class="form-group">
-                <label for="machine-plant" class="form-label">Plant</label>
-                <select id="machine-plant" class="form-control" required>
-                  <option value="">Select a plant</option>
-                  <!-- PLANT_OPTIONS -->
-                </select>
-              </div>
-            </div>
-          </div>
-          <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 220px;">
-              <div class="form-group">
-                <label for="machine-skill" class="form-label">Minimum Skill Level</label>
-                <select id="machine-skill" class="form-control" required>
-                  <option value="">Select a skill</option>
-                  <!-- SKILL_OPTIONS -->
-                </select>
-              </div>
-            </div>
-            <div style="flex: 1; min-width: 220px;">
-              <div class="form-group">
-                <label for="machine-cell" class="form-label">Cell</label>
-                <select id="machine-cell" class="form-control" required>
-                  <option value="">Select a cell</option>
-                  <!-- CELL_OPTIONS -->
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="machine-checksheets-count" class="form-label">Number of Checksheets</label>
-            <select id="machine-checksheets-count" class="form-control" required>
-              <option value="">Select number of checksheets</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
-          </div>
-          <div class="form-group" id="checkpoints-container" style="display: none;">
-            <label class="form-label">Checkpoints for each Checksheet</label>
-            <div id="checksheets-tabs" class="checksheets-tabs"></div>
-            <div id="checksheets-content" class="checksheets-content"></div>
-          </div>
-          <div class="modal-actions">
-            <button type="button" class="btn btn-outline" id="machine-cancel-btn">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="machine-submit-btn">Save</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Modal for Adding Cells -->
-    <div class="modal" id="cell-modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title">Add Cell</h3>
-          <button class="modal-close" id="cell-modal-close">&times;</button>
+        <div class="form-group">
+          <label for="checkpoint-how" class="form-label">How to check?</label>
+          <textarea id="checkpoint-how" class="form-control" rows="3" placeholder="Describe the process or method..."
+            required></textarea>
         </div>
-        <form id="cell-form">
-          <input type="hidden" id="cell-id" value="" />
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+
+          <div style="flex: 1; min-width: 200px;">
+            <div class="form-group">
+              <label for="checkpoint-image" class="form-label">Reference Image</label>
+              <input type="file" id="checkpoint-image" class="form-control" accept="image/*" />
+              <div id="checkpoint-image-preview" style="margin-top: 10px; display: none;">
+                <img src="" alt="Preview"
+                  style="max-width: 100px; max-height: 100px; border-radius: 4px; border: 1px solid #ddd;">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="checkpoint-type" class="form-label">Type</label>
+          <select id="checkpoint-type" class="form-control" required>
+            <option value="">Select type</option>
+            <option value="passfail">Pass/Fail</option>
+            <option value="numeric">Numeric</option>
+            <option value="level">Level</option>
+          </select>
+        </div>
+        <div id="numeric-fields" style="display:none;">
           <div class="form-group">
-            <label for="cell-name" class="form-label">Cell Name</label>
-            <input type="text" id="cell-name" class="form-control" required />
+            <label for="checkpoint-min" class="form-label">Min Value</label>
+            <input type="number" id="checkpoint-min" class="form-control" step="any" />
           </div>
           <div class="form-group">
-            <label for="cell-plant" class="form-label">Plant</label>
-            <select id="cell-plant" class="form-control" required>
-              <option value="">Select a plant</option>
-              <!-- PLANT_OPTIONS_CELLS -->
-            </select>
+            <label for="checkpoint-max" class="form-label">Max Value</label>
+            <input type="number" id="checkpoint-max" class="form-control" step="any" />
+          </div>
+          <div class="form-group">
+            <label for="checkpoint-unit" class="form-label">Unit</label>
+            <input type="text" id="checkpoint-unit" class="form-control" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="checkpoint-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="checkpoint-submit-btn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal for Adding/Editing Machines -->
+  <div class="modal" id="machine-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="machine-modal-title">Add Machine</h3>
+        <button class="modal-close" id="machine-modal-close">&times;</button>
+      </div>
+      <form id="machine-form">
+        <input type="hidden" id="machine-id" value="" />
+        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 220px;">
+            <div class="form-group">
+              <label for="machine-name" class="form-label">Machine Name</label>
+              <input type="text" id="machine-name" class="form-control" required />
+            </div>
+          </div>
+          <div style="flex: 1; min-width: 220px;">
+            <div class="form-group">
+              <label for="machine-plant" class="form-label">Plant</label>
+              <select id="machine-plant" class="form-control" required>
+                <option value="">Select a plant</option>
+                <!-- PLANT_OPTIONS -->
+              </select>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 220px;">
+            <div class="form-group">
+              <label for="machine-skill" class="form-label">Minimum Skill Level</label>
+              <select id="machine-skill" class="form-control" required>
+                <option value="">Select a skill</option>
+                <!-- SKILL_OPTIONS -->
+              </select>
+            </div>
+          </div>
+          <div style="flex: 1; min-width: 220px;">
+            <div class="form-group">
+              <label for="machine-cell" class="form-label">Cell</label>
+              <select id="machine-cell" class="form-control" required>
+                <option value="">Select a cell</option>
+                <!-- CELL_OPTIONS -->
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="machine-checksheets-count" class="form-label">Number of Checksheets</label>
+          <select id="machine-checksheets-count" class="form-control" required>
+            <option value="">Select number of checksheets</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+        <div class="form-group" id="checkpoints-container" style="display: none;">
+          <label class="form-label">Checkpoints for each Checksheet</label>
+          <div id="checksheets-tabs" class="checksheets-tabs"></div>
+          <div id="checksheets-content" class="checksheets-content"></div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="machine-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="machine-submit-btn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal for Adding Cells -->
+  <div class="modal" id="cell-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Cell</h3>
+        <button class="modal-close" id="cell-modal-close">&times;</button>
+      </div>
+      <form id="cell-form">
+        <input type="hidden" id="cell-id" value="" />
+        <div class="form-group">
+          <label for="cell-name" class="form-label">Cell Name</label>
+          <input type="text" id="cell-name" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label for="cell-plant" class="form-label">Plant</label>
+          <select id="cell-plant" class="form-control" required>
+            <option value="">Select a plant</option>
+            <!-- PLANT_OPTIONS_CELLS -->
+          </select>
           <div class="modal-actions">
             <button type="button" class="btn btn-outline" id="cell-cancel-btn">Cancel</button>
             <button type="submit" class="btn btn-primary">Save</button>
           </div>
-        </form>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal" id="confirm-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="confirm-title">Confirm Delete</h3>
+        <button class="modal-close" id="confirm-close">&times;</button>
+      </div>
+      <p id="confirm-message">Are you sure you want to delete this item?</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" id="confirm-cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirm-action">Confirm</button>
       </div>
     </div>
+  </div>
 
-    <!-- Confirmation Modal -->
-    <div class="modal" id="confirm-modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title" id="confirm-title">Confirm Delete</h3>
-          <button class="modal-close" id="confirm-close">&times;</button>
-        </div>
-        <p id="confirm-message">Are you sure you want to delete this item?</p>
-        <div class="modal-actions">
-          <button type="button" class="btn btn-outline" id="confirm-cancel">Cancel</button>
-          <button type="button" class="btn btn-primary" id="confirm-action">Confirm</button>
-        </div>
-      </div>
-    </div>
-
-    <script>
-      // Tab navigation (add checkpoints tab)
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-          this.classList.add('active');
-          document.getElementById(this.dataset.tab + '-tab').classList.add('active');
-        });
+  <script>
+    // Tab navigation (add checkpoints tab)
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function () {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab + '-tab').classList.add('active');
       });
+    });
 
-      // Initialize dropdown actions for plants
-      function initPlantDropdowns() {
-        document.querySelectorAll('#plants-table .dropdown-toggle').forEach(button => {
-          button.addEventListener('click', function(event) {
-            const row = this.closest('tr');
-            const plantId = row.dataset.id;
-            const plantName = row.cells[1].textContent;
+    // Initialize dropdown actions for plants
+    function initPlantDropdowns() {
+      document.querySelectorAll('#plants-table .dropdown-toggle').forEach(button => {
+        button.addEventListener('click', function (event) {
+          const row = this.closest('tr');
+          const plantId = row.dataset.id;
+          const plantName = row.cells[1].textContent;
 
-            // Create dropdown menu if it doesn't exist
-            let menu = this.nextElementSibling;
+          // Create dropdown menu if it doesn't exist
+          let menu = this.nextElementSibling;
 
-            if (!menu || !menu.classList.contains('dropdown-menu')) {
-              menu = document.createElement('div');
-              menu.className = 'dropdown-menu';
-              menu.innerHTML = `
+          if (!menu || !menu.classList.contains('dropdown-menu')) {
+            menu = document.createElement('div');
+            menu.className = 'dropdown-menu';
+            menu.innerHTML = `
                 <a href="#" class="dropdown-item edit-plant">Edit</a>
                 <a href="#" class="dropdown-item delete-plant">Delete</a>
               `;
-              this.parentNode.appendChild(menu);
+            this.parentNode.appendChild(menu);
 
-              // Add event listeners to the newly created menu items
-              menu.querySelector('.edit-plant').addEventListener('click', function(e) {
-                e.preventDefault();
-                openEditPlantModal(plantId, plantName);
-              });
-
-              menu.querySelector('.delete-plant').addEventListener('click', function(e) {
-                e.preventDefault();
-                confirmDeletePlant(plantId, plantName);
-              });
-            }
-
-            // Toggle menu visibility
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-
-            // Close other menus
-            document.querySelectorAll('.dropdown-menu').forEach(otherMenu => {
-              if (otherMenu !== menu) {
-                otherMenu.style.display = 'none';
-              }
+            // Add event listeners to the newly created menu items
+            menu.querySelector('.edit-plant').addEventListener('click', function (e) {
+              e.preventDefault();
+              openEditPlantModal(plantId, plantName);
             });
 
-            // Stop propagation
-            event.stopPropagation();
+            menu.querySelector('.delete-plant').addEventListener('click', function (e) {
+              e.preventDefault();
+              confirmDeletePlant(plantId, plantName);
+            });
+          }
+
+          // Toggle menu visibility
+          menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+
+          // Close other menus
+          document.querySelectorAll('.dropdown-menu').forEach(otherMenu => {
+            if (otherMenu !== menu) {
+              otherMenu.style.display = 'none';
+            }
           });
+
+          // Stop propagation
+          event.stopPropagation();
         });
-      }
+      });
+    }
 
-      // Initialize dropdown actions for machines
-      function initMachineDropdowns() {
-        document.querySelectorAll('#machines-table .dropdown-toggle').forEach(button => {
-          button.addEventListener('click', function(event) {
-            const row = this.closest('tr');
-            const machineId = row.dataset.id;
-            const machineName = row.cells[1].textContent;
-            const machineSkill = row.cells[2].querySelector('.minSkill').className.split('-')[1];
-            const plantId = row.cells[3].querySelector('.chip').className.split('-')[1];
-            const cellId = row.cells[4].querySelector('.chip').className.split('-')[1];
-            const cellName = row.cells[4].querySelector('.chip').textContent;
-            const checksheetsCount = row.cells[5].textContent; // New checksheets count column
-            
-            // The checkpoint cell is now hidden or may not exist in the new structure
-            // We'll need to fetch this data from the server when editing
-            const checkpointIds = [];
-            const checkpointNames = [];
-            
-            // Create dropdown menu if it doesn't exist
-            let menu = this.nextElementSibling;
+    // Initialize dropdown actions for machines
+    function initMachineDropdowns() {
+      document.querySelectorAll('#machines-table .dropdown-toggle').forEach(button => {
+        button.addEventListener('click', function (event) {
+          const row = this.closest('tr');
+          const machineId = row.dataset.id;
+          const machineName = row.cells[1].textContent;
+          const machineSkill = row.cells[2].querySelector('.minSkill').className.split('-')[1];
+          const plantId = row.cells[3].querySelector('.chip').className.split('-')[1];
+          const cellId = row.cells[4].querySelector('.chip').className.split('-')[1];
+          const cellName = row.cells[4].querySelector('.chip').textContent;
+          const checksheetsCount = row.cells[5].textContent; // New checksheets count column
 
-            if (!menu || !menu.classList.contains('dropdown-menu')) {
-              menu = document.createElement('div');
-              menu.className = 'dropdown-menu';
-              menu.innerHTML = `
+          // The checkpoint cell is now hidden or may not exist in the new structure
+          // We'll need to fetch this data from the server when editing
+          const checkpointIds = [];
+          const checkpointNames = [];
+
+          // Create dropdown menu if it doesn't exist
+          let menu = this.nextElementSibling;
+
+          if (!menu || !menu.classList.contains('dropdown-menu')) {
+            menu = document.createElement('div');
+            menu.className = 'dropdown-menu';
+            menu.innerHTML = `
                 <a href="#" class="dropdown-item edit-machine">Edit</a>
                 <a href="#" class="dropdown-item delete-machine">Delete</a>
               `;
-              this.parentNode.appendChild(menu);
+            this.parentNode.appendChild(menu);
 
-              // Add event listeners to the newly created menu items
-              menu.querySelector('.edit-machine').addEventListener('click', function(e) {
-                e.preventDefault();
-                openEditMachineModal(machineId, machineName, machineSkill, plantId, cellId, cellName, checkpointIds, checkpointNames);
-              });
-
-              menu.querySelector('.delete-machine').addEventListener('click', function(e) {
-                e.preventDefault();
-                confirmDeleteMachine(machineId, machineName);
-              });
-            }
-
-            // Toggle menu visibility
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-
-            // Close other menus
-            document.querySelectorAll('.dropdown-menu').forEach(otherMenu => {
-              if (otherMenu !== menu) {
-                otherMenu.style.display = 'none';
-              }
+            // Add event listeners to the newly created menu items
+            menu.querySelector('.edit-machine').addEventListener('click', function (e) {
+              e.preventDefault();
+              openEditMachineModal(machineId, machineName, machineSkill, plantId, cellId, cellName, checkpointIds, checkpointNames);
             });
 
-            // Stop propagation
-            event.stopPropagation();
+            menu.querySelector('.delete-machine').addEventListener('click', function (e) {
+              e.preventDefault();
+              confirmDeleteMachine(machineId, machineName);
+            });
+          }
+
+          // Toggle menu visibility
+          menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+
+          // Close other menus
+          document.querySelectorAll('.dropdown-menu').forEach(otherMenu => {
+            if (otherMenu !== menu) {
+              otherMenu.style.display = 'none';
+            }
           });
+
+          // Stop propagation
+          event.stopPropagation();
         });
-      }
+      });
+    }
 
-      // Initialize dropdown actions for cells
-      function initCellDropdowns() {
-        document.querySelectorAll('#cells-table .dropdown-toggle').forEach(button => {
-          button.addEventListener('click', function(event) {
-            const row = this.closest('tr');
-            const cellName = row.cells[1].textContent;
-            const plantId = row.cells[2].querySelector('.chip').className.split('-')[1];
-            const cellId = row.dataset.id;
+    // Initialize dropdown actions for cells
+    function initCellDropdowns() {
+      document.querySelectorAll('#cells-table .dropdown-toggle').forEach(button => {
+        button.addEventListener('click', function (event) {
+          const row = this.closest('tr');
+          const cellName = row.cells[1].textContent;
+          const plantId = row.cells[2].querySelector('.chip').className.split('-')[1];
+          const cellId = row.dataset.id;
 
-            console.log(cellId);
+          console.log(cellId);
 
-            // Create dropdown menu if it doesn't exist
-            let menu = this.nextElementSibling;
+          // Create dropdown menu if it doesn't exist
+          let menu = this.nextElementSibling;
 
-            if (!menu || !menu.classList.contains('dropdown-menu')) {
-              menu = document.createElement('div');
-              menu.className = 'dropdown-menu';
-              menu.innerHTML = `
+          if (!menu || !menu.classList.contains('dropdown-menu')) {
+            menu = document.createElement('div');
+            menu.className = 'dropdown-menu';
+            menu.innerHTML = `
                 <a href="#" class="dropdown-item edit-cell">Edit</a>
                 <a href="#" class="dropdown-item delete-cell">Delete</a>
               `;
-              this.parentNode.appendChild(menu);
+            this.parentNode.appendChild(menu);
 
-              // Add event listeners to the newly created menu items
-              menu.querySelector('.edit-cell').addEventListener('click', function(e) {
-                e.preventDefault();
-                openEditCellModal(cellName, plantId, cellId);
-              });
-
-              menu.querySelector('.delete-cell').addEventListener('click', function(e) {
-                e.preventDefault();
-                confirmDeleteCell(cellId, cellName);
-              });
-            }
-
-            // Toggle menu visibility
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-
-            // Close other menus
-            document.querySelectorAll('.dropdown-menu').forEach(otherMenu => {
-              if (otherMenu !== menu) {
-                otherMenu.style.display = 'none';
-              }
+            // Add event listeners to the newly created menu items
+            menu.querySelector('.edit-cell').addEventListener('click', function (e) {
+              e.preventDefault();
+              openEditCellModal(cellName, plantId, cellId);
             });
 
-            // Stop propagation
-            event.stopPropagation();
+            menu.querySelector('.delete-cell').addEventListener('click', function (e) {
+              e.preventDefault();
+              confirmDeleteCell(cellId, cellName);
+            });
+          }
+
+          // Toggle menu visibility
+          menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+
+          // Close other menus
+          document.querySelectorAll('.dropdown-menu').forEach(otherMenu => {
+            if (otherMenu !== menu) {
+              otherMenu.style.display = 'none';
+            }
           });
+
+          // Stop propagation
+          event.stopPropagation();
         });
-      }
+      });
+    }
 
-      // Initialize dropdown actions for checkpoints
-      function initCheckpointDropdowns() {
-        document.querySelectorAll('#checkpoints-table .dropdown-toggle').forEach(button => {
-          button.addEventListener('click', function(event) {
-            const row = this.closest('tr');
-            const checkpointId = row.dataset.id;
-            const checkpointName = row.cells[1].textContent;
-            const checkpointCategory = row.cells[2].textContent;
-            const checkpointType = row.cells[3].textContent;
-            const checkpointTime = row.cells[4].textContent;
-            const checkpointClit = row.cells[5].textContent;
-            const checkpointHow = row.cells[6].textContent;
-            const checkpointMin = row.cells[7].textContent;
-            const checkpointMax = row.cells[8].textContent;
-            const checkpointUnit = row.cells[9].textContent;
-            const checkpointAlertEmail = row.cells[10].textContent;
+    // Initialize dropdown actions for checkpoints
+    function initCheckpointDropdowns() {
+      document.querySelectorAll('#checkpoints-table .dropdown-toggle').forEach(button => {
+        button.addEventListener('click', function (event) {
+          const row = this.closest('tr');
+          const checkpointId = row.dataset.id;
+          const checkpointName = row.cells[1].textContent;
+          const checkpointCategory = row.cells[2].textContent;
+          const checkpointType = row.cells[3].textContent;
+          const checkpointTime = row.cells[4].textContent;
+          const checkpointClit = row.cells[5].textContent;
+          const checkpointHow = row.cells[6].textContent;
+          const checkpointMin = row.cells[7].textContent;
+          const checkpointMax = row.cells[8].textContent;
+          const checkpointUnit = row.cells[9].textContent;
+          const checkpointAlertEmail = row.cells[10].textContent;
 
-            // Create dropdown menu if it doesn't exist
-            let menu = this.nextElementSibling;
+          // Create dropdown menu if it doesn't exist
+          let menu = this.nextElementSibling;
 
-            if (!menu || !menu.classList.contains('dropdown-menu')) {
-              menu = document.createElement('div');
-              menu.className = 'dropdown-menu';
-              menu.innerHTML = `
+          if (!menu || !menu.classList.contains('dropdown-menu')) {
+            menu = document.createElement('div');
+            menu.className = 'dropdown-menu';
+            menu.innerHTML = `
                 <a href="#" class="dropdown-item edit-checkpoint">Edit</a>
                 <a href="#" class="dropdown-item delete-checkpoint">Delete</a>
               `;
-              this.parentNode.appendChild(menu);
+            this.parentNode.appendChild(menu);
 
-              // Add event listeners to the newly created menu items
-              menu.querySelector('.edit-checkpoint').addEventListener('click', function(e) {
-                e.preventDefault();
-                openEditCheckpointModal(checkpointId, checkpointName, checkpointCategory, checkpointType, checkpointTime, checkpointClit, checkpointHow, checkpointMin, checkpointMax, checkpointUnit, checkpointAlertEmail);
-              });
-
-              menu.querySelector('.delete-checkpoint').addEventListener('click', function(e) {
-                e.preventDefault();
-                confirmDeleteCheckpoint(checkpointId, checkpointName);
-              });
-            }
-
-            // Toggle menu visibility
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-
-            // Close other menus
-            document.querySelectorAll('.dropdown-menu').forEach(otherMenu => {
-              if (otherMenu !== menu) {
-                otherMenu.style.display = 'none';
-              }
+            // Add event listeners to the newly created menu items
+            menu.querySelector('.edit-checkpoint').addEventListener('click', function (e) {
+              e.preventDefault();
+              openEditCheckpointModal(checkpointId, checkpointName, checkpointCategory, checkpointType, checkpointTime, checkpointClit, checkpointHow, checkpointMin, checkpointMax, checkpointUnit, checkpointAlertEmail, row.dataset.photo);
             });
 
-            // Stop propagation
-            event.stopPropagation();
-          });
-        });
-      }
-
-      // Plant modal functions
-      function openAddPlantModal() {
-        document.getElementById('plant-modal-title').textContent = 'Add Plant';
-        document.getElementById('plant-id').value = '';
-        document.getElementById('plant-name').value = '';
-        document.getElementById('plant-modal').style.display = 'flex';
-      }
-
-      function openEditPlantModal(plantId, plantName) {
-        document.getElementById('plant-modal-title').textContent = 'Edit Plant';
-        document.getElementById('plant-id').value = plantId;
-        document.getElementById('plant-name').value = plantName;
-        document.getElementById('plant-modal').style.display = 'flex';
-      }
-
-      function closePlantModal() {
-        document.getElementById('plant-modal').style.display = 'none';
-      }
-
-      // Machine modal functions
-      function openAddMachineModal() {
-        document.getElementById('machine-modal-title').textContent = 'Add Machine';
-        document.getElementById('machine-id').value = '';
-        document.getElementById('machine-name').value = '';
-        document.getElementById('machine-skill').value = '';
-        document.getElementById('machine-plant').value = '';
-        document.getElementById('machine-cell').value = '';
-        document.getElementById('machine-checksheets-count').value = '';
-        document.getElementById('checkpoints-container').style.display = 'none';
-        clearChecksheetsContent();
-        document.getElementById('machine-modal').style.display = 'flex';
-      }
-
-      // Function to update selected checkpoints text for a checksheet
-      function updateChecksheetSelectedText(checksheetNum) {
-        const checkboxes = document.querySelectorAll(`input[name="checksheet-${checksheetNum}-checkpoints"]:checked`);
-        const textElement = document.getElementById(`checksheet-${checksheetNum}-selected-text`);
-        
-        if (textElement) {
-          if (checkboxes.length === 0) {
-            textElement.textContent = 'No checkpoints selected';
-          } else if (checkboxes.length === 1) {
-            textElement.textContent = `1 checkpoint selected`;
-          } else {
-            textElement.textContent = `${checkboxes.length} checkpoints selected`;
+            menu.querySelector('.delete-checkpoint').addEventListener('click', function (e) {
+              e.preventDefault();
+              confirmDeleteCheckpoint(checkpointId, checkpointName);
+            });
           }
+
+          // Toggle menu visibility
+          menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+
+          // Close other menus
+          document.querySelectorAll('.dropdown-menu').forEach(otherMenu => {
+            if (otherMenu !== menu) {
+              otherMenu.style.display = 'none';
+            }
+          });
+
+          // Stop propagation
+          event.stopPropagation();
+        });
+      });
+    }
+
+    // Plant modal functions
+    function openAddPlantModal() {
+      document.getElementById('plant-modal-title').textContent = 'Add Plant';
+      document.getElementById('plant-id').value = '';
+      document.getElementById('plant-name').value = '';
+      document.getElementById('plant-modal').style.display = 'flex';
+    }
+
+    function openEditPlantModal(plantId, plantName) {
+      document.getElementById('plant-modal-title').textContent = 'Edit Plant';
+      document.getElementById('plant-id').value = plantId;
+      document.getElementById('plant-name').value = plantName;
+      document.getElementById('plant-modal').style.display = 'flex';
+    }
+
+    function closePlantModal() {
+      document.getElementById('plant-modal').style.display = 'none';
+    }
+
+    // Machine modal functions
+    function openAddMachineModal() {
+      document.getElementById('machine-modal-title').textContent = 'Add Machine';
+      document.getElementById('machine-id').value = '';
+      document.getElementById('machine-name').value = '';
+      document.getElementById('machine-skill').value = '';
+      document.getElementById('machine-plant').value = '';
+      document.getElementById('machine-cell').value = '';
+      document.getElementById('machine-checksheets-count').value = '';
+      document.getElementById('checkpoints-container').style.display = 'none';
+      clearChecksheetsContent();
+      document.getElementById('machine-modal').style.display = 'flex';
+    }
+
+    // Function to update selected checkpoints text for a checksheet
+    function updateChecksheetSelectedText(checksheetNum) {
+      const checkboxes = document.querySelectorAll(`input[name="checksheet-${checksheetNum}-checkpoints"]:checked`);
+      const textElement = document.getElementById(`checksheet-${checksheetNum}-selected-text`);
+
+      if (textElement) {
+        if (checkboxes.length === 0) {
+          textElement.textContent = 'No checkpoints selected';
+        } else if (checkboxes.length === 1) {
+          textElement.textContent = `1 checkpoint selected`;
+        } else {
+          textElement.textContent = `${checkboxes.length} checkpoints selected`;
         }
       }
+    }
 
-      function openEditMachineModal(machineId, machineName, machineSkill, plantId, cellId, cellName, checkpointIds, checkpointNames) {
-        // Fetch machine details with checkpoints
-        fetch(`/admin/it/machines/${machineId}`)
-          .then(response => response.json())
-          .then(data => {
-            const machine = data.machine;
-            const checkpointsByChecksheet = data.checkpointsByChecksheet;
+    function openEditMachineModal(machineId, machineName, machineSkill, plantId, cellId, cellName, checkpointIds, checkpointNames) {
+      // Fetch machine details with checkpoints
+      fetch(`/admin/it/machines/${machineId}`)
+        .then(response => response.json())
+        .then(data => {
+          const machine = data.machine;
+          const checkpointsByChecksheet = data.checkpointsByChecksheet;
 
-            document.getElementById('machine-modal-title').textContent = 'Edit Machine';
-            document.getElementById('machine-id').value = machineId;
-            document.getElementById('machine-name').value = machine.name;
-            document.getElementById('machine-skill').value = machine.minimum_skill;
-            document.getElementById('machine-plant').value = machine.plant_id;
-            document.getElementById('machine-cell').value = machine.cell_id;
-            document.getElementById('machine-checksheets-count').value = machine.checksheets_count || 1;
-            
-            // Create checksheets UI with the fetched data
-            if (machine.checksheets_count && machine.checksheets_count > 0) {
-              document.getElementById('checkpoints-container').style.display = 'block';
-              createChecksheetsUI(machine.checksheets_count);
-              
-              // Pre-select checkpoints for each checksheet
-              setTimeout(() => {
-                for (let checksheetNum = 1; checksheetNum <= machine.checksheets_count; checksheetNum++) {
-                  const checksheetCheckpoints = checkpointsByChecksheet[checksheetNum] || [];
-                  
-                  checksheetCheckpoints.forEach(checkpoint => {
-                    const checkbox = document.querySelector(`input[name="checksheet-${checksheetNum}-checkpoints"][value="${checkpoint.id}"]`);
-                    if (checkbox) {
-                      checkbox.checked = true;
-                    }
-                  });
-                  
-                  // Update the selected text for this checksheet
-                  updateChecksheetSelectedText(checksheetNum);
-                }
-              }, 500); // Small delay to ensure UI is created
-            } else {
-              document.getElementById('checkpoints-container').style.display = 'none';
-              clearChecksheetsContent();
-            }
-            
-            document.getElementById('machine-modal').style.display = 'flex';
-          })
-          .catch(error => {
-            console.error('Error loading machine details:', error);
-            // Fallback to basic modal without checkpoints
-            document.getElementById('machine-modal-title').textContent = 'Edit Machine';
-            document.getElementById('machine-id').value = machineId;
-            document.getElementById('machine-name').value = machineName;
-            document.getElementById('machine-skill').value = machineSkill;
-            document.getElementById('machine-plant').value = plantId;
-            document.getElementById('machine-cell').value = cellId;
-            document.getElementById('machine-checksheets-count').value = '';
+          document.getElementById('machine-modal-title').textContent = 'Edit Machine';
+          document.getElementById('machine-id').value = machineId;
+          document.getElementById('machine-name').value = machine.name;
+          document.getElementById('machine-skill').value = machine.minimum_skill;
+          document.getElementById('machine-plant').value = machine.plant_id;
+          document.getElementById('machine-cell').value = machine.cell_id;
+          document.getElementById('machine-checksheets-count').value = machine.checksheets_count || 1;
+
+          // Create checksheets UI with the fetched data
+          if (machine.checksheets_count && machine.checksheets_count > 0) {
+            document.getElementById('checkpoints-container').style.display = 'block';
+            createChecksheetsUI(machine.checksheets_count);
+
+            // Pre-select checkpoints for each checksheet
+            setTimeout(() => {
+              for (let checksheetNum = 1; checksheetNum <= machine.checksheets_count; checksheetNum++) {
+                const checksheetCheckpoints = checkpointsByChecksheet[checksheetNum] || [];
+
+                checksheetCheckpoints.forEach(checkpoint => {
+                  const checkbox = document.querySelector(`input[name="checksheet-${checksheetNum}-checkpoints"][value="${checkpoint.id}"]`);
+                  if (checkbox) {
+                    checkbox.checked = true;
+                  }
+                });
+
+                // Update the selected text for this checksheet
+                updateChecksheetSelectedText(checksheetNum);
+              }
+            }, 500); // Small delay to ensure UI is created
+          } else {
             document.getElementById('checkpoints-container').style.display = 'none';
             clearChecksheetsContent();
-            document.getElementById('machine-modal').style.display = 'flex';
-          });
-      }
+          }
 
-      function closeMachineModal() {
-        document.getElementById('machine-modal').style.display = 'none';
-      }
+          document.getElementById('machine-modal').style.display = 'flex';
+        })
+        .catch(error => {
+          console.error('Error loading machine details:', error);
+          // Fallback to basic modal without checkpoints
+          document.getElementById('machine-modal-title').textContent = 'Edit Machine';
+          document.getElementById('machine-id').value = machineId;
+          document.getElementById('machine-name').value = machineName;
+          document.getElementById('machine-skill').value = machineSkill;
+          document.getElementById('machine-plant').value = plantId;
+          document.getElementById('machine-cell').value = cellId;
+          document.getElementById('machine-checksheets-count').value = '';
+          document.getElementById('checkpoints-container').style.display = 'none';
+          clearChecksheetsContent();
+          document.getElementById('machine-modal').style.display = 'flex';
+        });
+    }
 
-      // Checksheets functionality
-      function handleChecksheetsCountChange() {
-        const count = parseInt(document.getElementById('machine-checksheets-count').value);
-        const container = document.getElementById('checkpoints-container');
-        
-        if (count > 0) {
-          container.style.display = 'block';
-          createChecksheetsUI(count);
-        } else {
-          container.style.display = 'none';
-        }
-      }
+    function closeMachineModal() {
+      document.getElementById('machine-modal').style.display = 'none';
+    }
 
-      function createChecksheetsUI(count) {
-        const tabsContainer = document.getElementById('checksheets-tabs');
-        const contentContainer = document.getElementById('checksheets-content');
-        
-        // Clear existing content
-        tabsContainer.innerHTML = '';
-        contentContainer.innerHTML = '';
-        
-        // Create tabs and content for each checksheet
-        for (let i = 1; i <= count; i++) {
-          // Create tab
-          const tab = document.createElement('button');
-          tab.className = `checksheet-tab ${i === 1 ? 'active' : ''}`;
-          tab.textContent = `Checksheet ${i}`;
-          tab.type = 'button';
-          tab.dataset.checksheet = i;
-          tab.addEventListener('click', () => switchChecksheetTab(i));
-          tabsContainer.appendChild(tab);
-          
-          // Create content
-          const content = document.createElement('div');
-          content.className = `checksheet-content ${i === 1 ? 'active' : ''}`;
-          content.id = `checksheet-${i}-content`;
-          content.innerHTML = `
+    // Checksheets functionality
+    function handleChecksheetsCountChange() {
+      const count = parseInt(document.getElementById('machine-checksheets-count').value);
+      const container = document.getElementById('checkpoints-container');
+
+      if (count > 0) {
+        container.style.display = 'block';
+        createChecksheetsUI(count);
+      } else {
+        container.style.display = 'none';
+      }
+    }
+
+    function createChecksheetsUI(count) {
+      const tabsContainer = document.getElementById('checksheets-tabs');
+      const contentContainer = document.getElementById('checksheets-content');
+
+      // Clear existing content
+      tabsContainer.innerHTML = '';
+      contentContainer.innerHTML = '';
+
+      // Create tabs and content for each checksheet
+      for (let i = 1; i <= count; i++) {
+        // Create tab
+        const tab = document.createElement('button');
+        tab.className = `checksheet-tab ${i === 1 ? 'active' : ''}`;
+        tab.textContent = `Checksheet ${i}`;
+        tab.type = 'button';
+        tab.dataset.checksheet = i;
+        tab.addEventListener('click', () => switchChecksheetTab(i));
+        tabsContainer.appendChild(tab);
+
+        // Create content
+        const content = document.createElement('div');
+        content.className = `checksheet-content ${i === 1 ? 'active' : ''}`;
+        content.id = `checksheet-${i}-content`;
+        content.innerHTML = `
             <h4>Select checkpoints for Checksheet ${i}</h4>
             <div class="checksheet-multiselect">
               <div class="custom-multiselect">
@@ -1504,814 +1511,632 @@
               </div>
             </div>
           `;
-          contentContainer.appendChild(content);
-          
-          // Initialize multiselect for this checksheet
-          initializeChecksheetMultiselect(i);
+        contentContainer.appendChild(content);
+
+        // Initialize multiselect for this checksheet
+        initializeChecksheetMultiselect(i);
+      }
+    }
+
+    function switchChecksheetTab(activeTab) {
+      // Update tab states
+      document.querySelectorAll('.checksheet-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelector(`.checksheet-tab[data-checksheet="${activeTab}"]`).classList.add('active');
+
+      // Update content states
+      document.querySelectorAll('.checksheet-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(`checksheet-${activeTab}-content`).classList.add('active');
+    }
+
+    function initializeChecksheetMultiselect(checksheetNumber) {
+      const selectedDiv = document.getElementById(`checksheet-${checksheetNumber}-selected`);
+      const dropdownDiv = document.getElementById(`checksheet-${checksheetNumber}-dropdown`);
+      const optionsDiv = document.getElementById(`checksheet-${checksheetNumber}-options`);
+      const searchInput = document.getElementById(`checksheet-${checksheetNumber}-search`);
+
+      // Toggle dropdown
+      selectedDiv.addEventListener('click', () => {
+        dropdownDiv.style.display = dropdownDiv.style.display === 'block' ? 'none' : 'block';
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!selectedDiv.contains(e.target) && !dropdownDiv.contains(e.target)) {
+          dropdownDiv.style.display = 'none';
         }
-      }
+      });
 
-      function switchChecksheetTab(activeTab) {
-        // Update tab states
-        document.querySelectorAll('.checksheet-tab').forEach(tab => {
-          tab.classList.remove('active');
-        });
-        document.querySelector(`.checksheet-tab[data-checksheet="${activeTab}"]`).classList.add('active');
-        
-        // Update content states
-        document.querySelectorAll('.checksheet-content').forEach(content => {
-          content.classList.remove('active');
-        });
-        document.getElementById(`checksheet-${activeTab}-content`).classList.add('active');
-      }
+      // Load checkpoints for this multiselect
+      loadCheckpointsForChecksheet(checksheetNumber);
 
-      function initializeChecksheetMultiselect(checksheetNumber) {
-        const selectedDiv = document.getElementById(`checksheet-${checksheetNumber}-selected`);
-        const dropdownDiv = document.getElementById(`checksheet-${checksheetNumber}-dropdown`);
-        const optionsDiv = document.getElementById(`checksheet-${checksheetNumber}-options`);
-        const searchInput = document.getElementById(`checksheet-${checksheetNumber}-search`);
-        
-        // Toggle dropdown
-        selectedDiv.addEventListener('click', () => {
-          dropdownDiv.style.display = dropdownDiv.style.display === 'block' ? 'none' : 'block';
-        });
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-          if (!selectedDiv.contains(e.target) && !dropdownDiv.contains(e.target)) {
-            dropdownDiv.style.display = 'none';
-          }
-        });
-        
-        // Load checkpoints for this multiselect
-        loadCheckpointsForChecksheet(checksheetNumber);
-        
-        // Search functionality
-        searchInput.addEventListener('input', () => {
-          filterCheckpointsForChecksheet(checksheetNumber, searchInput.value);
-        });
-      }
+      // Search functionality
+      searchInput.addEventListener('input', () => {
+        filterCheckpointsForChecksheet(checksheetNumber, searchInput.value);
+      });
+    }
 
-      function loadCheckpointsForChecksheet(checksheetNumber) {
-        fetch('/admin/it/checkpoints')
-          .then(response => response.json())
-          .then(checkpoints => {
-            populateChecksheetOptions(checksheetNumber, checkpoints);
-          })
-          .catch(error => {
-            console.error('Error loading checkpoints:', error);
-          });
-      }
+    function loadCheckpointsForChecksheet(checksheetNumber) {
+      fetch('/admin/it/checkpoints')
+        .then(response => response.json())
+        .then(checkpoints => {
+          populateChecksheetOptions(checksheetNumber, checkpoints);
+        })
+        .catch(error => {
+          console.error('Error loading checkpoints:', error);
+        });
+    }
 
-      function populateChecksheetOptions(checksheetNumber, checkpoints) {
-        const optionsDiv = document.getElementById(`checksheet-${checksheetNumber}-options`);
-        optionsDiv.innerHTML = '';
-        
-        checkpoints.forEach(checkpoint => {
-          const label = document.createElement('label');
-          label.innerHTML = `
+    function populateChecksheetOptions(checksheetNumber, checkpoints) {
+      const optionsDiv = document.getElementById(`checksheet-${checksheetNumber}-options`);
+      optionsDiv.innerHTML = '';
+
+      checkpoints.forEach(checkpoint => {
+        const label = document.createElement('label');
+        label.innerHTML = `
             <input type="checkbox" value="${checkpoint.id}" name="checksheet-${checksheetNumber}-checkpoints">
             ${checkpoint.name} (${checkpoint.category})
           `;
-          
-          const checkbox = label.querySelector('input');
-          checkbox.addEventListener('change', () => {
-            updateChecksheetSelectedText(checksheetNumber);
-          });
-          
-          optionsDiv.appendChild(label);
+
+        const checkbox = label.querySelector('input');
+        checkbox.addEventListener('change', () => {
+          updateChecksheetSelectedText(checksheetNumber);
         });
-      }
 
-      function filterCheckpointsForChecksheet(checksheetNumber, searchTerm) {
-        const optionsDiv = document.getElementById(`checksheet-${checksheetNumber}-options`);
-        const labels = optionsDiv.querySelectorAll('label');
-        
-        labels.forEach(label => {
-          const text = label.textContent.toLowerCase();
-          const isVisible = text.includes(searchTerm.toLowerCase());
-          label.style.display = isVisible ? 'flex' : 'none';
-        });
-      }
-
-      function updateChecksheetSelectedText(checksheetNumber) {
-        const selectedDiv = document.getElementById(`checksheet-${checksheetNumber}-selected`);
-        const checkboxes = document.querySelectorAll(`input[name="checksheet-${checksheetNumber}-checkpoints"]:checked`);
-        
-        if (checkboxes.length === 0) {
-          selectedDiv.textContent = 'Select checkpoints';
-        } else if (checkboxes.length === 1) {
-          selectedDiv.textContent = checkboxes[0].nextSibling.textContent.trim();
-        } else {
-          selectedDiv.textContent = `${checkboxes.length} checkpoints selected`;
-        }
-      }
-
-      function clearChecksheetsContent() {
-        document.getElementById('checksheets-tabs').innerHTML = '';
-        document.getElementById('checksheets-content').innerHTML = '';
-      }
-
-      function getSelectedCheckpointsData() {
-        const checksheetCount = parseInt(document.getElementById('machine-checksheets-count').value) || 0;
-        const data = {};
-        
-        for (let i = 1; i <= checksheetCount; i++) {
-          const checkboxes = document.querySelectorAll(`input[name="checksheet-${i}-checkpoints"]:checked`);
-          data[i] = Array.from(checkboxes).map(cb => parseInt(cb.value));
-        }
-        
-        return data;
-      }
-
-      // Cell modal functions
-      function openAddCellModal() {
-        document.getElementById('cell-id').value = '';
-        document.getElementById('cell-name').value = '';
-        document.getElementById('cell-plant').value = '';
-        document.getElementById('cell-modal').style.display = 'flex';
-      }
-
-      function openEditCellModal(cellName, plantId, cellId) {
-        document.getElementById('cell-id').value = cellId;
-        document.getElementById('cell-name').value = cellName;
-        document.getElementById('cell-plant').value = plantId;
-        document.getElementById('cell-modal').style.display = 'flex';
-      }
-
-      function closeCellModal() {
-        document.getElementById('cell-modal').style.display = 'none';
-      }
-
-      // Checkpoint modal logic
-      document.getElementById('add-checkpoint-btn').addEventListener('click', openAddCheckpointModal);
-      document.getElementById('checkpoint-modal-close').addEventListener('click', closeCheckpointModal);
-      document.getElementById('checkpoint-cancel-btn').addEventListener('click', closeCheckpointModal);
-      document.getElementById('checkpoint-type').addEventListener('change', function() {
-        if (this.value === 'numeric') {
-          document.getElementById('numeric-fields').style.display = '';
-        } else {
-          document.getElementById('numeric-fields').style.display = 'none';
-        }
+        optionsDiv.appendChild(label);
       });
-      function openAddCheckpointModal() {
-        console.log("OPENING CHECKPOINT MODAL");
-        document.getElementById('checkpoint-modal-title').textContent = 'Add Checkpoint';
-        document.getElementById('checkpoint-id').value = '';
-        document.getElementById('checkpoint-name').value = '';
-        document.getElementById('checkpoint-category').value = '';
-        document.getElementById('checkpoint-type').value = '';
-        document.getElementById('checkpoint-min').value = '';
-        document.getElementById('checkpoint-max').value = '';
-        document.getElementById('checkpoint-unit').value = '';
-        document.getElementById('checkpoint-alert-email').value = '';
-        document.getElementById('checkpoint-time').value = '';
-        document.getElementById('checkpoint-clit').value = '';
-        document.getElementById('checkpoint-how').value = '';
+    }
+
+    function filterCheckpointsForChecksheet(checksheetNumber, searchTerm) {
+      const optionsDiv = document.getElementById(`checksheet-${checksheetNumber}-options`);
+      const labels = optionsDiv.querySelectorAll('label');
+
+      labels.forEach(label => {
+        const text = label.textContent.toLowerCase();
+        const isVisible = text.includes(searchTerm.toLowerCase());
+        label.style.display = isVisible ? 'flex' : 'none';
+      });
+    }
+
+    function updateChecksheetSelectedText(checksheetNumber) {
+      const selectedDiv = document.getElementById(`checksheet-${checksheetNumber}-selected`);
+      const checkboxes = document.querySelectorAll(`input[name="checksheet-${checksheetNumber}-checkpoints"]:checked`);
+
+      if (checkboxes.length === 0) {
+        selectedDiv.textContent = 'Select checkpoints';
+      } else if (checkboxes.length === 1) {
+        selectedDiv.textContent = checkboxes[0].nextSibling.textContent.trim();
+      } else {
+        selectedDiv.textContent = `${checkboxes.length} checkpoints selected`;
+      }
+    }
+
+    function clearChecksheetsContent() {
+      document.getElementById('checksheets-tabs').innerHTML = '';
+      document.getElementById('checksheets-content').innerHTML = '';
+    }
+
+    function getSelectedCheckpointsData() {
+      const checksheetCount = parseInt(document.getElementById('machine-checksheets-count').value) || 0;
+      const data = {};
+
+      for (let i = 1; i <= checksheetCount; i++) {
+        const checkboxes = document.querySelectorAll(`input[name="checksheet-${i}-checkpoints"]:checked`);
+        data[i] = Array.from(checkboxes).map(cb => parseInt(cb.value));
+      }
+
+      return data;
+    }
+
+    // Cell modal functions
+    function openAddCellModal() {
+      document.getElementById('cell-id').value = '';
+      document.getElementById('cell-name').value = '';
+      document.getElementById('cell-plant').value = '';
+      document.getElementById('cell-modal').style.display = 'flex';
+    }
+
+    function openEditCellModal(cellName, plantId, cellId) {
+      document.getElementById('cell-id').value = cellId;
+      document.getElementById('cell-name').value = cellName;
+      document.getElementById('cell-plant').value = plantId;
+      document.getElementById('cell-modal').style.display = 'flex';
+    }
+
+    function closeCellModal() {
+      document.getElementById('cell-modal').style.display = 'none';
+    }
+
+    // Checkpoint modal functions
+    function openAddCheckpointModal() {
+      document.getElementById('checkpoint-modal-title').textContent = 'Add Checkpoint';
+      document.getElementById('checkpoint-id').value = '';
+      document.getElementById('checkpoint-name').value = '';
+      document.getElementById('checkpoint-category').value = '';
+      document.getElementById('checkpoint-type').value = '';
+      document.getElementById('checkpoint-time').value = '';
+      document.getElementById('checkpoint-clit').value = '';
+      document.getElementById('checkpoint-how').value = '';
+      document.getElementById('checkpoint-min').value = '';
+      document.getElementById('checkpoint-max').value = '';
+      document.getElementById('checkpoint-unit').value = '';
+      document.getElementById('checkpoint-alert-email').value = '';
+
+      document.getElementById('checkpoint-image').value = '';
+      document.getElementById('checkpoint-image-preview').style.display = 'none';
+      document.getElementById('numeric-fields').style.display = 'none';
+      document.getElementById('checkpoint-modal').style.display = 'flex';
+    }
+
+    function closeCheckpointModal() {
+      document.getElementById('checkpoint-modal').style.display = 'none';
+    }
+
+    function openEditCheckpointModal(id, name, category, type, time, clit, how, min, max, unit, alertEmail, photoUrl) {
+      document.getElementById('checkpoint-modal-title').textContent = 'Edit Checkpoint';
+      document.getElementById('checkpoint-id').value = id;
+      document.getElementById('checkpoint-name').value = name;
+      document.getElementById('checkpoint-category').value = category;
+      document.getElementById('checkpoint-type').value = type;
+      document.getElementById('checkpoint-time').value = time;
+      document.getElementById('checkpoint-clit').value = clit;
+      document.getElementById('checkpoint-how').value = how;
+      document.getElementById('checkpoint-min').value = min;
+      document.getElementById('checkpoint-max').value = max;
+      document.getElementById('checkpoint-unit').value = unit;
+      document.getElementById('checkpoint-alert-email').value = alertEmail;
+      document.getElementById('checkpoint-image').value = ''; // Reset file input
+
+      const preview = document.getElementById('checkpoint-image-preview');
+      if (photoUrl && photoUrl !== 'null' && photoUrl !== 'undefined') {
+        preview.style.display = 'block';
+        preview.querySelector('img').src = photoUrl;
+      } else {
+        preview.style.display = 'none';
+      }
+
+      // Show/hide numeric fields based on type
+      if (type === 'numeric') {
+        document.getElementById('numeric-fields').style.display = 'block';
+      } else {
         document.getElementById('numeric-fields').style.display = 'none';
-        document.getElementById('checkpoint-modal').style.display = 'flex';
-        console.log( document.getElementById('checkpoint-modal').style)
-        
-      }
-      function closeCheckpointModal() {
-        document.getElementById('checkpoint-modal').style.display = 'none';
       }
 
-      function openEditCheckpointModal(checkpointId, checkpointName, checkpointCategory, checkpointType, checkpointTime, checkpointClit, checkpointHow, checkpointMin, checkpointMax, checkpointUnit, checkpointAlertEmail) {
-        document.getElementById('checkpoint-modal-title').textContent = 'Edit Checkpoint';
-        document.getElementById('checkpoint-id').value = checkpointId;
-        document.getElementById('checkpoint-name').value = checkpointName;
-        document.getElementById('checkpoint-category').value = checkpointCategory;
-        document.getElementById('checkpoint-type').value = checkpointType;
-        document.getElementById('checkpoint-time').value = checkpointTime;
-        document.getElementById('checkpoint-clit').value = checkpointClit;
-        document.getElementById('checkpoint-how').value = checkpointHow;
-        document.getElementById('checkpoint-min').value = checkpointMin;
-        document.getElementById('checkpoint-max').value = checkpointMax;
-        document.getElementById('checkpoint-unit').value = checkpointUnit;
-        document.getElementById('checkpoint-alert-email').value = checkpointAlertEmail;
-        
-        // Show/hide numeric fields based on type
-        if (checkpointType === 'numeric') {
-          document.getElementById('numeric-fields').style.display = '';
-        } else {
-          document.getElementById('numeric-fields').style.display = 'none';
-        }
-        
-        document.getElementById('checkpoint-modal').style.display = 'flex';
+      document.getElementById('checkpoint-modal').style.display = 'flex';
+    }
+
+    // Confirmation modal functions
+    function openConfirmModal(title, message, onConfirm) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = message;
+      document.getElementById('confirm-modal').style.display = 'flex';
+
+      console.log("CONFIRMATION MODAL OPENED");
+
+      // Set confirmation action
+      document.getElementById('confirm-action').onclick = function () {
+        // closeConfirmModal();
+        onConfirm();
+      };
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').style.display = 'none';
+    }
+
+    // Event listeners
+    document.getElementById('add-plant-btn').addEventListener('click', openAddPlantModal);
+    document.getElementById('plant-cancel-btn').addEventListener('click', closePlantModal);
+    document.getElementById('plant-modal-close').addEventListener('click', closePlantModal);
+
+    document.getElementById('add-machine-btn').addEventListener('click', openAddMachineModal);
+    document.getElementById('machine-cancel-btn').addEventListener('click', closeMachineModal);
+    document.getElementById('machine-modal-close').addEventListener('click', closeMachineModal);
+
+    document.getElementById('add-cell-btn').addEventListener('click', openAddCellModal);
+    document.getElementById('cell-cancel-btn').addEventListener('click', closeCellModal);
+    document.getElementById('cell-modal-close').addEventListener('click', closeCellModal);
+
+    document.getElementById('add-checkpoint-btn').addEventListener('click', openAddCheckpointModal);
+    document.getElementById('checkpoint-cancel-btn').addEventListener('click', closeCheckpointModal);
+    document.getElementById('checkpoint-modal-close').addEventListener('click', closeCheckpointModal);
+
+    document.getElementById('checkpoint-type').addEventListener('change', function () {
+      if (this.value === 'numeric') {
+        document.getElementById('numeric-fields').style.display = 'block';
+      } else {
+        document.getElementById('numeric-fields').style.display = 'none';
       }
+    });
 
-      function confirmDeleteCheckpoint(checkpointId, checkpointName) {
-        if (confirm("Are you sure you want to delete this checkpoint?\n\nThis action cannot be UNDONE.")) {
-          deleteCheckpoint(checkpointId);
-        }
-      }
+    document.getElementById('machine-checksheets-count').addEventListener('change', handleChecksheetsCountChange);
 
-      // Confirmation modal functions
-      function openConfirmModal(title, message, onConfirm) {
-        document.getElementById('confirm-title').textContent = title;
-        document.getElementById('confirm-message').textContent = message;
-        document.getElementById('confirm-modal').style.display = 'flex';
+    // Form submissions
+    document.getElementById('plant-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const id = document.getElementById('plant-id').value;
+      const name = document.getElementById('plant-name').value;
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/api/plants/${id}` : '/api/plants';
 
-        console.log("CONFIRMATION MODAL OPENED");
-
-        // Set confirmation action
-        document.getElementById('confirm-action').onclick = function() {
-          // closeConfirmModal();
-          onConfirm();
-        };
-      }
-
-      function closeConfirmModal() {
-        document.getElementById('confirm-modal').style.display = 'none';
-      }
-
-      function confirmDeletePlant(plantId, plantName) {
-        if (confirm("Are you sure you want to delete this plant?\n\nThis action cannot be UNDONE, and all users, cells and machines associated with this plant will also be DELETED.")) {
-          deletePlant(plantId);
-        }
-      }
-
-      function confirmDeleteMachine(machineId, machineName) {
-        if (confirm("Are you sure you want to delete this machine?\n\nThis action cannot be UNDONE.")) {
-          deleteMachine(machineId);
-        }
-      }
-
-      function confirmDeleteCell(cellId, cellName) {
-        if (confirm("Are you sure you want to delete this cell?\n\nThis action cannot be UNDONE, and all the machines associated with this cell will also be DELETED.")) {
-          deleteCell(cellId);
-        }
-      }
-
-      // API Functions
-      function savePlant() {
-        const plantId = document.getElementById('plant-id').value;
-        const plantName = document.getElementById('plant-name').value;
-
-        if (!plantName) {
-          showNotification('Plant name is required', 'error');
-          return;
-        }
-
-        const isEdit = plantId !== '';
-        const url = isEdit ? `/api/plants/${plantId}` : '/api/plants';
-        const method = isEdit ? 'PUT' : 'POST';
-
-        fetch(url, {
-          method: method,
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ name: plantName })
-        })
-        .then(response => {
-          if (!response.ok) {
-            return response.json().then(data => {
-              throw new Error(data.error || 'Failed to save plant');
-            });
-          }
-          return response.json();
-        })
+      fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name })
+      })
+        .then(response => response.json())
         .then(data => {
-          showNotification(data.message, 'success');
-          closePlantModal();
-          // Reload the page to reflect changes
-          window.location.reload();
+          if (data.error) {
+            showNotification(data.error, 'error');
+          } else {
+            showNotification(data.message, 'success');
+            closePlantModal();
+            setTimeout(() => location.reload(), 1000);
+          }
         })
         .catch(error => {
-          showNotification(error.message, 'error');
+          showNotification('An error occurred', 'error');
         });
-      }
+    });
 
-      function deletePlant(plantId) {
-        fetch(`/api/plants/${plantId}`, {
-          method: 'DELETE'
-        })
-        .then(response => {
-          if (!response.ok) {
-            return response.json().then(data => {
-              throw new Error(data.error || 'Failed to delete plant');
-            });
-          }
-          return response.json();
-        })
-        .then(data => {
-          showNotification(data.message, 'success');
-          // Remove the row from the table
-          const row = document.querySelector(`#plants-table tr[data-id="${plantId}"]`);
-          if (row) {
-            row.remove();
-          }
-          // Update the count
-          updateTableCount('plants');
-        })
-        .catch(error => {
-          showNotification(error.message, 'error');
-        });
-      }
+    document.getElementById('machine-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const id = document.getElementById('machine-id').value;
+      const name = document.getElementById('machine-name').value;
+      const plantId = document.getElementById('machine-plant').value;
+      const cellId = document.getElementById('machine-cell').value;
+      const skill = document.getElementById('machine-skill').options[document.getElementById('machine-skill').selectedIndex].text;
+      const checksheetsCount = document.getElementById('machine-checksheets-count').value;
 
-      function saveMachine() {
-        const machineId = document.getElementById('machine-id').value;
-        const machineName = document.getElementById('machine-name').value;
-        const machineSkill = document.getElementById('machine-skill').value;
-        const plantId = document.getElementById('machine-plant').value;
-        const cellId = document.getElementById('machine-cell').value;
-        const checksheetsCount = document.getElementById('machine-checksheets-count').value;
-
-        if (!machineName || !plantId || !cellId || !checksheetsCount) {
-          showNotification('Machine name, plant, cell, and checksheets count are required', 'error');
-          return;
+      // Collect checkpoints for each checksheet
+      const checkpoints = {};
+      if (checksheetsCount > 0) {
+        for (let i = 1; i <= checksheetsCount; i++) {
+          const checkboxes = document.querySelectorAll(`input[name="checksheet-${i}-checkpoints"]:checked`);
+          checkpoints[i] = Array.from(checkboxes).map(cb => cb.value);
         }
-
-        // Get selected checkpoints for each checksheet
-        const selectedCheckpoints = getSelectedCheckpointsData();
-
-        console.log("Selected checkpoints: ", selectedCheckpoints);
-
-        const isEdit = machineId !== '';
-        const url = isEdit ? `/api/machines/${machineId}` : '/api/machines';
-        const method = isEdit ? 'PUT' : 'POST';
-
-        fetch(url, {
-          method: method,
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            name: machineName,
-            minimum_skill: machineSkill,
-            plant_id: plantId,
-            cell_id: cellId,
-            checksheets_count: parseInt(checksheetsCount),
-            checkpoints: selectedCheckpoints
-          })
-        })
-        .then(response => {
-          if (!response.ok) {
-            return response.json().then(data => {
-              throw new Error(data.error || 'Failed to save machine');
-            });
-          }
-          return response.json();
-        })
-        .then(data => {
-          showNotification(data.message, 'success');
-          closeMachineModal();
-          // Reload the page to reflect changes
-          // window.location.reload();
-        })
-        .catch(error => {
-          showNotification(error.message, 'error');
-        });
-      }
-    
-
-      function deleteMachine(machineId) {
-        fetch(`/api/machines/${machineId}`, {
-          method: 'DELETE'
-        })
-        .then(response => {
-          if (!response.ok) {
-            return response.json().then(data => {
-              throw new Error(data.error || 'Failed to delete machine');
-            });
-          }
-          return response.json();
-        })
-        .then(data => {
-          showNotification(data.message, 'success');
-          // Remove the row from the table
-          const row = document.querySelector(`#machines-table tr[data-id="${machineId}"]`);
-          if (row) {
-            row.remove();
-          }
-          // Update the count
-          updateTableCount('machines');
-        })
-        .catch(error => {
-          showNotification(error.message, 'error');
-        });
       }
 
-      function deleteCell(cellId) {
-        fetch(`/api/cells/${cellId}`, {
-          method: 'DELETE'
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/api/machines/${id}` : '/api/machines';
+
+      fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name,
+          plant_id: plantId,
+          cell_id: cellId,
+          minimum_skill: skill,
+          checksheets_count: checksheetsCount,
+          checkpoints: checkpoints
         })
-        .then(response => {
-          if (!response.ok) {
-            return response.json().then(data => {
-              throw new Error(data.error || 'Failed to delete cell');
-            });
-          }
-          return response.json();
-        })
+      })
+        .then(response => response.json())
         .then(data => {
-          showNotification(data.message, 'success');
-          // Remove the row from the table
-          const row = document.querySelector(`#cells-table tr[data-id="${cellId}"]`);
-          if (row) {
-            row.remove();
+          if (data.error) {
+            showNotification(data.error, 'error');
+          } else {
+            showNotification(data.message, 'success');
+            closeMachineModal();
+            setTimeout(() => location.reload(), 1000);
           }
-          // Update the count
-          updateTableCount('cells');
         })
         .catch(error => {
-          showNotification(error.message, 'error');
+          showNotification('An error occurred', 'error');
         });
-      }
+    });
 
-      function saveCell() {
-        const cellName = document.getElementById('cell-name').value;
-        const cellId = document.getElementById('cell-id').value;
-        const plant_id = document.getElementById('cell-plant').value;
+    document.getElementById('cell-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const id = document.getElementById('cell-id').value;
+      const name = document.getElementById('cell-name').value;
+      const plantId = document.getElementById('cell-plant').value;
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/api/cells/${id}` : '/api/cells';
 
-        if (!cellName || !plant_id) {
-          showNotification('Cell name and plant are required', 'error');
-          return;
-        }
-
-        const isEdit = cellId !== '';
-        const url = isEdit ? `/api/cells/${cellId}` : '/api/cells';
-        const method = isEdit ? 'PUT' : 'POST';
-        fetch(url, {
-          method: method,
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ cellName: cellName, plant_id: plant_id })
-        })
-        .then(response => {
-          if (!response.ok) {
-            return response.json().then(data => {
-              throw new Error(data.error || 'Failed to upsert cell');
-            });
-          }
-          return response.json();
-        })
+      fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cellName: name, plant_id: plantId })
+      })
+        .then(response => response.json())
         .then(data => {
-          showNotification(data.message, 'success');
-          closeCellModal();
-          // Reload the page to reflect changes
-          window.location.reload();
+          if (data.error) {
+            showNotification(data.error, 'error');
+          } else {
+            showNotification(data.message, 'success');
+            closeCellModal();
+            setTimeout(() => location.reload(), 1000);
+          }
         })
         .catch(error => {
-          showNotification(error.message, 'error');
+          showNotification('An error occurred', 'error');
         });
+    });
+
+    document.getElementById('checkpoint-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const id = document.getElementById('checkpoint-id').value;
+
+      const formData = new FormData();
+      formData.append('name', document.getElementById('checkpoint-name').value);
+      formData.append('category', document.getElementById('checkpoint-category').value);
+      formData.append('type', document.getElementById('checkpoint-type').value);
+      formData.append('time', document.getElementById('checkpoint-time').value);
+      formData.append('clit', document.getElementById('checkpoint-clit').value);
+      formData.append('how', document.getElementById('checkpoint-how').value);
+      formData.append('min', document.getElementById('checkpoint-min').value);
+      formData.append('max', document.getElementById('checkpoint-max').value);
+      formData.append('unit', document.getElementById('checkpoint-unit').value);
+      formData.append('alertEmail', document.getElementById('checkpoint-alert-email').value);
+
+
+      const imageFile = document.getElementById('checkpoint-image').files[0];
+      if (imageFile) {
+        formData.append('image', imageFile);
       }
 
-      function saveCheckpoint() {
-        const checkpointId = document.getElementById('checkpoint-id').value;
-        const checkpointName = document.getElementById('checkpoint-name').value;
-        const checkpointCategory = document.getElementById('checkpoint-category').value;
-        const checkpointType = document.getElementById('checkpoint-type').value;
-        const checkpointMin = document.getElementById('checkpoint-min').value;
-        const checkpointMax = document.getElementById('checkpoint-max').value;
-        const checkpointUnit = document.getElementById('checkpoint-unit').value;
-        const checkpointAlertEmail = document.getElementById('checkpoint-alert-email').value;
-        const checkpointTime = document.getElementById('checkpoint-time').value;
-        const checkpointClit = document.getElementById('checkpoint-clit').value;
-        const checkpointHow = document.getElementById('checkpoint-how').value;
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/api/checkpoints/${id}` : '/api/checkpoints';
 
-        if (!checkpointName || !checkpointCategory || !checkpointType) {
-          showNotification('Name, category, and type are required', 'error');
-          return;
-        }
-
-        // For numeric type, min and max values are required
-        if (checkpointType === 'numeric' && (!checkpointMin || !checkpointMax)) {
-          showNotification('Min and max values are required for numeric type', 'error');
-          return;
-        }
-
-        const isEdit = checkpointId !== '';
-        const url = isEdit ? `/api/checkpoints/${checkpointId}` : '/api/checkpoints';
-        const method = isEdit ? 'PUT' : 'POST';
-
-        fetch(url, {
-          method: method,
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            name: checkpointName,
-            category: checkpointCategory,
-            type: checkpointType,
-            min: checkpointMin,
-            max: checkpointMax,
-            unit: checkpointUnit,
-            alertEmail: checkpointAlertEmail,
-            time: checkpointTime,
-            clit: checkpointClit,
-            how: checkpointHow
-          })
-        })
-        .then(response => {
-          if (!response.ok) {
-            return response.json().then(data => {
-              throw new Error(data.error || 'Failed to save checkpoint');
-            });
-          }
-          return response.json();
-        })
+      fetch(url, {
+        method: method,
+        body: formData
+      })
+        .then(response => response.json())
         .then(data => {
-          showNotification(data.message, 'success');
-          closeCheckpointModal();
-          // Reload the page to reflect changes
-          window.location.reload();
+          if (data.error) {
+            showNotification(data.error, 'error');
+          } else {
+            showNotification(data.message, 'success');
+            closeCheckpointModal();
+            setTimeout(() => location.reload(), 1000);
+          }
         })
         .catch(error => {
-          showNotification(error.message, 'error');
+          showNotification('An error occurred', 'error');
         });
+    });
+
+    // Delete functions
+    function confirmDeletePlant(id, name) {
+      openConfirmModal('Delete Plant', `Are you sure you want to delete plant "${name}"? This will also delete all associated machines.`, function () {
+        fetch(`/api/plants/${id}`, { method: 'DELETE' })
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) showNotification(data.error, 'error');
+            else {
+              showNotification(data.message, 'success');
+              closeConfirmModal();
+              setTimeout(() => location.reload(), 1000);
+            }
+          });
+      });
+    }
+
+    function confirmDeleteMachine(id, name) {
+      openConfirmModal('Delete Machine', `Are you sure you want to delete machine "${name}"?`, function () {
+        fetch(`/api/machines/${id}`, { method: 'DELETE' })
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) showNotification(data.error, 'error');
+            else {
+              showNotification(data.message, 'success');
+              closeConfirmModal();
+              setTimeout(() => location.reload(), 1000);
+            }
+          });
+      });
+    }
+
+    function confirmDeleteCell(id, name) {
+      openConfirmModal('Delete Cell', `Are you sure you want to delete cell "${name}"?`, function () {
+        fetch(`/api/cells/${id}`, { method: 'DELETE' })
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) showNotification(data.error, 'error');
+            else {
+              showNotification(data.message, 'success');
+              closeConfirmModal();
+              setTimeout(() => location.reload(), 1000);
+            }
+          });
+      });
+    }
+
+    function confirmDeleteCheckpoint(id, name) {
+      openConfirmModal('Delete Checkpoint', `Are you sure you want to delete checkpoint "${name}"?`, function () {
+        fetch(`/api/checkpoints/${id}`, { method: 'DELETE' })
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) showNotification(data.error, 'error');
+            else {
+              showNotification(data.message, 'success');
+              closeConfirmModal();
+              setTimeout(() => location.reload(), 1000);
+            }
+          });
+      });
+    }
+
+    document.getElementById('confirm-close').addEventListener('click', closeConfirmModal);
+    document.getElementById('confirm-cancel').addEventListener('click', closeConfirmModal);
+
+    // Search functionality
+    function setupSearch(entityType) {
+      const searchInput = document.getElementById(`${entityType}-search`);
+      const table = document.getElementById(`${entityType}-table`);
+
+      searchInput.addEventListener('input', function () {
+        const searchTerm = this.value.toLowerCase();
+        const rows = table.querySelectorAll('tbody tr');
+
+        let visibleCount = 0;
+        rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          const isVisible = text.includes(searchTerm);
+          row.style.display = isVisible ? '' : 'none';
+          if (isVisible) visibleCount++;
+        });
+
+        // Update counter
+        updateTableCount(entityType, visibleCount, rows.length);
+      });
+    }
+
+    function updateTableCount(entityType, visibleCount, totalCount) {
+      const countElement = document.getElementById(`${entityType}-count`);
+      if (!visibleCount) {
+        // Count visible rows
+        const rows = document.querySelectorAll(`#${entityType}-table tbody tr`);
+        visibleCount = Array.from(rows).filter(row => row.style.display !== 'none').length;
+        totalCount = rows.length;
       }
 
-      function deleteCheckpoint(checkpointId) {
-        fetch(`/api/checkpoints/${checkpointId}`, {
-          method: 'DELETE'
-        })
-        .then(response => {
-          if (!response.ok) {
-            return response.json().then(data => {
-              throw new Error(data.error || 'Failed to delete checkpoint');
-            });
-          }
-          return response.json();
-        })
-        .then(data => {
-          showNotification(data.message, 'success');
-          // Remove the row from the table
-          const row = document.querySelector(`#checkpoints-table tr[data-id="${checkpointId}"]`);
-          if (row) {
-            row.remove();
-          }
-          // Update the count
-          updateTableCount('checkpoints');
-        })
-        .catch(error => {
-          showNotification(error.message, 'error');
-        });
-      }
+      countElement.textContent = `Showing ${visibleCount} of ${totalCount} ${entityType}`;
+    }
 
-      // Search functionality
-      function setupSearch(entityType) {
-        const searchInput = document.getElementById(`${entityType}-search`);
-        const table = document.getElementById(`${entityType}-table`);
+    // Sort functionality
+    function setupSorting(entityType) {
+      const table = document.getElementById(`${entityType}-table`);
 
-        searchInput.addEventListener('input', function() {
-          const searchTerm = this.value.toLowerCase();
-          const rows = table.querySelectorAll('tbody tr');
+      table.querySelectorAll('th button').forEach(button => {
+        button.addEventListener('click', function () {
+          const index = this.closest('th').cellIndex;
+          const isAscending = this.getAttribute('data-order') !== 'asc';
 
-          let visibleCount = 0;
-          rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            const isVisible = text.includes(searchTerm);
-            row.style.display = isVisible ? '' : 'none';
-            if (isVisible) visibleCount++;
+          // Reset all other sort indicators
+          table.querySelectorAll('th button').forEach(btn => {
+            btn.removeAttribute('data-order');
+            btn.querySelector('.sort-icon').className = 'fas fa-sort sort-icon';
           });
 
-          // Update counter
-          updateTableCount(entityType, visibleCount, rows.length);
-        });
-      }
+          // Set this column's sort order
+          this.setAttribute('data-order', isAscending ? 'asc' : 'desc');
+          this.querySelector('.sort-icon').className = 'fas fa-sort-' + (isAscending ? 'up' : 'down') + ' sort-icon';
 
-      function updateTableCount(entityType, visibleCount, totalCount) {
-        const countElement = document.getElementById(`${entityType}-count`);
-        if (!visibleCount) {
-          // Count visible rows
-          const rows = document.querySelectorAll(`#${entityType}-table tbody tr`);
-          visibleCount = Array.from(rows).filter(row => row.style.display !== 'none').length;
-          totalCount = rows.length;
-        }
+          // Sort table
+          const tbody = table.querySelector('tbody');
+          const rows = Array.from(tbody.querySelectorAll('tr'));
 
-        countElement.textContent = `Showing ${visibleCount} of ${totalCount} ${entityType}`;
-      }
+          rows.sort((a, b) => {
+            const aValue = a.cells[index].textContent.trim();
+            const bValue = b.cells[index].textContent.trim();
 
-      // Sort functionality
-      function setupSorting(entityType) {
-        const table = document.getElementById(`${entityType}-table`);
+            // Handle
+            if (!isNaN(aValue) && !isNaN(bValue)) {
+              return isAscending ? aValue - bValue : bValue - aValue;
+            }
 
-        table.querySelectorAll('th button').forEach(button => {
-          button.addEventListener('click', function() {
-            const index = this.closest('th').cellIndex;
-            const isAscending = this.getAttribute('data-order') !== 'asc';
-
-            // Reset all other sort indicators
-            table.querySelectorAll('th button').forEach(btn => {
-              btn.removeAttribute('data-order');
-              btn.querySelector('.sort-icon').className = 'fas fa-sort sort-icon';
-            });
-
-            // Set this column's sort order
-            this.setAttribute('data-order', isAscending ? 'asc' : 'desc');
-            this.querySelector('.sort-icon').className = 'fas fa-sort-' + (isAscending ? 'up' : 'down') + ' sort-icon';
-
-            // Sort table
-            const tbody = table.querySelector('tbody');
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-
-            rows.sort((a, b) => {
-              const aValue = a.cells[index].textContent.trim();
-              const bValue = b.cells[index].textContent.trim();
-
-              // Handle
-              if (!isNaN(aValue) && !isNaN(bValue)) {
-                return isAscending ? aValue - bValue : bValue - aValue;
-              }
-
-              // String sorting
-              return isAscending
-                ? aValue.localeCompare(bValue)
-                : bValue.localeCompare(aValue);
-            });
-
-            // Reorder rows
-            rows.forEach(row => tbody.appendChild(row));
+            // String sorting
+            return isAscending
+              ? aValue.localeCompare(bValue)
+              : bValue.localeCompare(aValue);
           });
+
+          // Reorder rows
+          rows.forEach(row => tbody.appendChild(row));
         });
-      }
+      });
+    }
 
-      // Show notification
-      function showNotification(message, type) {
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.textContent = message;
+    // Show notification
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.textContent = message;
 
-        // Add to DOM
-        document.body.appendChild(notification);
+      // Add to DOM
+      document.body.appendChild(notification);
 
-        // Remove after timeout
+      // Remove after timeout
+      setTimeout(() => {
+        notification.classList.add('notification-hide');
         setTimeout(() => {
-          notification.classList.add('notification-hide');
-          setTimeout(() => {
-            document.body.removeChild(notification);
-          }, 300);
-        }, 3000);
-      }
+          document.body.removeChild(notification);
+        }, 300);
+      }, 3000);
+    }
 
-      // Close dropdown when clicking elsewhere
-      document.addEventListener('click', function(event) {
-        if (!event.target.closest('.dropdown-toggle')) {
-          document.querySelectorAll('.dropdown-menu').forEach(menu => {
-            menu.style.display = 'none';
-          });
-        }
-      });
-
-      // Event listeners for modals
-      document.getElementById('add-plant-btn').addEventListener('click', openAddPlantModal);
-      document.getElementById('plant-modal-close').addEventListener('click', closePlantModal);
-      document.getElementById('plant-cancel-btn').addEventListener('click', closePlantModal);
-      document.getElementById('plant-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        savePlant();
-      });
-
-      document.getElementById('add-machine-btn').addEventListener('click', openAddMachineModal);
-      document.getElementById('machine-modal-close').addEventListener('click', closeMachineModal);
-      document.getElementById('machine-cancel-btn').addEventListener('click', closeMachineModal);
-      document.getElementById('machine-checksheets-count').addEventListener('change', handleChecksheetsCountChange);
-      document.getElementById('machine-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveMachine();
-      });
-
-      document.getElementById('add-cell-btn').addEventListener('click', openAddCellModal);
-      document.getElementById('cell-modal-close').addEventListener('click', closeCellModal);
-      document.getElementById('cell-cancel-btn').addEventListener('click', closeCellModal);
-      document.getElementById('cell-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveCell();
-      });
-
-      document.getElementById('checkpoint-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveCheckpoint();
-      });
-
-      document.getElementById('confirm-close').addEventListener('click', closeConfirmModal);
-      document.getElementById('confirm-cancel').addEventListener('click', closeConfirmModal);
-
-      // Custom multiselect for checkpoints
-      // const multiselect = document.getElementById('checkpoint-multiselect');
-      // const selectedDiv = document.getElementById('checkpoint-multiselect-selected');
-      // const dropdown = document.getElementById('checkpoint-multiselect-dropdown');
-      // const searchInput = document.getElementById('checkpoint-search');
-      // const optionsDiv = document.getElementById('checkpoint-options');
-
-      // Open/close dropdown
-      // selectedDiv.addEventListener('click', function(e) {
-      //   dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-      //   if (dropdown.style.display === 'block') {
-      //     searchInput.focus();
-      //   }
-      //   e.stopPropagation();
-      // });
-      // document.addEventListener('click', function(e) {
-      //   if (!multiselect.contains(e.target)) {
-      //     dropdown.style.display = 'none';
-      //   }
-      // });
-
-      // Filter options on search
-      // searchInput.addEventListener('input', function() {
-      //   const search = this.value.toLowerCase();
-      //   Array.from(optionsDiv.querySelectorAll('label')).forEach(label => {
-      //     label.style.display = label.textContent.toLowerCase().includes(search) ? '' : 'none';
-      //   });
-      // });
-
-      // Update selected chips
-      // function updateSelectedChips() {
-      //   const checked = optionsDiv.querySelectorAll('input[type="checkbox"]:checked');
-      //   selectedDiv.innerHTML = '';
-      //   if (checked.length === 0) {
-      //     selectedDiv.textContent = 'Select checkpoints';
-      //   } else {
-      //     checked.forEach(cb => {
-      //       const chip = document.createElement('span');
-      //       chip.className = 'chip';
-      //       chip.textContent = cb.dataset.name;
-      //       chip.value = cb.value;
-      //       const remove = document.createElement('span');
-      //       remove.className = 'remove-chip';
-      //       remove.textContent = '×';
-      //       remove.onclick = function(e) {
-      //         cb.checked = false;
-      //         updateSelectedChips();
-      //         e.stopPropagation();
-      //       };
-      //       chip.appendChild(remove);
-      //       selectedDiv.appendChild(chip);
-      //     });
-      //   }
-      // }
-      // optionsDiv.addEventListener('change', function(e) {
-      //   if (e.target.type === 'checkbox') {
-      //     updateSelectedChips();
-      //   }
-      // });
-      // Initial update
-      // updateSelectedChips();
-
-      // Initialize everything when the DOM is loaded
-      document.addEventListener('DOMContentLoaded', function() {
-        // Initialize dropdowns
-        initPlantDropdowns();
-        initMachineDropdowns();
-        initCellDropdowns();
-        initCheckpointDropdowns();
-
-        // Setup search functionality
-        setupSearch('plants');
-        setupSearch('machines');
-        setupSearch('cells');
-        setupSearch('checkpoints');
-
-        // Setup sorting
-        setupSorting('plants');
-        setupSorting('machines');
-        setupSorting('cells');
-        setupSorting('checkpoints');
-
-        // Update table counts
-        updateTableCount('plants');
-        updateTableCount('machines');
-        updateTableCount('cells');
-        updateTableCount('checkpoints');
-
-        // Close modals when clicking outside
-        window.addEventListener('click', function(event) {
-          if (event.target.classList.contains('modal')) {
-            event.target.style.display = 'none';
-          }
+    // Close dropdown when clicking elsewhere
+    document.addEventListener('click', function (event) {
+      if (!event.target.closest('.dropdown-toggle')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+          menu.style.display = 'none';
         });
+      }
+    });
+    // Initialize everything when the DOM is loaded
+    document.addEventListener('DOMContentLoaded', function () {
+      // Initialize dropdowns
+      initPlantDropdowns();
+      initMachineDropdowns();
+      initCellDropdowns();
+      initCheckpointDropdowns();
 
-        // Checkpoint search for multi-select
-        const checkpointSearch = document.getElementById('checkpoint-search');
-        const checkpointSelect = document.getElementById('machine-checkpoints');
-        if (checkpointSearch && checkpointSelect) {
-          checkpointSearch.addEventListener('input', function() {
-            const search = this.value.toLowerCase();
-            Array.from(checkpointSelect.options).forEach(opt => {
-              if (!opt.value) return; // skip placeholder
-              opt.style.display = opt.textContent.toLowerCase().includes(search) ? '' : 'none';
-            });
-          });
+      // Setup search functionality
+      setupSearch('plants');
+      setupSearch('machines');
+      setupSearch('cells');
+      setupSearch('checkpoints');
+
+      // Setup sorting
+      setupSorting('plants');
+      setupSorting('machines');
+      setupSorting('cells');
+      setupSorting('checkpoints');
+
+      // Update table counts
+      updateTableCount('plants');
+      updateTableCount('machines');
+      updateTableCount('cells');
+      updateTableCount('checkpoints');
+
+      // Close modals when clicking outside
+      window.addEventListener('click', function (event) {
+        if (event.target.classList.contains('modal')) {
+          event.target.style.display = 'none';
         }
       });
-      function logout() {
-        fetch("/logout", {
-          method: "POST",
-          credentials: "include",
-        })
-          .then(() => {
-            window.location.href = "/login";
-          })
-          .catch((err) => {
-            console.error("Logout error:", err);
-            alert("Logout failed!");
+
+      // Checkpoint search for multi-select
+      const checkpointSearch = document.getElementById('checkpoint-search');
+      const checkpointSelect = document.getElementById('machine-checkpoints');
+      if (checkpointSearch && checkpointSelect) {
+        checkpointSearch.addEventListener('input', function () {
+          const search = this.value.toLowerCase();
+          Array.from(checkpointSelect.options).forEach(opt => {
+            if (!opt.value) return; // skip placeholder
+            opt.style.display = opt.textContent.toLowerCase().includes(search) ? '' : 'none';
           });
+        });
       }
-    </script>
-  </body>
+    });
+
+    function logout() {
+      fetch("/logout", {
+        method: "POST",
+        credentials: "include",
+      })
+        .then(() => {
+          window.location.href = "/login";
+        })
+        .catch((err) => {
+          console.error("Logout error:", err);
+          alert("Logout failed!");
+        });
+    }
+  </script>
+</body>
+
 </html>

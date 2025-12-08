@@ -66,12 +66,10 @@ function generateAdminHTML(users) {
         <td>${user.username}</td>
         <td>${user.email}</td>
         <td>${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</td>
-        <td><span class="chip active-chip-${user.active}">${
-        user.active === 1 ? "Active" : "Inactive"
-      }</span></td>
-        <td><span class="chip chip-${user.plant_id}">${
-        user.plant_id
-      }</span></td>
+        <td><span class="chip active-chip-${user.active}">${user.active === 1 ? "Active" : "Inactive"
+        }</span></td>
+        <td><span class="chip chip-${user.plant_id}">${user.plant_id
+        }</span></td>
         <td class="actions-cell">
           <div class="dropdown">
             <button class="dropdown-toggle">
@@ -452,7 +450,7 @@ function renderSettingsPage(res) {
   // Get plants data
   const plantsQuery = `SELECT id, name FROM plants ORDER BY name ASC`;
   const skillsQuery = `SELECT id, name FROM skills ORDER BY name ASC`;
-  const checkpointsQuery = `SELECT id, name, category, type, min_value, max_value, unit, alert_email, time, clit, how FROM checkpoints ORDER BY name ASC`;
+  const checkpointsQuery = `SELECT id, name, category, type, min_value, max_value, unit, alert_email, time, clit, how, photo_url FROM checkpoints ORDER BY name ASC`;
 
   db.all(plantsQuery, [], (err, plants) => {
     if (err) {
@@ -670,7 +668,7 @@ function generateSettingsHTML(plants, machines, cells, skills, checkpoints) {
   const checkpointRows = checkpoints
     .map((checkpoint) => {
       return `
-      <tr data-id="${checkpoint.id}">
+      <tr data-id="${checkpoint.id}" data-photo="${checkpoint.photo_url || ''}">
         <td>${checkpoint.id}</td>
         <td>${checkpoint.name}</td>
         <td>${checkpoint.category || ''}</td>
@@ -732,13 +730,13 @@ function generateSettingsHTML(plants, machines, cells, skills, checkpoints) {
 // API endpoint to get checkpoints for the multiselect
 router.get("/checkpoints", (req, res) => {
   const query = `SELECT id, name, category FROM checkpoints ORDER BY name ASC`;
-  
+
   db.all(query, [], (err, checkpoints) => {
     if (err) {
       console.error("Error retrieving checkpoints:", err.message);
       return res.status(500).json({ error: "Database error occurred" });
     }
-    
+
     res.json(checkpoints);
   });
 });
@@ -746,7 +744,7 @@ router.get("/checkpoints", (req, res) => {
 // API endpoint to get machine details with checkpoints by checksheet
 router.get("/machines/:id", (req, res) => {
   const machineId = req.params.id;
-  
+
   // Get machine basic info
   const machineQuery = `
     SELECT m.*, p.name as plant_name, c.name as cell_name, s.name as skill_name
@@ -756,17 +754,17 @@ router.get("/machines/:id", (req, res) => {
     JOIN skills s ON m.minimum_skill = s.id
     WHERE m.id = ?
   `;
-  
+
   db.get(machineQuery, [machineId], (err, machine) => {
     if (err) {
       console.error("Error retrieving machine:", err.message);
       return res.status(500).json({ error: "Database error occurred" });
     }
-    
+
     if (!machine) {
       return res.status(404).json({ error: "Machine not found" });
     }
-    
+
     // Get machine checkpoints organized by checksheet (page)
     const checkpointsQuery = `
       SELECT mc.page, mc.checkpoint_id, cp.name, cp.category
@@ -775,13 +773,13 @@ router.get("/machines/:id", (req, res) => {
       WHERE mc.machine_id = ?
       ORDER BY mc.page, cp.name
     `;
-    
+
     db.all(checkpointsQuery, [machineId], (err, checkpoints) => {
       if (err) {
         console.error("Error retrieving machine checkpoints:", err.message);
         return res.status(500).json({ error: "Database error occurred" });
       }
-      
+
       // Organize checkpoints by checksheet
       const checkpointsByChecksheet = {};
       checkpoints.forEach(cp => {
@@ -794,7 +792,7 @@ router.get("/machines/:id", (req, res) => {
           category: cp.category
         });
       });
-      
+
       res.json({
         machine,
         checkpointsByChecksheet
