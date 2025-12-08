@@ -5,6 +5,8 @@ const sqlite3 = require("sqlite3").verbose();
 const router = express.Router();
 const db = new sqlite3.Database("./database.db");
 
+
+
 router.get("/", (req, res) => {
   res.json(`hello ${req.user.fullname}`);
 });

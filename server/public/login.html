@@ -1,265 +1,292 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - Company Portal</title>
-    <style>
-      body {
-        margin: 0;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(to right, #2c3e50, #3498db);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Company Portal</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #2c3e50, #3498db);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .login-box {
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-box h2 {
+      margin-bottom: 30px;
+      font-size: 24px;
+      text-align: center;
+      color: #333;
+    }
+
+    .login-box label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    .login-box input[type="text"],
+    .login-box input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      background-color: #0077cc;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .login-box button:hover {
+      background-color: #005fa3;
+    }
+
+    .login-box .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .login-box .footer a {
+      color: #0077cc;
+      text-decoration: none;
+    }
+
+    .login-box .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Date/Time top right */
+    .datetime {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 14px;
+      color: #fff;
+      text-align: right;
+      background-color: rgba(255, 255, 255, 0.2);
+      padding: 8px 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Error message styling */
+    .error-message {
+      color: #e74c3c;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 14px;
+      display: none;
+    }
+
+    /* Loading indicator */
+    .loading {
+      display: none;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .loading::after {
+      content: "...";
+      animation: dots 1.5s steps(5, end) infinite;
+    }
+
+    @keyframes dots {
+
+      0%,
+      20% {
+        content: ".";
       }
 
-      .login-box {
-        background-color: #fff;
-        padding: 40px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        width: 100%;
-        max-width: 400px;
+      40% {
+        content: "..";
       }
 
-      .login-box h2 {
-        margin-bottom: 30px;
-        font-size: 24px;
-        text-align: center;
-        color: #333;
-      }
-
-      .login-box label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: #555;
-      }
-
-      .login-box input[type="text"],
-      .login-box input[type="password"] {
-        width: 100%;
-        padding: 12px;
-        margin-bottom: 20px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 16px;
-      }
-
-      .login-box button {
-        width: 100%;
-        padding: 12px;
-        background-color: #0077cc;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-
-      .login-box button:hover {
-        background-color: #005fa3;
-      }
-
-      .login-box .footer {
-        margin-top: 20px;
-        text-align: center;
-        font-size: 14px;
-        color: #666;
-      }
-
-      .login-box .footer a {
-        color: #0077cc;
-        text-decoration: none;
-      }
-
-      .login-box .footer a:hover {
-        text-decoration: underline;
-      }
-      /* Date/Time top right */
-      .datetime {
-        position: absolute;
-        top: 20px;
-        right: 30px;
-        font-size: 14px;
-        color: #fff;
-        text-align: right;
-        background-color: rgba(255, 255, 255, 0.2);
-        padding: 8px 12px;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      }
-
-      /* Error message styling */
-      .error-message {
-        color: #e74c3c;
-        margin-bottom: 15px;
-        text-align: center;
-        font-size: 14px;
-        display: none;
-      }
-
-      /* Loading indicator */
-      .loading {
-        display: none;
-        text-align: center;
-        margin-bottom: 15px;
-      }
-
-      .loading::after {
+      60%,
+      100% {
         content: "...";
-        animation: dots 1.5s steps(5, end) infinite;
       }
+    }
+  </style>
+</head>
 
-      @keyframes dots {
-        0%,
-        20% {
-          content: ".";
-        }
-        40% {
-          content: "..";
-        }
-        60%,
-        100% {
-          content: "...";
-        }
+<body>
+  <!-- Date and Time in top-right -->
+  <div class="datetime">
+    <div id="date"></div>
+    <div id="time"></div>
+  </div>
+  <div class="login-box">
+    <h2>Welcome Back</h2>
+    <div id="error-message" class="error-message"></div>
+    <div id="loading-indicator" class="loading">Signing in</div>
+    <form id="login-form">
+      <label for="username">Username or Email</label>
+      <input type="text" id="username" name="username" placeholder="Enter your username" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter your password" required />
+
+      <div id="access-code-section"
+        style="display: none; border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
+        <label for="temp_code" style="color: #3b82f6;">Access Code</label>
+        <input type="text" id="temp_code" name="temp_code" placeholder="Enter access code">
+
+        <label for="temp_password" style="color: #3b82f6;">Access Password</label>
+        <input type="password" id="temp_password" name="temp_password" placeholder="Enter access password">
+      </div>
+
+      <div style="text-align: right; margin-bottom: 15px;">
+        <a href="#" id="toggle-access-code" style="font-size: 14px; color: #3b82f6; text-decoration: none;">Login with
+          Access Code</a>
+      </div>
+
+      <button type="submit">Sign In</button>
+
+      <div class="footer">
+        <p>
+          <a href="Forgot password.html">Forgot password?</a> |
+          <a href="Create account.html">Create account</a>
+        </p>
+        <nav>
+          <a href="/">Home</a>
+          <a href="about.html">About</a>
+          <a href="#">Services</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Update date and time
+    function updateDateTime() {
+      const now = new Date();
+      const date = now.toLocaleDateString(undefined, {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      const time = now.toLocaleTimeString();
+      document.getElementById("date").textContent = date;
+      document.getElementById("time").textContent = time;
+    }
+
+    // Initialize datetime and set interval
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    document.getElementById('toggle-access-code').addEventListener('click', function (e) {
+      e.preventDefault();
+      const section = document.getElementById('access-code-section');
+      if (section.style.display === 'none') {
+        section.style.display = 'block';
+        this.textContent = 'Hide Access Code Login';
+      } else {
+        section.style.display = 'none';
+        this.textContent = 'Login with Access Code';
+        document.getElementById('temp_code').value = '';
+        document.getElementById('temp_password').value = '';
       }
-    </style>
-  </head>
-  <body>
-    <!-- Date and Time in top-right -->
-    <div class="datetime">
-      <div id="date"></div>
-      <div id="time"></div>
-    </div>
-    <div class="login-box">
-      <h2>Welcome Back</h2>
-      <div id="error-message" class="error-message"></div>
-      <div id="loading-indicator" class="loading">Signing in</div>
-      <form id="login-form">
-        <label for="username">Username or Email</label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          placeholder="Enter your username"
-          required
-        />
+    });
 
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="Enter your password"
-          required
-        />
+    // Handle login form submission
+    document
+      .getElementById("login-form")
+      .addEventListener("submit", function (event) {
+        event.preventDefault();
 
-        <button type="submit">Sign In</button>
+        // Show loading indicator
+        document.getElementById("loading-indicator").style.display = "block";
+        document.getElementById("error-message").style.display = "none";
 
-        <div class="footer">
-          <p>
-            <a href="Forgot password.html">Forgot password?</a> |
-            <a href="Create account.html">Create account</a>
-          </p>
-          <nav>
-            <a href="/">Home</a>
-            <a href="about.html">About</a>
-            <a href="#">Services</a>
-            <a href="contact.html">Contact</a>
-          </nav>
-        </div>
-      </form>
-    </div>
+        // Get form data
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const temp_code = document.getElementById("temp_code").value;
+        const temp_password = document.getElementById("temp_password").value;
 
-    <script>
-      // Update date and time
-      function updateDateTime() {
-        const now = new Date();
-        const date = now.toLocaleDateString(undefined, {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-        const time = now.toLocaleTimeString();
-        document.getElementById("date").textContent = date;
-        document.getElementById("time").textContent = time;
-      }
+        ADMIN_ROLES = ["admin", "itAdmin", "ptt"]
 
-      // Initialize datetime and set interval
-      setInterval(updateDateTime, 1000);
-      updateDateTime();
+        // Create request
+        fetch("/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            username: username,
+            password: password,
+            temp_code: temp_code,
+            temp_password: temp_password
+          }),
+        })
+          .then(async (response) => {
+            const resp = await response.json(); // await here
 
-      // Handle login form submission
-      document
-        .getElementById("login-form")
-        .addEventListener("submit", function (event) {
-          event.preventDefault();
-
-          // Show loading indicator
-          document.getElementById("loading-indicator").style.display = "block";
-          document.getElementById("error-message").style.display = "none";
-
-          // Get form data
-          const username = document.getElementById("username").value;
-          const password = document.getElementById("password").value;
-
-          ADMIN_ROLES = ["admin", "itAdmin", "ptt"]
-
-          // Create request
-          fetch("/login", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({
-              username: username,
-              password: password,
-            }),
+            if (response.ok) {
+              return resp;
+            } else {
+              // Use message from JSON response or fallback
+              throw new Error(
+                resp.message || "Login failed. Please check your credentials."
+              );
+            }
           })
-            .then(async (response) => {
-              const resp = await response.json(); // await here
+          .then((data) => {
+            if (data && ADMIN_ROLES.includes(data.role)) {
+              window.location.href = '/admin';
+              return;
+            }
 
-              if (response.ok) {
-                return resp;
-              } else {
-                // Use message from JSON response or fallback
-                throw new Error(
-                  resp.message || "Login failed. Please check your credentials."
-                );
-              }
-            })
-            .then((data) => {
-              if(data && ADMIN_ROLES.includes(data.role)) {
-                window.location.href = '/admin';
-                return;
-              }
+            document.getElementById("loading-indicator").style.display =
+              "none";
 
-              document.getElementById("loading-indicator").style.display =
-                "none";
+            if (data && data.plant_id) {
+              window.location.href = `page1.html?plant=${data.plant_id}`;
+            } else {
+              throw new Error(
+                "Invalid server response. Plant information missing."
+              );
+            }
+          })
+          .catch((error) => {
+            document.getElementById("loading-indicator").style.display =
+              "none";
+            const errorElement = document.getElementById("error-message");
+            errorElement.textContent = error.message;
+            errorElement.style.display = "block";
+          });
+      });
+  </script>
+</body>
 
-              if (data && data.plant_id) {
-                window.location.href = `page1.html?plant=${data.plant_id}`;
-              } else {
-                throw new Error(
-                  "Invalid server response. Plant information missing."
-                );
-              }
-            })
-            .catch((error) => {
-              document.getElementById("loading-indicator").style.display =
-                "none";
-              const errorElement = document.getElementById("error-message");
-              errorElement.textContent = error.message;
-              errorElement.style.display = "block";
-            });
-        });
-    </script>
-  </body>
 </html>

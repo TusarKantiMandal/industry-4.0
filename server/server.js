@@ -58,10 +58,11 @@ app.use("/admin", (req, res, next) => {
 
 const adminRoutes = require("./admin");
 const apiRoutes = require("./api");
+const accessCodeRoutes = require("./accessCodes");
 const openRoutes = require("./openRoutes");
 const checkSheetRoutes = require("./checkSheet");
 const { sendEmail } = require("./email");
-app.use("/admin", adminRoutes); // TODO: add verifyAdmin middleware
+app.use("/admin", verifyItAdmin, adminRoutes); // TODO: add verifyAdmin middleware
 
 // PTT Users Endpoint (Accessible to all logged-in users)
 app.get("/api/users/ptt", verifyToken, (req, res) => {
@@ -89,6 +90,7 @@ app.get("/api/users/approvers", verifyToken, (req, res) => {
   });
 });
 
+app.use("/api/access-codes", verifyToken, accessCodeRoutes);
 app.use("/api", verifyItAdmin, apiRoutes);
 app.use("/open", openRoutes);
 app.use("/machine/:machineId", verifyMachineAccess, checkSheetRoutes);
@@ -99,15 +101,46 @@ app.post("/service/send-email", (req, res) => {
   if (!email || !subject || !message) {
     return res.status(400).json({ error: "Email, subject, and message are required" });
   }
-  sendEmail(email, subject, message, cc || [], user.fullname)
-    .then(() => {
-      res.json({ success: true, message: "Emails sent successfully" });
-    })
-    .catch((error) => {
-      console.error("Error sending emails:", error);
-      res.status(500).json({ error: "Failed to send emails" });
-    });
+  sendEmail(email, subject, message, cc);
+  res.json({ message: "Email sent successfully" });
 });
+
+// Middleware to verify JWT token
+function verifyToken(req, res, next) {
+  const token = req.cookies.token;
+
+  if (!token)
+    return res.redirect("/error.html?type=auth&errorCode=401&details=No token");
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err)
+      return res.redirect(
+        "/error.html?type=auth&errorCode=403&details=Invalid token"
+      );
+
+    console.log("VerifyToken Decoded:", decoded);
+
+    // Check if this is a temporary session and if the access code is still valid
+    if (decoded.is_temp && decoded.access_code_id) {
+      console.log(`Verifying temp token for access_code_id: ${decoded.access_code_id}`);
+      const query = "SELECT is_active, expires_at FROM temp_access_codes WHERE id = ?";
+      db.get(query, [decoded.access_code_id], (err, row) => {
+        console.log(`DB Result for access code ${decoded.access_code_id}:`, row);
+        if (err || !row || !row.is_active || new Date(row.expires_at) < new Date()) {
+          console.log("Access code revoked or expired. Denying access.");
+          res.clearCookie("token");
+          return res.redirect("/error.html?type=auth&errorCode=403&details=Session Expired or Revoked");
+        }
+        req.user = decoded;
+        next();
+      });
+    } else {
+      // console.log("Standard token verified");
+      req.user = decoded;
+      next();
+    }
+  });
+}
 
 app.get("/page1.html", verifyToken, (req, res) => {
   const usersPlant = req.user.plant_id;
@@ -314,6 +347,31 @@ const db = new sqlite3.Database("./database.db", (err) => {
       );
 
       db.run(`CREATE INDEX IF NOT EXISTS idx_batch_id ON data(batch_id);`);
+
+      db.run(`
+        CREATE TABLE IF NOT EXISTS temp_access_codes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          code TEXT NOT NULL UNIQUE,
+          password TEXT NOT NULL,
+          creator_id INTEGER NOT NULL,
+          expires_at DATETIME NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          is_active INTEGER DEFAULT 1,
+          FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+      `);
+
+      db.run(`
+        CREATE TABLE IF NOT EXISTS temp_access_logs (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          access_code_id INTEGER NOT NULL,
+          real_user_id INTEGER NOT NULL,
+          ip_address TEXT,
+          login_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (access_code_id) REFERENCES temp_access_codes(id) ON DELETE CASCADE,
+          FOREIGN KEY (real_user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+      `);
     });
   }
 });
@@ -371,6 +429,30 @@ app.get("/login", (req, res) => {
   }
 
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
+
+    const access_code_id = decoded.access_code_id;
+
+    if (access_code_id) {
+      const q = `
+        SELECT *
+        FROM temp_access_codes
+        WHERE id = ?
+          AND is_active = 1
+          AND expires_at > datetime('now')
+      `;
+
+      return db.get(q, [access_code_id], (err, row) => {
+        if (err) {
+          console.error("Error checking access code:", err.message);
+          return res.status(500).send("Database error occurred");
+        }
+
+        if (!row) {
+          return res.sendFile(path.join(__dirname, "public", "login.html"));
+        }
+      });
+    }
+
     if (err) {
       // Invalid token → show login
       return res.sendFile(path.join(__dirname, "public", "login.html"));
@@ -402,58 +484,108 @@ app.post("/logout", (req, res) => {
 });
 
 // Handle login - Support both form and JSON data
+// Handle login - Support both form and JSON data
 app.post("/login", (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, temp_code, temp_password } = req.body;
+
+  // 1. Authenticate Real User
   const loginQuery = `
     SELECT * FROM users WHERE (username = ? OR email = ?) AND password = ?
   `;
 
-  db.get(loginQuery, [username, username, password], (err, row) => {
+  db.get(loginQuery, [username, username, password], (err, realUser) => {
     if (err) {
       console.error("Login error", err.message);
-      // Return error as JSON
       return res.status(500).json({ success: false, message: "Server error" });
     }
 
-    if (!row) {
+    if (!realUser) {
       return res.status(401).json({
         success: false,
-        message: "No user exists or wrong credentials!",
+        message: "Invalid user credentials!",
       });
     }
 
-    if (!row.active) {
+    if (!realUser.active) {
       return res.status(403).json({
         success: false,
         message: "User account is inactive.",
       });
     }
 
-    console.log(`User "${username}" logged in.`);
+    // 2. Check if Temp Access Code is provided
+    if (temp_code && temp_password) {
+      const codeQuery = `SELECT * FROM temp_access_codes WHERE code = ? AND password = ? AND is_active = 1 AND expires_at >= datetime('now');`;
+      db.get(codeQuery, [temp_code, temp_password], (err, accessCode) => {
+        if (err) return res.status(500).json({ success: false, message: "Server error checking code" });
 
-    const userData = {
-      success: true,
-      id: row.id,
-      fullname: row.fullname,
-      plant_id: row.plant_id,
-      cell: row.cell,
-      email: row.email,
-      username: row.username,
-      role: row.role,
-      active: row.active,
-    };
+        if (!accessCode) {
+          return res.status(401).json({ success: false, message: "Invalid access code or password" });
+        }
 
-    delete userData.password;
+        getUserById(accessCode.creator_id).then(creatorUser => {
+          if (!creatorUser) return res.status(500).json({ success: false, message: "Creator user not found" });
 
-    const token = jwt.sign(userData, JWT_SECRET, { expiresIn: "24h" });
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "Lax",
-      maxAge: 1 * 60 * 60 * 1000 * 24 * 30, // 30 days
-    });
+          const logQuery = `INSERT INTO temp_access_logs (access_code_id, real_user_id, ip_address) VALUES (?, ?, ?)`;
+          const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+          db.run(logQuery, [accessCode.id, realUser.id, ip]);
 
-    return res.status(200).json(userData);
+          console.log(`User "${realUser.username}" logged in using access code "${temp_code}" (Impersonating ${creatorUser.username})`);
+
+          const userData = {
+            success: true,
+            id: creatorUser.id,
+            fullname: creatorUser.fullname,
+            plant_id: creatorUser.plant_id,
+            cell: creatorUser.cell,
+            email: creatorUser.email,
+            username: creatorUser.username,
+            role: creatorUser.role,
+            active: creatorUser.active,
+            impersonated_by: realUser.id,
+            access_code_id: accessCode.id, // For revocation check
+            is_temp: true
+          };
+
+          console.log("Generating temp token with data:", userData);
+
+          const token = jwt.sign(userData, JWT_SECRET, { expiresIn: "24h" });
+          res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+            maxAge: 24 * 60 * 60 * 1000,
+          });
+
+          return res.status(200).json(userData);
+        });
+      });
+    } else {
+      // Normal Login
+      console.log(`User "${username}" logged in.`);
+
+      const userData = {
+        success: true,
+        id: realUser.id,
+        fullname: realUser.fullname,
+        plant_id: realUser.plant_id,
+        cell: realUser.cell,
+        email: realUser.email,
+        username: realUser.username,
+        role: realUser.role,
+        active: realUser.active,
+      };
+
+      const token = jwt.sign(userData, JWT_SECRET, { expiresIn: "24h" });
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "Lax",
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+
+      return res.status(200).json(userData);
+    }
   });
 });
 
@@ -611,13 +743,52 @@ function verifyItAdmin(req, res, next) {
       return res.redirect(
         "/error.html?type=auth&errorCode=403&details=Invalid token"
       );
+
+    const access_code_id = decoded.access_code_id;
+
+    console.log("Access code ID:", access_code_id);
+
+    if (access_code_id) {
+      const q = `
+        SELECT *
+        FROM temp_access_codes
+        WHERE id = ?
+          AND is_active = 1
+          AND expires_at > datetime('now')
+      `;
+
+      return db.get(q, [access_code_id], (err, row) => {
+        if (err) {
+          console.error("Error checking access code:", err.message);
+          return res.status(500).send("Database error occurred");
+        }
+
+        if (!row) {
+          return res.redirect("/error.html?type=auth&errorCode=403&details=Invalid token");
+        }
+
+        req.user = decoded;
+        const access = decoded.role === "itAdmin" ||
+                       decoded.role === "ptt" ||
+                       decoded.role === "admin";
+
+        if (!access) return res.redirect("/error.html?type=auth&errorCode=403&details=Invalid token");
+
+        return next();
+      });
+    }
+
     req.user = decoded;
-    // Check if the user is an IT admin
-    const access = decoded.role == "itAdmin" || decoded.role == "ptt";
+    const access = decoded.role === "itAdmin" ||
+                   decoded.role === "ptt" ||
+                   decoded.role === "admin";
+
     if (!access) return res.redirect("/403.html");
-    next();
+
+    return next();
   });
 }
+
 
 function verifyMachineAccess(req, res, next) {
   const token = req.cookies.token;
@@ -654,3 +825,6 @@ function verifyMachineAccess(req, res, next) {
     });
   });
 }
+
+// Access Code Management Endpoints
+
