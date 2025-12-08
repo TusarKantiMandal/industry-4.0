@@ -450,7 +450,7 @@ function renderSettingsPage(res) {
   // Get plants data
   const plantsQuery = `SELECT id, name FROM plants ORDER BY name ASC`;
   const skillsQuery = `SELECT id, name FROM skills ORDER BY name ASC`;
-  const checkpointsQuery = `SELECT id, name, category, type, min_value, max_value, unit, alert_email, time, clit, how, photo_url FROM checkpoints ORDER BY name ASC`;
+  const checkpointsQuery = `SELECT id, name, category, type, min_value, max_value, unit, alert_email, time, clit, how, photo_url, db_address FROM checkpoints ORDER BY name ASC`;
 
   db.all(plantsQuery, [], (err, plants) => {
     if (err) {
@@ -668,7 +668,7 @@ function generateSettingsHTML(plants, machines, cells, skills, checkpoints) {
   const checkpointRows = checkpoints
     .map((checkpoint) => {
       return `
-      <tr data-id="${checkpoint.id}" data-photo="${checkpoint.photo_url || ''}">
+      <tr data-id="${checkpoint.id}" data-photo="${checkpoint.photo_url || ''}" data-db-address="${checkpoint.db_address || ''}">
         <td>${checkpoint.id}</td>
         <td>${checkpoint.name}</td>
         <td>${checkpoint.category || ''}</td>

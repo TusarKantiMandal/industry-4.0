@@ -848,7 +848,7 @@ const upload = multer({ storage: storage });
 // Get all checkpoints
 router.get("/checkpoints", (req, res) => {
   const query = `
-    SELECT id, name, category, type, min_value, max_value, unit, alert_email, time, clit, how, photo_url, created_at, updated_at
+    SELECT id, name, category, type, min_value, max_value, unit, alert_email, time, clit, how, photo_url, db_address, created_at, updated_at
     FROM checkpoints 
     ORDER BY name ASC
   `;
@@ -865,7 +865,7 @@ router.get("/checkpoints", (req, res) => {
 
 // Create new checkpoint
 router.post("/checkpoints", upload.single("image"), (req, res) => {
-  const { name, category, type, min, max, unit, alertEmail, time, clit, how } = req.body;
+  const { name, category, type, min, max, unit, alertEmail, time, clit, how, db_address } = req.body;
   const photoUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
   if (!name || !category || !type) {
@@ -873,11 +873,11 @@ router.post("/checkpoints", upload.single("image"), (req, res) => {
   }
 
   const query = `
-    INSERT INTO checkpoints (name, category, type, min_value, max_value, unit, alert_email, time, clit, how, photo_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO checkpoints (name, category, type, min_value, max_value, unit, alert_email, time, clit, how, photo_url, db_address)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.run(query, [name, category, type, min || null, max || null, unit || null, alertEmail || null, time || null, clit || null, how || null, photoUrl], function (err) {
+  db.run(query, [name, category, type, min || null, max || null, unit || null, alertEmail || null, time || null, clit || null, how || null, photoUrl, db_address || null], function (err) {
     if (err) {
       console.error("Error creating checkpoint:", err.message);
       return res.status(500).json({ error: "Failed to create checkpoint" });
@@ -894,7 +894,7 @@ router.post("/checkpoints", upload.single("image"), (req, res) => {
 // Update checkpoint
 router.put("/checkpoints/:id", upload.single("image"), (req, res) => {
   const checkpointId = req.params.id;
-  const { name, category, type, min, max, unit, alertEmail, time, clit, how } = req.body;
+  const { name, category, type, min, max, unit, alertEmail, time, clit, how, db_address } = req.body;
   const photoUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
 
   if (!name || !category || !type) {
@@ -903,10 +903,10 @@ router.put("/checkpoints/:id", upload.single("image"), (req, res) => {
 
   let query = `
     UPDATE checkpoints 
-    SET name = ?, category = ?, type = ?, min_value = ?, max_value = ?, unit = ?, alert_email = ?, time = ?, clit = ?, how = ?, updated_at = CURRENT_TIMESTAMP
+    SET name = ?, category = ?, type = ?, min_value = ?, max_value = ?, unit = ?, alert_email = ?, time = ?, clit = ?, how = ?, db_address = ?, updated_at = CURRENT_TIMESTAMP
   `;
 
-  const params = [name, category, type, min || null, max || null, unit || null, alertEmail || null, time || null, clit || null, how || null];
+  const params = [name, category, type, min || null, max || null, unit || null, alertEmail || null, time || null, clit || null, how || null, db_address || null];
 
   if (photoUrl) {
     query += `, photo_url = ?`;

@@ -302,10 +302,30 @@ const db = new sqlite3.Database("./database.db", (err) => {
           clit TEXT,
           how TEXT,
           photo_url TEXT,
+          db_address TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );`
       );
+
+      // Migration: Add db_address column if it doesn't exist
+      db.all("PRAGMA table_info(checkpoints);", (err, columns) => {
+        if (err) {
+          console.error("Error checking checkpoints table schema:", err.message);
+        } else {
+          const hasDbAddress = columns.some(col => col.name === 'db_address');
+          if (!hasDbAddress) {
+            console.log("Adding db_address column to checkpoints table...");
+            db.run("ALTER TABLE checkpoints ADD COLUMN db_address TEXT;", (err) => {
+              if (err) {
+                console.error("Error adding db_address column:", err.message);
+              } else {
+                console.log("db_address column added successfully.");
+              }
+            });
+          }
+        }
+      });
 
       db.run(
         `CREATE TABLE IF NOT EXISTS machine_checkpoint (
@@ -769,8 +789,8 @@ function verifyItAdmin(req, res, next) {
 
         req.user = decoded;
         const access = decoded.role === "itAdmin" ||
-                       decoded.role === "ptt" ||
-                       decoded.role === "admin";
+          decoded.role === "ptt" ||
+          decoded.role === "admin";
 
         if (!access) return res.redirect("/error.html?type=auth&errorCode=403&details=Invalid token");
 
@@ -780,8 +800,8 @@ function verifyItAdmin(req, res, next) {
 
     req.user = decoded;
     const access = decoded.role === "itAdmin" ||
-                   decoded.role === "ptt" ||
-                   decoded.role === "admin";
+      decoded.role === "ptt" ||
+      decoded.role === "admin";
 
     if (!access) return res.redirect("/403.html");
 
