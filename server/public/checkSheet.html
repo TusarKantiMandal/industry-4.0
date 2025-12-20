@@ -459,6 +459,22 @@
       box-shadow: var(--shadow-lg);
       border-color: white;
     }
+
+    /* Approval Status Colors */
+    .approve-pending {
+      background-color: #fef3c7 !important;
+      color: #92400e !important;
+    }
+
+    .approve-success {
+      background-color: #dcfce7 !important;
+      color: #166534 !important;
+    }
+
+    .approve-rejected {
+      background-color: #fee2e2 !important;
+      color: #991b1b !important;
+    }
   </style>
 </head>
 
@@ -558,6 +574,10 @@
           <div class="detail-row">
             <label>Approver:</label>
             <span id="details-approver"></span>
+          </div>
+          <div class="detail-row" id="details-comment-row" style="display: none;">
+            <label>Comment:</label>
+            <span id="details-comment"></span>
           </div>
         </div>
 
@@ -1235,6 +1255,24 @@
 
         const statusSpan = document.getElementById("details-status");
         const approvalRequestNote = document.getElementById("details-approval-request");
+
+        document.getElementById("details-approver").textContent =
+          entry && entry.approver_name ? entry.approver_name : "-";
+
+        const commentRow = document.getElementById("details-comment-row");
+        const commentSpan = document.getElementById("details-comment");
+        if (entry && entry.comment) {
+          commentRow.style.display = "flex";
+          commentSpan.textContent = entry.comment;
+        } else {
+          commentRow.style.display = "none";
+          commentSpan.textContent = "";
+        }
+
+        // Show approval request message if pending
+        const approvalRequestMsg = document.getElementById(
+          "details-approval-request"
+        );
 
         if (entry) {
           if (entry.approved === 1) {

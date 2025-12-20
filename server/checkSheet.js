@@ -76,7 +76,7 @@ router.get("/api/checkSheet", async (req, res) => {
         if (err) {
           return res.status(500).json({ error: "Database error" });
         }
-        
+
         // Group checkpoints by page/checksheet
         const checkpointsByPage = {};
         checkpoints.forEach(checkpoint => {
@@ -88,7 +88,7 @@ router.get("/api/checkSheet", async (req, res) => {
         });
 
         const totalChecksheets = Object.keys(checkpointsByPage).length;
-        
+
         // Return checkpoints grouped by page and data for UI rendering
         res.json({
           checkpoints,
@@ -274,13 +274,12 @@ router.put("/updateData", async (req, res) => {
 
     console.log("machine ", machineName);
 
-    const approveLink = `${
-      process.env.APPROVE_BASE_URL || "http://localhost:3000"
-    }/approve?machineId=${encodeURIComponent(
-      machineId
-    )}&year=${encodeURIComponent(year)}&month=${encodeURIComponent(
-      month
-    )}&day=${encodeURIComponent(day)}&batchId=${encodeURIComponent(batchId)}`;
+    const approveLink = `${process.env.APPROVE_BASE_URL || "http://localhost:3000"
+      }/approve?machineId=${encodeURIComponent(
+        machineId
+      )}&year=${encodeURIComponent(year)}&month=${encodeURIComponent(
+        month
+      )}&day=${encodeURIComponent(day)}&batchId=${encodeURIComponent(batchId)}`;
 
     sendEmail({
       to: approverEmail,
@@ -304,7 +303,7 @@ router.put("/updateData", async (req, res) => {
 //     SELECT approver_email FROM data
 //     WHERE id = ? AND machine_id = ? AND year = ? AND month = ? AND day = ? AND shift = ?
 //   `;
-  
+
 //   try {
 //     const row = await new Promise((resolve, reject) => {
 //       db.get(query, [id, machineId, year, month, day, shift], (err, row) => {
@@ -346,7 +345,7 @@ router.put("/updateData", async (req, res) => {
 //       SET approved = 1
 //       WHERE id = ? AND machine_id = ? AND year = ? AND month = ? AND day = ? AND shift = ?
 //     `;
-    
+
 //     await new Promise((resolve, reject) => {
 //       db.run(updateQuery, [id, machineId, year, month, day, shift], function (err) {
 //         if (err) reject(err);
@@ -383,9 +382,9 @@ router.put("/updateData", async (req, res) => {
 //       }));
 
 //       const allCheckpointsOk = evaluateCheckpoints(checkpointsWithDetails);
-      
+
 //       console.log(`Individual approval for machine ${machineId}: All checkpoints OK = ${allCheckpointsOk}`);
-      
+
 //       try {
 //         // Send result to PLC
 //         await sendToPLC(machineId, allCheckpointsOk);
@@ -397,7 +396,7 @@ router.put("/updateData", async (req, res) => {
 //     } else {
 //       res.send("Data approved successfully");
 //     }
-    
+
 //   } catch (error) {
 //     console.error("Error in individual approval:", error);
 //     res.status(500).send("Database error");
@@ -437,6 +436,7 @@ router.get("/batchData/:batchId", (req, res) => {
 
 router.post("/batchData/:batchId/approve", async (req, res) => {
   const batchId = req.params.batchId;
+  const { comment } = req.body;
 
   if (!batchId) {
     return res.status(400).send("Batch ID not provided");
@@ -482,12 +482,12 @@ router.post("/batchData/:batchId/approve", async (req, res) => {
     // Approve the batch
     const updateQuery = `
       UPDATE data
-      SET approved = 1, updated_at = CURRENT_TIMESTAMP
+      SET approved = 1, updated_at = CURRENT_TIMESTAMP, comment = ?
       WHERE batch_id = ? AND approver_email = ?
     `;
 
     await new Promise((resolve, reject) => {
-      db.run(updateQuery, [batchId, email], function (err) {
+      db.run(updateQuery, [comment, batchId, email], function (err) {
         if (err) reject(err);
         else resolve(this);
       });
@@ -506,9 +506,9 @@ router.post("/batchData/:batchId/approve", async (req, res) => {
     }));
 
     const allCheckpointsOk = evaluateCheckpoints(checkpointsWithDetails);
-    
+
     console.log(`Batch ${batchId} approval result: All checkpoints OK = ${allCheckpointsOk}`);
-    
+
     try {
       await sendToPLC(machineId, allCheckpointsOk);
       res.send("Batch approved successfully and sent to PLC");
@@ -516,9 +516,9 @@ router.post("/batchData/:batchId/approve", async (req, res) => {
       console.error("Error sending data to PLC:", plcError);
       res.send("Batch approved successfully, but PLC communication failed");
     }
-    
+
     sendBatchOwnerNotification(batchId, "approved");
-    
+
   } catch (error) {
     console.error("Error in batch approval:", error);
     res.status(500).send("Database error");
@@ -527,6 +527,7 @@ router.post("/batchData/:batchId/approve", async (req, res) => {
 
 router.post("/batchData/:batchId/reject", async (req, res) => {
   const batchId = req.params.batchId;
+  const { comment } = req.body;
 
   if (!batchId) {
     return res.status(400).send("Batch ID not provided");
@@ -549,11 +550,11 @@ router.post("/batchData/:batchId/reject", async (req, res) => {
 
   const query = `
     UPDATE data
-    SET approved = -1, updated_at = CURRENT_TIMESTAMP
+    SET approved = -1, updated_at = CURRENT_TIMESTAMP, comment = ?
     WHERE batch_id = ? AND approver_email = ?
   `;
 
-  db.run(query, [batchId, email], function (err) {
+  db.run(query, [comment, batchId, email], function (err) {
     if (err) {
       return res.status(500).send("Database error");
     }
@@ -574,17 +575,14 @@ function sendBatchOwnerNotification(batchId, status) {
         name: row.machine_id,
       };
 
-      const url = `${
-        process.env.APPROVE_BASE_URL || "http://localhost:3000"
-      }/machine/${row.machine_id}/checkSheet?year=${row.year}&month=${
-        row.month
-      }`;
+      const url = `${process.env.APPROVE_BASE_URL || "http://localhost:3000"
+        }/machine/${row.machine_id}/checkSheet?year=${row.year}&month=${row.month
+        }`;
       sendEmail({
         to: userRow.email,
         cc: [],
-        subject: `CheckSheet Entry ${
-          status === "approved" ? "Approved" : "Rejected"
-        }`,
+        subject: `CheckSheet Entry ${status === "approved" ? "Approved" : "Rejected"
+          }`,
         body: `Hello ${userRow.fullname},<br><br>Your submitted check sheet entry for Machine: ${machineName.name}, Date: ${row.year}-${row.month}-${row.day}, Shift: ${row.shift} has been <b>${status}</b>.<br><br>View the check sheet: <a href='${url}'>Check Sheet</a><br><br>Regards,<br>CheckSheet System`,
       }).catch((error) => {
         console.error("Error sending batch owner notification email:", error);

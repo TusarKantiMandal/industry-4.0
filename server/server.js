@@ -820,8 +820,49 @@ function verifyMachineAccess(req, res, next) {
       return res.redirect(
         "/error.html?type=auth&errorCode=403&details=Invalid token"
       );
+
+      // first verify if admin, if admin then directly allow
+      
+      const access_code_id = decoded.access_code_id;
+
+      if (access_code_id) {
+        const q = `
+          SELECT *
+          FROM temp_access_codes
+          WHERE id = ?
+            AND is_active = 1
+            AND expires_at > datetime('now')
+        `;
+
+        return db.get(q, [access_code_id], (err, row) => {
+          if (err) {
+            console.error("Error checking access code:", err.message);
+            return res.status(500).send("Database error occurred");
+          }
+
+          if (!row) {
+            return res.redirect("/error.html?type=auth&errorCode=403&details=Invalid token");
+          }
+
+          req.user = decoded;
+          const access = decoded.role === "itAdmin" ||
+            decoded.role === "ptt" ||
+            decoded.role === "admin";
+
+          if (!access) return res.redirect("/error.html?type=auth&errorCode=403&details=Invalid token");
+
+          return next();
+        });
+      }
+
     req.user = decoded;
     req.machineId = req.params.machineId;
+
+    const access = decoded.role === "itAdmin" ||
+      decoded.role === "ptt" ||
+      decoded.role === "admin";
+
+    if (access) return next();
 
     const machineId = req.params.machineId;
     const userId = decoded.id;
