@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <link rel="stylesheet" href="./admin.css" />
-  </head>
-  <style>
-    :root {
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <link rel="stylesheet" href="./admin.css" />
+</head>
+<style>
+  :root {
     --primary-color: #3b82f6;
     --primary-hover: #2563eb;
     --sidebar-bg: #1e293b;
@@ -19,26 +20,26 @@
     --body-bg: #f8fafc;
     --text-primary: #1e293b;
     --text-secondary: #64748b;
-}
+  }
 
-* {
+  * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+  }
 
-body {
+  body {
     background-color: var(--body-bg);
     color: var(--text-primary);
-}
+  }
 
-.container {
+  .container {
     display: flex;
     min-height: 100vh;
-}
+  }
 
-.sidebar {
+  .sidebar {
     width: 250px;
     background-color: var(--sidebar-bg);
     color: var(--sidebar-text);
@@ -46,25 +47,25 @@ body {
     position: fixed;
     height: 100vh;
     overflow-y: auto;
-}
+  }
 
-.sidebar-header {
+  .sidebar-header {
     font-size: 1.5rem;
     font-weight: bold;
     margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
+  }
 
-.sidebar-menu {
+  .sidebar-menu {
     list-style: none;
-}
+  }
 
-.sidebar-menu-item {
+  .sidebar-menu-item {
     margin-bottom: 0.5rem;
-}
+  }
 
-.sidebar-link {
+  .sidebar-link {
     display: flex;
     align-items: center;
     padding: 0.75rem 1rem;
@@ -72,88 +73,88 @@ body {
     color: var(--sidebar-text);
     border-radius: 0.5rem;
     transition: all 0.2s ease;
-}
+  }
 
-.sidebar-link:hover {
+  .sidebar-link:hover {
     background-color: rgba(255, 255, 255, 0.1);
-}
+  }
 
-.sidebar-link.active {
+  .sidebar-link.active {
     background-color: rgba(255, 255, 255, 0.2);
     font-weight: 600;
-}
+  }
 
-.sidebar-icon {
+  .sidebar-icon {
     margin-right: 0.75rem;
-}
+  }
 
-.main-content {
+  .main-content {
     flex: 1;
     margin-left: 250px;
-}
+  }
 
-.header {
+  .header {
     padding: 1rem 2rem;
     background-color: var(--header-bg);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
-}
+  }
 
-.header h2 {
+  .header h2 {
     font-weight: 600;
     color: var(--text-primary);
-}
+  }
 
-.content {
+  .content {
     padding: 2rem;
-}
+  }
 
-.content-header {
+  .content-header {
     margin-bottom: 2rem;
-}
+  }
 
-.content-title {
+  .content-title {
     font-size: 1.75rem;
     font-weight: 600;
     margin-bottom: 1.5rem;
-}
+  }
 
-.search-export {
+  .search-export {
     display: flex;
     justify-content: space-between;
     margin-bottom: 1.5rem;
-}
+  }
 
-.search-container {
+  .search-container {
     position: relative;
     width: 300px;
-}
+  }
 
-.search-icon {
+  .search-icon {
     position: absolute;
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-secondary);
-}
+  }
 
-.search-input {
+  .search-input {
     padding: 0.75rem 0.75rem 0.75rem 2.5rem;
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     width: 100%;
     font-size: 0.875rem;
-}
+  }
 
-.search-input:focus {
+  .search-input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-}
+  }
 
-.btn {
+  .btn {
     padding: 0.75rem 1.25rem;
     border-radius: 0.5rem;
     border: none;
@@ -164,54 +165,54 @@ body {
     align-items: center;
     gap: 0.5rem;
     transition: all 0.2s ease;
-}
+  }
 
-.btn-primary {
+  .btn-primary {
     background-color: var(--primary-color);
     color: white;
-}
+  }
 
-.btn-primary:hover {
+  .btn-primary:hover {
     background-color: var(--primary-hover);
-}
+  }
 
-.btn-outline {
+  .btn-outline {
     background-color: transparent;
     border: 1px solid var(--border-color);
     color: var(--text-primary);
-}
+  }
 
-.btn-outline:hover {
+  .btn-outline:hover {
     background-color: var(--hover-bg);
-}
+  }
 
-.table-container {
+  .table-container {
     background-color: white;
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     overflow: hidden;
-}
+  }
 
-table {
+  table {
     width: 100%;
     border-collapse: collapse;
-}
+  }
 
-th,
-td {
+  th,
+  td {
     padding: 1rem;
     text-align: left;
     border-bottom: 1px solid var(--border-color);
     font-size: 0.875rem;
-}
+  }
 
-th {
+  th {
     font-weight: 600;
     color: var(--text-secondary);
     background-color: #f8fafc;
-}
+  }
 
-th button {
+  th button {
     background: none;
     border: none;
     color: inherit;
@@ -221,80 +222,80 @@ th button {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-}
+  }
 
-.sort-icon {
+  .sort-icon {
     font-size: 0.75rem;
-}
+  }
 
-tbody tr:hover {
+  tbody tr:hover {
     background-color: var(--hover-bg);
-}
+  }
 
-.actions-cell {
+  .actions-cell {
     text-align: right;
-}
+  }
 
-.dropdown {
+  .dropdown {
     position: relative;
     display: inline-block;
-}
+  }
 
-.dropdown-toggle {
+  .dropdown-toggle {
     background: none;
     border: none;
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 0.25rem;
-}
+  }
 
-.dropdown-toggle:hover {
+  .dropdown-toggle:hover {
     background-color: var(--hover-bg);
-}
+  }
 
-.badge {
+  .badge {
     display: inline-block;
     padding: 0.25rem 0.5rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 500;
     background-color: #e2e8f0;
-}
+  }
 
-.table-footer {
+  .table-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
     color: var(--text-secondary);
     font-size: 0.875rem;
-}
+  }
 
-.pagination {
+  .pagination {
     display: flex;
     gap: 0.5rem;
-}
+  }
 
-.pagination-btn {
+  .pagination-btn {
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--border-color);
     border-radius: 0.25rem;
     background-color: white;
     cursor: pointer;
     transition: all 0.2s ease;
-}
+  }
 
-.pagination-btn:hover {
+  .pagination-btn:hover {
     background-color: var(--hover-bg);
-}
+  }
 
-.pagination-btn.active {
+  .pagination-btn.active {
     background-color: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
-}
+  }
 
-.chip {
+  .chip {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -302,82 +303,89 @@ tbody tr:hover {
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 500;
-}
+  }
 
-.chip-1 {
+  .chip-1 {
     background-color: #e0f2fe;
     color: #0369a1;
-}
+  }
 
-.chip-2 {
+  .chip-2 {
     background-color: #fef3c7;
     color: #92400e;
-}
+  }
 
-.chip-3 {
+  .chip-3 {
     background-color: #dcfce7;
     color: #166534;
-}
+  }
 
-.active-chip-1 {
+  .active-chip-1 {
     background-color: #449563;
     color: #ffffff;
-}
+  }
 
-.active-chip-0 {
+  .active-chip-0 {
     background-color: #985656d1;
     color: #ffffff;
-}
-  </style>
-  <body>
-    <div class="container">
-      <!-- Sidebar -->
-      <div class="sidebar">
-        <div class="sidebar-header">Admin Dashboard</div>
-        <ul class="sidebar-menu">
-          <!-- <li class="sidebar-menu-item">
+  }
+</style>
+
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">Admin Dashboard</div>
+      <ul class="sidebar-menu">
+        <!-- <li class="sidebar-menu-item">
                     <a href="#" class="sidebar-link active">
                         <span class="sidebar-icon"><i class="fas fa-th-large"></i></span>
                         <span>Dashboard</span>
                     </a>
                 </li> -->
-          <li class="sidebar-menu-item">
-            <a href="/admin/ptt?tab=users" class="sidebar-link active">
-              <span class="sidebar-icon"><i class="fas fa-users"></i></span>
-              <span>Users</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a href="/" class="sidebar-link">
-              <span class="sidebar-icon"><i class="fas fa-home"></i></span>
-              <span>Go Back To Home</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a href="/admin/access-codes" class="sidebar-link">
-              <span class="sidebar-icon"><i class="fas fa-key"></i></span>
-              <span>Access Codes</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a href="/me" class="sidebar-link">
-              <span class="sidebar-icon"><i class="fas fa-user"></i></span>
-              <span>Profile</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <div class="sidebar-link" onclick="logout()" style="cursor: pointer;">
-              <span class="sidebar-icon"><i class="fas fa-sign-out"></i></span>
-              <span>Logout</span>
-            </div>
-          </li>
-        </ul>
-      </div>
+        <li class="sidebar-menu-item">
+          <a href="/admin/ptt?tab=users" class="sidebar-link active">
+            <span class="sidebar-icon"><i class="fas fa-users"></i></span>
+            <span>Users</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <a href="/admin/ptt/summary" class="sidebar-link">
+            <span class="sidebar-icon"><i class="fas fa-chart-line"></i></span>
+            <span>Summary</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <a href="/" class="sidebar-link">
+            <span class="sidebar-icon"><i class="fas fa-home"></i></span>
+            <span>Go Back To Home</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <a href="/admin/access-codes" class="sidebar-link">
+            <span class="sidebar-icon"><i class="fas fa-key"></i></span>
+            <span>Access Codes</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <a href="/me" class="sidebar-link">
+            <span class="sidebar-icon"><i class="fas fa-user"></i></span>
+            <span>Profile</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
+          <div class="sidebar-link" onclick="logout()" style="cursor: pointer;">
+            <span class="sidebar-icon"><i class="fas fa-sign-out"></i></span>
+            <span>Logout</span>
+          </div>
+        </li>
+      </ul>
+    </div>
 
-      <!-- Main Content -->
-      <div class="main-content">
-        <!-- Header -->
-        <!-- <div class="header">
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <!-- <div class="header">
                 <h2>User Management</h2>
                 <div class="header-actions">
                     <button class="btn btn-outline">
@@ -387,105 +395,102 @@ tbody tr:hover {
                 </div>
             </div> -->
 
-        <!-- Content -->
-        <div class="content">
-          <div class="content-header">
-            <h1 class="content-title">User Management</h1>
-          </div>
+      <!-- Content -->
+      <div class="content">
+        <div class="content-header">
+          <h1 class="content-title">User Management</h1>
+        </div>
 
-          <div class="search-export">
-            <div class="search-container">
-              <span class="search-icon">
-                <i class="fas fa-search"></i>
-              </span>
-              <input
-                type="text"
-                class="search-input"
-                placeholder="Search users..."
-              />
-            </div>
-            <!-- <div class="export-container">
+        <div class="search-export">
+          <div class="search-container">
+            <span class="search-icon">
+              <i class="fas fa-search"></i>
+            </span>
+            <input type="text" class="search-input" placeholder="Search users..." />
+          </div>
+          <!-- <div class="export-container">
                         <button class="btn btn-outline">
                             <i class="fas fa-download"></i>
                             <span>Export</span>
                             <i class="fas fa-chevron-down"></i>
                         </button>
                     </div> -->
-          </div>
+        </div>
 
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>
-                    <button>ID <i class="fas fa-sort sort-icon"></i></button>
-                  </th>
-                  <th>
-                    <button>
-                      Full Name <i class="fas fa-sort sort-icon"></i>
-                    </button>
-                  </th>
-                  <th>
-                    <button>
-                      Username <i class="fas fa-sort sort-icon"></i>
-                    </button>
-                  </th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>
-                    <button>
-                      Plant ID <i class="fas fa-sort sort-icon"></i>
-                    </button>
-                  </th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-            <div class="table-footer">
-              <div>Showing 5 of 5 users</div>
-              <div class="pagination">
-                <button class="pagination-btn" disabled>Previous</button>
-                <button class="pagination-btn active">1</button>
-                <button class="pagination-btn">Next</button>
-              </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>
+                  <button>ID <i class="fas fa-sort sort-icon"></i></button>
+                </th>
+                <th>
+                  <button>
+                    Full Name <i class="fas fa-sort sort-icon"></i>
+                  </button>
+                </th>
+                <th>
+                  <button>
+                    Username <i class="fas fa-sort sort-icon"></i>
+                  </button>
+                </th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>
+                  <button>
+                    Plant ID <i class="fas fa-sort sort-icon"></i>
+                  </button>
+                </th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div class="table-footer">
+            <div>Showing 5 of 5 users</div>
+            <div class="pagination">
+              <button class="pagination-btn" disabled>Previous</button>
+              <button class="pagination-btn active">1</button>
+              <button class="pagination-btn">Next</button>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <script>
-      // Initialize dropdown actions
-      document.querySelectorAll(".dropdown-toggle").forEach((button) => {
-        button.addEventListener("click", function () {
-          // Here you would toggle a dropdown menu
-          console.log("Dropdown clicked");
-        });
+  <script>
+    // Initialize dropdown actions
+    document.querySelectorAll(".dropdown-toggle").forEach((button) => {
+      button.addEventListener("click", function () {
+        // Here you would toggle a dropdown menu
+        console.log("Dropdown clicked");
       });
+    });
 
-      // Sort functionality (basic implementation)
-      document.querySelectorAll("th button").forEach((button) => {
-        button.addEventListener("click", function () {
-          // Here you would implement sorting logic
-          console.log("Sort clicked");
-        });
+    // Sort functionality (basic implementation)
+    document.querySelectorAll("th button").forEach((button) => {
+      button.addEventListener("click", function () {
+        // Here you would implement sorting logic
+        console.log("Sort clicked");
       });
+    });
 
-      function logout() {
-        fetch("/logout", {
-          method: "POST",
-          credentials: "include",
+    function logout() {
+      fetch("/logout", {
+        method: "POST",
+        credentials: "include",
+      })
+        .then(() => {
+          window.location.href = "/login";
         })
-          .then(() => {
-            window.location.href = "/login";
-          })
-          .catch((err) => {
-            console.error("Logout error:", err);
-            alert("Logout failed!");
-          });
-      }
-    </script>
-  </body>
+        .catch((err) => {
+          console.error("Logout error:", err);
+          alert("Logout failed!");
+        });
+    }
+  </script>
+</body>
+
 </html>

@@ -666,6 +666,12 @@
           </a>
         </li>
         <li class="sidebar-menu-item">
+          <a href="/admin/it/summary" class="sidebar-link">
+            <span class="sidebar-icon"><i class="fas fa-chart-line"></i></span>
+            <span>Summary</span>
+          </a>
+        </li>
+        <li class="sidebar-menu-item">
           <a href="/" class="sidebar-link">
             <span class="sidebar-icon"><i class="fas fa-home"></i></span>
             <span>Go Back To Home</span>
@@ -1795,7 +1801,7 @@
       const name = document.getElementById('machine-name').value;
       const plantId = document.getElementById('machine-plant').value;
       const cellId = document.getElementById('machine-cell').value;
-      const skill = document.getElementById('machine-skill').options[document.getElementById('machine-skill').selectedIndex].text;
+      const skill = document.getElementById('machine-skill').value;
       const checksheetsCount = document.getElementById('machine-checksheets-count').value;
 
       // Collect checkpoints for each checksheet

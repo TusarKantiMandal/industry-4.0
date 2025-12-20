@@ -392,6 +392,17 @@ const db = new sqlite3.Database("./database.db", (err) => {
           FOREIGN KEY (real_user_id) REFERENCES users(id) ON DELETE CASCADE
         );
       `);
+
+      db.run(`
+        CREATE TABLE IF NOT EXISTS otps (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          email TEXT NOT NULL,
+          otp TEXT NOT NULL,
+          purpose TEXT NOT NULL,
+          expires_at DATETIME NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
     });
   }
 });
@@ -609,6 +620,108 @@ app.post("/login", (req, res) => {
   });
 });
 
+// Send OTP
+app.post("/auth/send-otp", (req, res) => {
+  const { email, purpose = "password_reset" } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email is required" });
+  }
+
+  // Check if user exists
+  db.get("SELECT id FROM users WHERE email = ?", [email], (err, user) => {
+    if (err) {
+      console.error("Error checking user:", err);
+      return res.status(500).json({ success: false, message: "Database error" });
+    }
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    console.log(`DEBUG: Generated OTP for ${email}: ${otp}`);
+
+    // Store OTP
+    // First delete any existing OTP for this email and purpose
+    db.run("DELETE FROM otps WHERE email = ? AND purpose = ?", [email, purpose], (err) => {
+      if (err) console.error("Error deleting old OTP:", err);
+
+      db.run(
+        "INSERT INTO otps (email, otp, purpose, expires_at) VALUES (?, ?, ?, ?)",
+        [email, otp, purpose, expiresAt.toISOString()],
+        (err) => {
+          if (err) {
+            console.error("Error storing OTP:", err);
+            return res.status(500).json({ success: false, message: "Failed to generate OTP" });
+          }
+
+          // Send Email
+          sendEmail({
+            to: email,
+            subject: "Password Reset OTP",
+            body: `<p>Your OTP for password reset is: <strong>${otp}</strong></p><p>This OTP is valid for 10 minutes.</p>`,
+          })
+            .then(() => {
+              res.json({ success: true, message: "OTP sent successfully" });
+            })
+            .catch((err) => {
+              console.error("Error sending email:", err);
+              res.status(500).json({ success: false, message: "Failed to send email" });
+            });
+        }
+      );
+    });
+  });
+});
+
+// Reset Password with OTP
+app.post("/auth/reset-password", (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ success: false, message: "All fields are required" });
+  }
+
+  // Verify OTP
+  db.get(
+    "SELECT * FROM otps WHERE email = ? AND otp = ? AND purpose = 'password_reset'",
+    [email, otp],
+    (err, record) => {
+      if (err) {
+        console.error("Error verifying OTP:", err);
+        return res.status(500).json({ success: false, message: "Database error" });
+      }
+
+      if (!record) {
+        return res.status(400).json({ success: false, message: "Invalid OTP" });
+      }
+
+      if (new Date(record.expires_at) < new Date()) {
+        return res.status(400).json({ success: false, message: "OTP expired" });
+      }
+
+      // Update Password
+      db.run(
+        "UPDATE users SET password = ? WHERE email = ?",
+        [newPassword, email],
+        (err) => {
+          if (err) {
+            console.error("Error updating password:", err);
+            return res.status(500).json({ success: false, message: "Failed to update password" });
+          }
+
+          // Delete OTP
+          db.run("DELETE FROM otps WHERE id = ?", [record.id]);
+
+          res.json({ success: true, message: "Password updated successfully" });
+        }
+      );
+    });
+});
+
 app.get("/approve", verifyToken, (req, res) => {
   const { machineId, year, month, day, batchId } = req.query;
   const filePath = path.join(__dirname, "public", "approveUi.html");
@@ -821,12 +934,12 @@ function verifyMachineAccess(req, res, next) {
         "/error.html?type=auth&errorCode=403&details=Invalid token"
       );
 
-      // first verify if admin, if admin then directly allow
-      
-      const access_code_id = decoded.access_code_id;
+    // first verify if admin, if admin then directly allow
 
-      if (access_code_id) {
-        const q = `
+    const access_code_id = decoded.access_code_id;
+
+    if (access_code_id) {
+      const q = `
           SELECT *
           FROM temp_access_codes
           WHERE id = ?
@@ -834,26 +947,26 @@ function verifyMachineAccess(req, res, next) {
             AND expires_at > datetime('now')
         `;
 
-        return db.get(q, [access_code_id], (err, row) => {
-          if (err) {
-            console.error("Error checking access code:", err.message);
-            return res.status(500).send("Database error occurred");
-          }
+      return db.get(q, [access_code_id], (err, row) => {
+        if (err) {
+          console.error("Error checking access code:", err.message);
+          return res.status(500).send("Database error occurred");
+        }
 
-          if (!row) {
-            return res.redirect("/error.html?type=auth&errorCode=403&details=Invalid token");
-          }
+        if (!row) {
+          return res.redirect("/error.html?type=auth&errorCode=403&details=Invalid token");
+        }
 
-          req.user = decoded;
-          const access = decoded.role === "itAdmin" ||
-            decoded.role === "ptt" ||
-            decoded.role === "admin";
+        req.user = decoded;
+        const access = decoded.role === "itAdmin" ||
+          decoded.role === "ptt" ||
+          decoded.role === "admin";
 
-          if (!access) return res.redirect("/error.html?type=auth&errorCode=403&details=Invalid token");
+        if (!access) return res.redirect("/error.html?type=auth&errorCode=403&details=Invalid token");
 
-          return next();
-        });
-      }
+        return next();
+      });
+    }
 
     req.user = decoded;
     req.machineId = req.params.machineId;

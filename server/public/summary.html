@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>System Summary - Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --background-color: #f3f4f6;
+            --surface-color: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --sidebar-width: 250px;
+            --header-height: 64px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100%;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--surface-color);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+            flex: 1;
+        }
+
+        .sidebar-menu-item {
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .sidebar-link:hover {
+            background-color: var(--background-color);
+            color: var(--primary-color);
+        }
+
+        .sidebar-link.active {
+            background-color: #eff6ff;
+            color: var(--primary-color);
+            border-right: 3px solid var(--primary-color);
+        }
+
+        .sidebar-icon {
+            width: 24px;
+            margin-right: 0.75rem;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-header {
+            height: var(--header-height);
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        .content-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        /* Dashboard Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background-color: var(--surface-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kpi-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .kpi-trend {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .trend-up {
+            color: var(--success-color);
+        }
+
+        .trend-down {
+            color: var(--danger-color);
+        }
+
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background-color: var(--surface-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Table Section */
+        .table-card {
+            background-color: var(--surface-color);
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #f9fafb;
+            padding: 0.75rem 1.5rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.875rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-ok {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-ng {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            display: none;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">Admin Dashboard</div>
+            <ul class="sidebar-menu" id="sidebar-menu">
+                <!-- Sidebar items will be injected here -->
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <h1 class="content-title">System Summary</h1>
+                <div class="header-actions">
+                    <button class="btn btn-outline" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="content">
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">Total Inspections</div>
+                        <div class="kpi-value" id="total-inspections">-</div>
+                        <div class="kpi-trend">
+                            <span class="text-secondary">All time</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Total Failures (NG)</div>
+                        <div class="kpi-value" id="total-failures" style="color: var(--danger-color)">-</div>
+                        <div class="kpi-trend">
+                            <span class="text-secondary">All time</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Failure Rate</div>
+                        <div class="kpi-value" id="failure-rate">-</div>
+                        <div class="kpi-trend">
+                            <span class="text-secondary">% of total inspections</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Failures by Machine</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="machineChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Top Failing Checkpoints</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="checkpointChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Data Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3 class="table-title">Recent Data Entries</h3>
+                    </div>
+                    <div class="table-container">
+                        <table id="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Plant</th>
+                                    <th>Cell</th>
+                                    <th>Machine</th>
+                                    <th>Checkpoint</th>
+                                    <th>Value</th>
+                                    <th>Status</th>
+                                    <th>User</th>
+                                    <th>Approver</th>
+                                    <th>Approval Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="data-table-body">
+                                <!-- Data rows will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let machineChart = null;
+        let checkpointChart = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupSidebar();
+            refreshData();
+        });
+
+        async function setupSidebar() {
+            try {
+                const response = await fetch('/api/me');
+                const user = await response.json();
+                const menu = document.getElementById('sidebar-menu');
+
+                let links = '';
+
+                if (user.role === 'ptt') {
+                    links = `
+            <li class="sidebar-menu-item">
+              <a href="/admin/ptt?tab=users" class="sidebar-link">
+                <span class="sidebar-icon"><i class="fas fa-users"></i></span>
+                <span>Users</span>
+              </a>
+            </li>
+            <li class="sidebar-menu-item">
+              <a href="/admin/ptt/summary" class="sidebar-link active">
+                <span class="sidebar-icon"><i class="fas fa-chart-line"></i></span>
+                <span>Summary</span>
+              </a>
+            </li>
+          `;
+                } else {
+                    // Default to IT Admin / Admin links
+                    links = `
+            <li class="sidebar-menu-item">
+              <a href="/admin/it?tab=users" class="sidebar-link">
+                <span class="sidebar-icon"><i class="fas fa-users"></i></span>
+                <span>Users</span>
+              </a>
+            </li>
+            <li class="sidebar-menu-item">
+              <a href="/admin/it?tab=settings" class="sidebar-link">
+                <span class="sidebar-icon"><i class="fas fa-cog"></i></span>
+                <span>Settings</span>
+              </a>
+            </li>
+            <li class="sidebar-menu-item">
+              <a href="/admin/it/summary" class="sidebar-link active">
+                <span class="sidebar-icon"><i class="fas fa-chart-line"></i></span>
+                <span>Summary</span>
+              </a>
+            </li>
+          `;
+                }
+
+                // Common links
+                links += `
+          <li class="sidebar-menu-item">
+            <a href="/" class="sidebar-link">
+              <span class="sidebar-icon"><i class="fas fa-home"></i></span>
+              <span>Go Back To Home</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <div class="sidebar-link" onclick="logout()" style="cursor: pointer;">
+              <span class="sidebar-icon"><i class="fas fa-sign-out-alt"></i></span>
+              <span>Logout</span>
+            </div>
+          </li>
+        `;
+
+                menu.innerHTML = links;
+
+            } catch (error) {
+                console.error('Error setting up sidebar:', error);
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        async function refreshData() {
+            showLoading();
+            try {
+                await Promise.all([
+                    fetchKPIs(),
+                    fetchMachineFailures(),
+                    fetchCheckpointFailures(),
+                    fetchRecentData()
+                ]);
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+                alert('Failed to load summary data');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function fetchKPIs() {
+            const response = await fetch('/api/summary/kpis');
+            const data = await response.json();
+
+            document.getElementById('total-inspections').textContent = data.totalInspections.toLocaleString();
+            document.getElementById('total-failures').textContent = data.totalFailures.toLocaleString();
+            document.getElementById('failure-rate').textContent = data.failureRate + '%';
+        }
+
+        async function fetchMachineFailures() {
+            const response = await fetch('/api/summary/failures-by-machine');
+            const data = await response.json();
+
+            const ctx = document.getElementById('machineChart').getContext('2d');
+
+            if (machineChart) machineChart.destroy();
+
+            machineChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.name),
+                    datasets: [{
+                        label: 'Failures',
+                        data: data.map(d => d.count),
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function fetchCheckpointFailures() {
+            const response = await fetch('/api/summary/failures-by-checkpoint');
+            const data = await response.json();
+
+            const ctx = document.getElementById('checkpointChart').getContext('2d');
+
+            if (checkpointChart) checkpointChart.destroy();
+
+            checkpointChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(d => d.name),
+                    datasets: [{
+                        data: data.map(d => d.count),
+                        backgroundColor: [
+                            '#ef4444',
+                            '#f97316',
+                            '#f59e0b',
+                            '#84cc16',
+                            '#10b981'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+
+        async function fetchRecentData() {
+            const response = await fetch('/api/summary/recent-data');
+            const data = await response.json();
+
+            const tbody = document.getElementById('data-table-body');
+            tbody.innerHTML = data.map(row => `
+        <tr>
+          <td>${new Date(row.created_at).toLocaleString()}</td>
+          <td>${row.plant_name || '-'}</td>
+          <td>${row.cell_name || '-'}</td>
+          <td>${row.machine_name}</td>
+          <td>${row.checkpoint_name}</td>
+          <td>${row.value}</td>
+          <td>
+            <span class="status-badge ${row.is_ok ? 'status-ok' : 'status-ng'}">
+              ${row.is_ok ? 'OK' : 'NG'}
+            </span>
+          </td>
+          <td>${row.user_name}</td>
+          <td>${row.approver_name || '-'}</td>
+          <td>
+            ${getApprovalStatusBadge(row.approved)}
+          </td>
+        </tr>
+      `).join('');
+        }
+
+        function getApprovalStatusBadge(status) {
+            if (status === 1) {
+                return '<span class="status-badge status-ok">Approved</span>';
+            } else if (status === -1) {
+                return '<span class="status-badge status-ng">Rejected</span>';
+            } else {
+                return '<span class="status-badge" style="background-color: #fef3c7; color: #92400e;">Pending</span>';
+            }
+        }
+
+        function logout() {
+            fetch("/logout", {
+                method: "POST",
+                credentials: "include",
+            })
+                .then(() => {
+                    window.location.href = "/login";
+                })
+                .catch((err) => {
+                    console.error("Logout error:", err);
+                    alert("Logout failed!");
+                });
+        }
+    </script>
+</body>
+
+</html>

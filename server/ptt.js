@@ -6,14 +6,14 @@ const router = express.Router();
 const db = new sqlite3.Database("./database.db");
 
 router.get("/", (req, res) => {
-    const tab = req.query.tab || "users";
-  
-    if (tab === "users") {
-      renderUsersPage(req, res);
-    } else if (tab === "settings") {
-    } else {
-      res.status(400).send("Invalid tab");
-    }
+  const tab = req.query.tab || "users";
+
+  if (tab === "users") {
+    renderUsersPage(req, res);
+  } else if (tab === "settings") {
+  } else {
+    res.status(400).send("Invalid tab");
+  }
 });
 
 router.get("/users/edit", (req, res) => {
@@ -23,9 +23,9 @@ router.get("/users/edit", (req, res) => {
 
 function renderUsersPage(req, res) {
 
-    const pttUserId = req.user.id;
-    
-    const query = `
+  const pttUserId = req.user.id;
+
+  const query = `
     SELECT DISTINCT 
       u.id, 
       u.fullname, 
@@ -42,7 +42,7 @@ function renderUsersPage(req, res) {
       AND u.role NOT IN ('admin', 'itAdmin', 'ptt')
     ORDER BY u.id ASC;
   `;
-  
+
 
   db.all(query, [pttUserId], (err, users) => {
     if (err) {
@@ -69,12 +69,10 @@ function generateAdminHTML(users) {
         <td>${user.username}</td>
         <td>${user.email}</td>
         <td>${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</td>
-        <td><span class="chip active-chip-${user.active}">${
-        user.active === 1 ? "Active" : "Inactive"
-      }</span></td>
-        <td><span class="chip chip-${user.plant_id}">${
-        user.plant_id
-      }</span></td>
+        <td><span class="chip active-chip-${user.active}">${user.active === 1 ? "Active" : "Inactive"
+        }</span></td>
+        <td><span class="chip chip-${user.plant_id}">${user.plant_id
+        }</span></td>
         <td class="actions-cell">
           <div class="dropdown">
             <button class="dropdown-toggle">
@@ -456,3 +454,9 @@ const additionalStyles = `
 
 
 module.exports = router
+
+// Summary Page Route
+router.get("/summary", (req, res) => {
+  const summaryPath = path.join(__dirname, "public", "summary.html");
+  res.sendFile(summaryPath);
+});

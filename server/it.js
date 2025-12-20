@@ -801,4 +801,11 @@ router.get("/machines/:id", (req, res) => {
   });
 });
 
+
+// Summary Page Route
+router.get("/summary", (req, res) => {
+  const summaryPath = path.join(__dirname, "public", "summary.html");
+  res.sendFile(summaryPath);
+});
+
 module.exports = router;
