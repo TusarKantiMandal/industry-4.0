@@ -8,7 +8,7 @@ router.use("/it", verifyItAdmin, itRoutes);
 router.use("/ptt", pttRoutes);
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = "SECRET_KEY";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 function verifyItAdmin(req, res, next) {
   const token = req.cookies.token;

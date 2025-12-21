@@ -7,7 +7,7 @@ const router = express.Router();
 const db = new sqlite3.Database("./database.db");
 
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "SECRET_KEY"; // TODO: get from .env
+const JWT_SECRET = process.env.JWT_SECRET;
 
 router.get("/cells", (req, res) => {
   const query =

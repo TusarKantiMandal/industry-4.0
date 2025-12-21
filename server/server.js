@@ -19,7 +19,7 @@ const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "SECRET_KEY"; // TODO: get from .env
+const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://127.0.0.1:3001"); // <-- Match frontend origin
