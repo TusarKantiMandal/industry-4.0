@@ -19,7 +19,7 @@ const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || "some_secret";
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://127.0.0.1:3001"); // <-- Match frontend origin
@@ -974,6 +974,8 @@ function verifyMachineAccess(req, res, next) {
     const access = decoded.role === "itAdmin" ||
       decoded.role === "ptt" ||
       decoded.role === "admin";
+
+    console.log("ROLE: ", decoded.role);
 
     if (access) return next();
 

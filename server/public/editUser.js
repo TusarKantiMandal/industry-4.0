@@ -127,11 +127,12 @@ function loadUserData(userId) {
         addSkillBtn.innerHTML = `<i class="fas fa-plus"></i> Add Machine`;
       } else {
         // Add user skills
-        if (user.skills && user.skills.length > 0) {
-          user.skills.forEach((skill, index) => {
-            addSkillCard(skill.machine_name, skill.skill.toString(), index + 1);
+        const existingSkills = data.machines.filter(m => m.skill);
+        if (existingSkills.length > 0) {
+          existingSkills.forEach((m, index) => {
+            addSkillCard(m.machine_name, m.skill, index + 1);
           });
-          skillCounter = user.skills.length + 1;
+          skillCounter = existingSkills.length + 1;
         } else {
           skillCounter = 1;
         }
@@ -340,21 +341,18 @@ function addSkillCard(name, level, customId = null) {
       <label class="form-label">Skill Level</label>
       <div class="skill-level">
         <div class="level-option">
-          <input type="radio" name="skill-${skillId}-level" id="skill-${skillId}-level-1" class="level-radio" value="L1" ${
-    level === "L1" ? "checked" : ""
-  }>
+          <input type="radio" name="skill-${skillId}-level" id="skill-${skillId}-level-1" class="level-radio" value="L1" ${level === "L1" ? "checked" : ""
+    }>
           <label for="skill-${skillId}-level-1" class="level-label">L1</label>
         </div>
         <div class="level-option">
-          <input type="radio" name="skill-${skillId}-level" id="skill-${skillId}-level-2" class="level-radio" value="L2" ${
-    level === "L2" ? "checked" : ""
-  }>
+          <input type="radio" name="skill-${skillId}-level" id="skill-${skillId}-level-2" class="level-radio" value="L2" ${level === "L2" ? "checked" : ""
+    }>
           <label for="skill-${skillId}-level-2" class="level-label">L2</label>
         </div>
         <div class="level-option">
-          <input type="radio" name="skill-${skillId}-level" id="skill-${skillId}-level-3" class="level-radio" value="L3" ${
-    level === "L3" ? "checked" : ""
-  }>
+          <input type="radio" name="skill-${skillId}-level" id="skill-${skillId}-level-3" class="level-radio" value="L3" ${level === "L3" ? "checked" : ""
+    }>
           <label for="skill-${skillId}-level-3" class="level-label">L3</label>
         </div>
       </div>
@@ -425,8 +423,8 @@ async function populateMachines(machines) {
 
   machines.forEach((machine) => {
     const option = document.createElement("option");
-    option.value = machine.name;
-    option.textContent = machine.name;
+    option.value = machine.machine_name;
+    option.textContent = machine.machine_name;
     skillSelect.appendChild(option);
 
     // const machineOption = document.createElement("option");

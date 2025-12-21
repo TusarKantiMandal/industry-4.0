@@ -245,6 +245,31 @@
       background-color: #f1f5f9;
     }
 
+    .day-cell {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .day-cell::before {
+      content: attr(data-shift);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: rgba(0, 0, 0, 0.05);
+      pointer-events: none;
+      z-index: 0;
+      user-select: none;
+    }
+
+    .day-cell i,
+    .day-cell span {
+      position: relative;
+      z-index: 1;
+    }
+
     .day-header {
       background-color: var(--primary-color);
       color: white;
@@ -989,10 +1014,10 @@
             td.innerHTML = '<i class="fas fa-times"></i>';
             td.classList.add("cross");
           } else if (existingEntry.value === "NA") {
-            td.textContent = "NA";
+            td.innerHTML = '<span>NA</span>';
             td.classList.add("na");
           } else {
-            td.textContent = existingEntry.value;
+            td.innerHTML = `<span>${existingEntry.value}</span>`;
           }
 
           if (existingEntry.approved === 0) {
@@ -1075,10 +1100,10 @@
             currentCell.innerHTML = '<i class="fas fa-times"></i>';
             currentCell.classList.add("cross");
           } else if (value === "NA") {
-            currentCell.textContent = "NA";
+            currentCell.innerHTML = '<span>NA</span>';
             currentCell.classList.add("na");
           } else {
-            currentCell.textContent = value;
+            currentCell.innerHTML = `<span>${value}</span>`;
             currentCell.className = "day-cell"; // Reset class if clearing or other value
           }
 

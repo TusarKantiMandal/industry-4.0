@@ -69,13 +69,13 @@ router.get("/users/:id", (req, res) => {
 
   const skillsQuery = `
     SELECT 
-      us.machine_id,
+      m.id AS machine_id,
       m.name AS machine_name,
       s.name AS skill
-    FROM user_skills us
-    JOIN machines m ON us.machine_id = m.id
-    JOIN skills s ON us.skill_id = s.id
-    WHERE us.user_id = ?
+    FROM machines m
+    LEFT JOIN user_skills us ON m.id = us.machine_id AND us.user_id = ?
+    LEFT JOIN skills s ON us.skill_id = s.id
+    ORDER BY m.name ASC
   `;
 
   const plantsQuery = `SELECT id, name FROM plants ORDER BY name ASC`;
