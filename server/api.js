@@ -151,6 +151,11 @@ router.put("/users/:id", (req, res) => {
   const userId = req.params.id;
   const { fullname, email, skills } = req.body;
 
+  // Restrict 'admin' role from updating users (only 'itAdmin' and 'ptt' allowed)
+  if (req.user.role === 'admin') {
+    return res.status(403).json({ error: "Admins are not authorized to update users." });
+  }
+
   if (!fullname || !email || !skills) {
     return res.status(400).json({ error: "All fields are required" });
   }
