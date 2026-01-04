@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Digital AM Check Sheet System</title>
+
+    <style>
+        /* ================= RESET ================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #eef3f8, #dbe7f3);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ================= NAVBAR ================= */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 51, 102, 0.95);
+            padding: 14px 30px;
+            color: white;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-left {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .btn-nav {
+            padding: 8px 16px;
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-nav:hover {
+            background: #00bfff;
+            color: #003366;
+            border-color: #00bfff;
+        }
+
+        .btn-nav.logout {
+            background: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-nav.logout:hover {
+            background: #c82333;
+            border-color: #c82333;
+            color: white;
+        }
+
+        .clock {
+            font-size: 14px;
+            text-align: right;
+            opacity: 0.9;
+        }
+
+        /* ================= MAIN CONTENT ================= */
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .dashboard-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 50px 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            animation: fadeDown 0.8s ease;
+        }
+
+        .dashboard-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-container h1 {
+            font-size: 32px;
+            color: #003366;
+            margin-bottom: 10px;
+        }
+
+        .plant-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: linear-gradient(180deg, #f9fbff, #eef4fb);
+            border: 2px solid #00bfff;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #003366;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-container p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        /* ================= MACHINE SELECT ================= */
+        .select-group {
+            margin-bottom: 20px;
+        }
+
+        .select-group label {
+            display: block;
+            font-size: 16px;
+            font-weight: 500;
+            color: #003366;
+            margin-bottom: 10px;
+        }
+
+        .select-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #dbe7f3;
+            border-radius: 6px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: "Segoe UI", Roboto, sans-serif;
+        }
+
+        .select-group select:focus {
+            outline: none;
+            border-color: #00bfff;
+        }
+
+        /* ================= LOADER ================= */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loader-content {
+            text-align: center;
+        }
+
+        .spinner {
+            border: 6px solid #eef4fb;
+            border-top: 6px solid #00bfff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .loader-text {
+            font-size: 18px;
+            color: #003366;
+            font-weight: 500;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ================= FOOTER ================= */
+        footer {
+            background: linear-gradient(135deg, #003366, #002244);
+            color: white;
+            text-align: center;
+            padding: 14px 0;
+            font-size: 14px;
+        }
+
+        /* ================= ANIMATION ================= */
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ================= RESPONSIVE ================= */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 10px;
+                padding: 14px 20px;
+            }
+
+            .navbar-left {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .dashboard-container {
+                padding: 40px 30px;
+                margin: 20px;
+            }
+
+            .dashboard-container h1 {
+                font-size: 26px;
+            }
+
+            .dashboard-icon {
+                font-size: 52px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- LOADER -->
+    <div id="loader" class="loader-overlay">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <div class="loader-text">Loading Dashboard...</div>
+        </div>
+    </div>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="navbar-left">
+            <div class="logo">Digital AM Check Sheet</div>
+            <button class="btn-nav" onclick="checkProfile()">My Profile</button>
+            <button class="btn-nav logout" onclick="logout()">Logout</button>
+        </div>
+        <div class="clock" id="clock"></div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="dashboard-container">
+            <div class="dashboard-icon">⚙️</div>
+            <h1>Machine Dashboard</h1>
+            <div id="plantDisplay" class="plant-badge">Loading plant...</div>
+            <p>Select a machine to view and manage its check sheet</p>
+
+            <div class="select-group">
+                <label for="machineDropdown">Choose Machine</label>
+                <select id="machineDropdown" onchange="handleSelect(this)">
+                    <option value="">-- Select a Machine --</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        © 2025 Digital AM Check Sheet System | Developed by Tusar
+    </footer>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        var machines = {};
+        var plants = {};
+        var cells = {};
+        var user = {};
+
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            const time = now.toLocaleTimeString();
+            const date = now.toLocaleDateString(undefined, {
+                weekday: "short",
+                month: "short",
+                day: "numeric"
+            });
+            document.getElementById("clock").innerHTML = time + "<br>" + date;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Fetch user data
+        async function getUser() {
+            try {
+                const response = await fetch("/open/me", {
+                    method: "GET",
+                    credentials: "include",
+                });
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                const data = await response.json();
+                machines = data.machines;
+                plants = data.plants;
+                cells = data.cells;
+                user = data.user;
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                alert("Failed to load user data.");
+            }
+        }
+
+        // Populate machine dropdown
+        function populateDropdown(plantId) {
+            const dropdown = document.getElementById("machineDropdown");
+            const plantDisplay = document.getElementById("plantDisplay");
+
+            // Clear existing options
+            while (dropdown.options.length > 1) {
+                dropdown.remove(1);
+            }
+
+            // Update plant display
+            const plantObj = plants.find(
+                (plant) => String(plant.id) === String(plantId.replace("plant", ""))
+            );
+            const plantName = plantObj ? plantObj.name : "Unknown Plant";
+            plantDisplay.textContent = `Plant: ${plantName}`;
+
+            // Add machine options
+            machines.forEach((machine) => {
+                const option = document.createElement("option");
+                option.value = machine.id;
+                option.textContent = machine.name;
+                dropdown.appendChild(option);
+            });
+        }
+
+        // Handle machine selection
+        function handleSelect(selectElement) {
+            const selectedValue = selectElement.value;
+            if (selectedValue) {
+                window.location.href = `machine/${selectedValue}/checkSheet`;
+            }
+        }
+
+        // Profile button action
+        function checkProfile() {
+            window.location.href = "/me";
+        }
+
+        // Logout function
+        function logout() {
+            fetch("/logout", {
+                method: "POST",
+                credentials: "include",
+            })
+                .then(() => {
+                    window.location.href = "/login";
+                })
+                .catch((err) => {
+                    console.error("Logout error:", err);
+                    alert("Logout failed!");
+                });
+        }
+
+        // Initialize page
+        window.onload = async function () {
+            document.getElementById("loader").style.display = "flex";
+            try {
+                await getUser();
+                const plantId = user.plant_id;
+                populateDropdown("plant" + plantId);
+            } finally {
+                document.getElementById("loader").style.display = "none";
+            }
+        };
+    </script>
+</body>
+
+</html>

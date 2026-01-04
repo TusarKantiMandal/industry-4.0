@@ -1,73 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <!DOCTYPE html>
-<html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Signup Successful</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account Created - Digital AM Check Sheet System</title>
+
   <style>
-    body {
+    /* ================= RESET ================= */
+    * {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f2f6fc;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #eef3f8, #dbe7f3);
+      color: #333;
+      min-height: 100vh;
       display: flex;
-      justify-content: center;
       align-items: center;
-      height: 100vh;
+      justify-content: center;
+      position: relative;
     }
 
-    .success-box {
-      background-color: #fff;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    /* ================= CLOCK ================= */
+    .clock {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 14px;
+      color: #003366;
+      text-align: right;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ================= SUCCESS CONTAINER ================= */
+    .success-container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 50px 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 480px;
       text-align: center;
-      max-width: 400px;
+      animation: fadeDown 0.8s ease;
     }
 
-    .success-box h2 {
-      color: #28a745;
-      font-size: 26px;
+    .success-icon {
+      font-size: 72px;
       margin-bottom: 20px;
+      animation: scaleIn 0.6s ease;
     }
 
-    .success-box p {
-      color: #444;
+    .success-container h1 {
+      font-size: 32px;
+      color: #003366;
+      margin-bottom: 15px;
+    }
+
+    .success-container p {
       font-size: 16px;
+      color: #555;
+      line-height: 1.6;
       margin-bottom: 30px;
     }
 
-    .success-box a {
-      display: inline-block;
-      padding: 12px 24px;
-      background-color: #007bff;
-      color: #fff;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
+    /* ================= INFO CARD ================= */
+    .info-card {
+      background: linear-gradient(180deg, #f9fbff, #eef4fb);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      border: 2px solid #dbe7f3;
     }
 
-    .success-box a:hover {
-      background-color: #0056b3;
+    .info-card h3 {
+      font-size: 18px;
+      color: #003366;
+      margin-bottom: 10px;
+    }
+
+    .info-card p {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 0;
+    }
+
+    /* ================= BUTTON ================= */
+    .btn-primary {
+      display: inline-block;
+      padding: 14px 32px;
+      background: #003366;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn-primary:hover {
+      background: #00bfff;
+      color: #003366;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 191, 255, 0.3);
+    }
+
+    /* ================= FOOTER LINKS ================= */
+    .footer-links {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: #00bfff;
+      text-decoration: none;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+
+    .footer-links a:hover {
+      color: #003366;
+    }
+
+    /* ================= ANIMATIONS ================= */
+    @keyframes fadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 768px) {
+      .success-container {
+        padding: 40px 30px;
+        margin: 20px;
+      }
+
+      .clock {
+        top: 10px;
+        right: 10px;
+        font-size: 12px;
+        padding: 8px 12px;
+      }
+
+      .success-container h1 {
+        font-size: 26px;
+      }
+
+      .success-icon {
+        font-size: 60px;
+      }
     }
   </style>
 </head>
-<body>
-  <div class="success-box">
-    <h2>Account Created!</h2>
-    <p>Your signup was successful. You can now log in to your account.</p>
-    <a href="login.html">Go to Login</a>
-  </div>
-</body>
-</html>
 
+<body>
+  <!-- CLOCK -->
+  <div class="clock" id="clock"></div>
+
+  <!-- SUCCESS CONTAINER -->
+  <div class="success-container">
+    <div class="success-icon">✅</div>
+    <h1>Account Created!</h1>
+    <p>Your signup was successful. You can now log in to access the Digital AM Check Sheet System.</p>
+
+    <div class="info-card">
+      <h3>What's Next?</h3>
+      <p>Use your credentials to sign in and start managing your autonomous maintenance check sheets. If you need any
+        assistance, contact your administrator.</p>
+    </div>
+
+    <a href="login.html" class="btn-primary">Go to Login</a>
+
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    // Update clock
+    function updateClock() {
+      const now = new Date();
+      const time = now.toLocaleTimeString();
+      const date = now.toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+      });
+      document.getElementById("clock").innerHTML = time + "<br>" + date;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
 </body>
+
 </html>

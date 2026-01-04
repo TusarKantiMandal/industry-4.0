@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,40 +20,40 @@
       --border: #ebecf0;
       --card-shadow: rgba(9, 30, 66, 0.25) 0px 1px 1px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px;
     }
-    
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, 'Helvetica Neue', sans-serif;
-      line-height:.6;
+      line-height: .6;
       color: var(--dark);
       background-color: #f4f5f7;
       margin: 0;
       padding: 0;
     }
-    
+
     .header {
       background-color: var(--primary);
       color: white;
       padding: 16px 0;
     }
-    
+
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 24px;
     }
-    
+
     .header-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    
+
     .app-title {
       font-size: 20px;
       font-weight: 600;
@@ -60,7 +61,7 @@
       align-items: center;
       gap: 10px;
     }
-    
+
     .back-button {
       background-color: rgba(255, 255, 255, 0.2);
       color: white;
@@ -76,38 +77,38 @@
       gap: 6px;
       transition: background-color 0.2s;
     }
-    
+
     .back-button:hover {
       background-color: rgba(255, 255, 255, 0.3);
     }
-    
+
     .page-title {
       font-size: 24px;
       font-weight: 500;
       margin: 30px 0 20px;
       color: var(--dark);
     }
-    
+
     .profile-layout {
       display: grid;
       grid-template-columns: 1fr;
       gap: 24px;
       margin-bottom: 40px;
     }
-    
+
     @media (min-width: 768px) {
       .profile-layout {
         grid-template-columns: 280px 1fr;
       }
     }
-    
+
     .panel {
       background-color: white;
       border-radius: 3px;
       box-shadow: var(--card-shadow);
       overflow: hidden;
     }
-    
+
     .panel-header {
       padding: 16px;
       border-bottom: 1px solid var(--border);
@@ -115,7 +116,7 @@
       justify-content: space-between;
       align-items: center;
     }
-    
+
     .panel-title {
       font-size: 16px;
       font-weight: 600;
@@ -124,20 +125,20 @@
       align-items: center;
       gap: 8px;
     }
-    
+
     .panel-icon {
       color: var(--primary);
     }
-    
+
     .panel-body {
       padding: 20px;
     }
-    
+
     .user-details {
       text-align: center;
       padding-bottom: 20px;
     }
-    
+
     .user-avatar {
       width: 100px;
       height: 100px;
@@ -151,19 +152,19 @@
       font-weight: 500;
       color: var(--primary);
     }
-    
+
     .user-name {
       font-size: 18px;
       font-weight: 600;
       margin-bottom: 4px;
     }
-    
+
     .user-role {
       color: var(--gray);
       font-size: 14px;
       margin-bottom: 16px;
     }
-    
+
     .status-badge {
       display: inline-block;
       background-color: var(--secondary-light);
@@ -173,40 +174,40 @@
       font-size: 12px;
       font-weight: 600;
     }
-    
+
     .info-list {
       list-style-type: none;
       margin-top: 24px;
     }
-    
+
     .info-item {
       display: flex;
       padding: 12px 0;
       border-bottom: 1px solid var(--border);
     }
-    
+
     .info-item:last-child {
       border-bottom: none;
     }
-    
+
     .info-label {
       width: 100px;
       color: var(--gray);
       font-size: 14px;
     }
-    
+
     .info-value {
       flex: 1;
       font-weight: 500;
       font-size: 14px;
     }
-    
+
     .plant-details {
       display: flex;
       align-items: flex-start;
       gap: 16px;
     }
-    
+
     .plant-icon {
       width: 48px;
       height: 48px;
@@ -218,57 +219,57 @@
       color: var(--secondary);
       font-size: 24px;
     }
-    
+
     .plant-info {
       flex: 1;
     }
-    
+
     .plant-name {
       font-size: 16px;
       font-weight: 600;
       color: var(--secondary);
       margin-bottom: 4px;
     }
-    
+
     .plant-meta {
       display: flex;
       gap: 16px;
       margin-top: 16px;
     }
-    
+
     .plant-meta-item {
       flex: 1;
     }
-    
+
     .meta-label {
       font-size: 12px;
       color: var(--gray);
       margin-bottom: 4px;
     }
-    
+
     .meta-value {
       font-weight: 500;
       font-size: 14px;
     }
-    
+
     .skill-cards {
       display: grid;
       grid-template-columns: 1fr;
       gap: 16px;
     }
-    
+
     @media (min-width: 768px) {
       .skill-cards {
         grid-template-columns: repeat(2, 1fr);
       }
     }
-    
+
     @media (min-width: 1024px) {
       .skill-cards {
         grid-template-columns: repeat(3, 1fr);
       }
     }
-    
+
     .skill-card {
       background-color: white;
       border-radius: 3px;
@@ -277,12 +278,12 @@
       position: relative;
       overflow: hidden;
     }
-    
+
     .skill-card:hover {
       transform: translateY(-2px);
       box-shadow: rgba(9, 30, 66, 0.25) 0px 8px 16px -4px, rgba(9, 30, 66, 0.31) 0px 0px 1px;
     }
-    
+
     .skill-level-indicator {
       position: absolute;
       top: 0;
@@ -293,7 +294,7 @@
       border-width: 0 40px 40px 0;
       border-color: transparent var(--gray-light) transparent transparent;
     }
-    
+
     .skill-level-text {
       position: absolute;
       top: 5px;
@@ -302,23 +303,23 @@
       font-weight: 700;
       color: white;
     }
-    
+
     .skill-card.level-1 .skill-level-indicator {
       border-color: transparent #ffbdad transparent transparent;
     }
-    
+
     .skill-card.level-2 .skill-level-indicator {
       border-color: transparent #ffe2bd transparent transparent;
     }
-    
+
     .skill-card.level-3 .skill-level-indicator {
       border-color: transparent #abf5d1 transparent transparent;
     }
-    
+
     .skill-card-content {
       padding: 16px;
     }
-    
+
     .skill-icon {
       width: 40px;
       height: 40px;
@@ -331,20 +332,20 @@
       font-size: 20px;
       margin-bottom: 12px;
     }
-    
+
     .skill-title {
       font-size: 16px;
       font-weight: 600;
       margin-bottom: 8px;
     }
-    
+
     .skill-description {
       font-size: 14px;
       color: var(--gray);
       margin-bottom: 12px;
       min-height: 60px;
     }
-    
+
     .skill-meta {
       display: flex;
       gap: 12px;
@@ -352,27 +353,27 @@
       padding-top: 12px;
       font-size: 12px;
     }
-    
-    
+
+
     .empty-state {
       text-align: center;
       padding: 40px 20px;
       color: var(--gray);
     }
-    
+
     .empty-state-icon {
       font-size: 40px;
       margin-bottom: 16px;
       color: var(--gray-light);
     }
-    
+
     .empty-state-title {
       font-size: 16px;
       font-weight: 500;
       margin-bottom: 8px;
     }
-    
-    
+
+
     .action-button {
       background-color: var(--primary);
       color: white;
@@ -384,12 +385,13 @@
       cursor: pointer;
       transition: background-color 0.2s;
     }
-    
+
     .action-button:hover {
       background-color: #0747a6;
     }
   </style>
 </head>
+
 <body>
   <header class="header">
     <div class="container header-content">
@@ -397,16 +399,16 @@
         <i class="fas fa-industry"></i>
         Manufacturing Portal
       </div>
-      <a href="/page1.html" class="back-button">
+      <a href="/dashboard.html" class="back-button">
         <i class="fas fa-arrow-left"></i>
         Back
       </a>
     </div>
   </header>
-  
+
   <main class="container">
     <h1 class="page-title">User Profile</h1>
-    
+
     <div class="profile-layout">
       <div class="panel">
         <div class="panel-header">
@@ -426,7 +428,7 @@
             <h3 class="user-name">{{fullname}}</h3>
             <span class="status-badge">Active</span>
           </div>
-          
+
           <ul class="info-list">
             <li class="info-item">
               <div class="info-label">Username</div>
@@ -447,7 +449,7 @@
           </ul>
         </div>
       </div>
-      
+
       <div>
         <div class="panel">
           <div class="panel-header">
@@ -468,7 +470,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="panel" style="margin-top: 24px;">
           <div class="panel-header">
             <h2 class="panel-title">
@@ -521,4 +523,5 @@
     </div>
   </main>
 </body>
+
 </html>

@@ -142,12 +142,12 @@ function verifyToken(req, res, next) {
   });
 }
 
-app.get("/page1.html", verifyToken, (req, res) => {
+app.get("/dashboard.html", verifyToken, (req, res) => {
   const usersPlant = req.user.plant_id;
   const plant = req.query.plant;
 
   if (plant === undefined || plant === "") {
-    return res.redirect("/page1.html?plant=" + usersPlant);
+    return res.redirect("/dashboard.html?plant=" + usersPlant);
   }
 
   if (!plant) {
@@ -158,7 +158,7 @@ app.get("/page1.html", verifyToken, (req, res) => {
     return res.sendFile(path.join(__dirname, "public", "403.html"));
   }
 
-  res.sendFile(path.join(__dirname, "public", "page1.html"));
+  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -500,7 +500,7 @@ app.get("/login", (req, res) => {
       }
       const plantId = decoded.plant_id;
       // Redirect to protected page with skill query
-      return res.redirect(`/page1.html?plant=${plantId}`);
+      return res.redirect(`/dashboard.html?plant=${plantId}`);
     });
   });
 });

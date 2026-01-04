@@ -1,498 +1,448 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Account</title>
-    <style>
-      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account - Digital AM Check Sheet System</title>
+
+  <style>
+    /* ================= RESET ================= */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #eef3f8, #dbe7f3);
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    /* ================= CLOCK ================= */
+    .clock {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 14px;
+      color: #003366;
+      text-align: right;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ================= SIGNUP CONTAINER ================= */
+    .signup-container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 550px;
+      animation: fadeDown 0.8s ease;
+    }
+
+    .signup-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .signup-header .icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .signup-header h1 {
+      font-size: 28px;
+      color: #003366;
+      margin-bottom: 8px;
+    }
+
+    .signup-header p {
+      font-size: 15px;
+      color: #666;
+    }
+
+    /* ================= FORM ELEMENTS ================= */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #003366;
+      margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #dbe7f3;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: 0.3s;
+      background: white;
+      font-family: "Segoe UI", Roboto, sans-serif;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #00bfff;
+    }
+
+    .form-group select {
+      cursor: pointer;
+    }
+
+    /* ================= TWO COLUMNS ================= */
+    .two-cols {
+      display: flex;
+      gap: 15px;
+    }
+
+    .two-cols .form-group {
+      flex: 1;
+    }
+
+    /* ================= PASSWORD STRENGTH ================= */
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 20px;
+      user-select: none;
+    }
+
+    .strength-bar {
+      height: 4px;
+      background: #eef4fb;
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .strength-progress {
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s, background 0.3s;
+      background: #dc3545;
+    }
+
+    .strength-progress.weak {
+      background: #dc3545;
+    }
+
+    .strength-progress.medium {
+      background: #ffc107;
+    }
+
+    .strength-progress.strong {
+      background: #28a745;
+    }
+
+    /* ================= BUTTONS ================= */
+    .btn-primary {
+      width: 100%;
+      padding: 12px 24px;
+      background: #003366;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 10px;
+    }
+
+    .btn-primary:hover {
+      background: #00bfff;
+      color: #003366;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 191, 255, 0.3);
+    }
+
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ================= FOOTER ================= */
+    .signup-footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .signup-footer a {
+      color: #00bfff;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .signup-footer a:hover {
+      color: #003366;
+    }
+
+    /* ================= ANIMATION ================= */
+    @keyframes fadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
       }
 
-      body {
-        margin: 0;
-        font-family: "Poppins", sans-serif;
-        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: 20px;
-        position: relative;
-        overflow-x: hidden;
-      }
-
-      body::before {
-        content: "";
-        position: absolute;
-        width: 300px;
-        height: 300px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        top: -100px;
-        left: -100px;
-        z-index: -1;
-      }
-
-      body::after {
-        content: "";
-        position: absolute;
-        width: 250px;
-        height: 250px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        bottom: -70px;
-        right: -70px;
-        z-index: -1;
-      }
-
-      .signup-container {
-        position: relative;
-        max-width: 500px;
-        width: 100%;
-      }
-
-      .signup-box {
-        background-color: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
-        padding: 40px;
-        border-radius: 16px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-        width: 100%;
+      to {
+        opacity: 1;
         transform: translateY(0);
-        transition: all 0.5s ease;
+      }
+    }
+
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 768px) {
+      .signup-container {
+        padding: 30px 20px;
       }
 
-      .signup-box:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      .clock {
+        top: 10px;
+        right: 10px;
+        font-size: 12px;
+        padding: 8px 12px;
       }
 
-      .signup-header {
-        text-align: center;
-        margin-bottom: 30px;
-      }
-
-      .signup-header h2 {
-        color: #333;
-        font-size: 28px;
-        font-weight: 600;
-        margin-bottom: 10px;
-      }
-
-      .signup-header p {
-        color: #666;
-        font-size: 14px;
-      }
-
-      .input-group {
-        margin-bottom: 20px;
-        position: relative;
-      }
-
-      .input-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: #444;
-        font-size: 14px;
-        transition: all 0.3s ease;
-      }
-
-      .input-group input {
-        width: 100%;
-        padding: 14px 15px;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        font-size: 15px;
-        background-color: rgba(255, 255, 255, 0.9);
-        transition: all 0.3s ease;
-      }
-
-      .input-group input:focus {
-        border-color: #2575fc;
-        box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.1);
-        outline: none;
-      }
-
-      .input-group input::placeholder {
-        color: #aaa;
-      }
-
-      .input-icon {
-        position: absolute;
-        right: 15px;
-        top: 42px;
-        color: #aaa;
-        font-size: 18px;
-      }
-
-      .btn-submit {
-        width: 100%;
-        padding: 15px;
-        background: linear-gradient(to right, #2575fc, #6a11cb);
-        color: #fff;
-        border: none;
-        border-radius: 10px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .btn-submit:hover {
-        background: linear-gradient(to right, #1f68e0, #5b0fb3);
-        transform: translateY(-2px);
-        box-shadow: 0 7px 15px rgba(37, 117, 252, 0.3);
-      }
-
-      .btn-submit:active {
-        transform: translateY(1px);
-      }
-
-      .footer {
-        margin-top: 25px;
-        text-align: center;
-        font-size: 14px;
-        color: #666;
-      }
-
-      .footer a {
-        color: #2575fc;
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.3s ease;
-      }
-
-      .footer a:hover {
-        color: #6a11cb;
+      .signup-header h1 {
+        font-size: 24px;
       }
 
       .two-cols {
-        display: flex;
-        gap: 15px;
+        flex-direction: column;
+        gap: 0;
       }
+    }
+  </style>
+</head>
 
-      .two-cols .input-group {
-        flex: 1;
-      }
+<body>
+  <!-- CLOCK -->
+  <div class="clock" id="clock"></div>
 
-      .password-toggle {
-        position: absolute;
-        right: 15px;
-        top: 42px;
-        color: #aaa;
-        cursor: pointer;
-        font-size: 18px;
-        z-index: 10;
-      }
-
-      .completion-bar {
-        height: 5px;
-        background-color: #eee;
-        border-radius: 10px;
-        margin-top: 5px;
-        overflow: hidden;
-      }
-
-      .completion-progress {
-        height: 100%;
-        background: linear-gradient(to right, #ff416c, #ff4b2b);
-        width: 0%;
-        transition: width 0.5s ease;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .signup-box {
-        animation: fadeIn 0.8s ease forwards;
-      }
-
-      .input-group {
-        opacity: 0;
-        animation: fadeIn 0.5s ease forwards;
-      }
-
-      .input-group:nth-child(1) {
-        animation-delay: 0.1s;
-      }
-      .input-group:nth-child(2) {
-        animation-delay: 0.2s;
-      }
-      .input-group:nth-child(3) {
-        animation-delay: 0.3s;
-      }
-      .input-group:nth-child(4) {
-        animation-delay: 0.4s;
-      }
-      .input-group:nth-child(5) {
-        animation-delay: 0.5s;
-      }
-      .input-group:nth-child(6) {
-        animation-delay: 0.6s;
-      }
-
-      button {
-        opacity: 0;
-        animation: fadeIn 0.5s ease forwards;
-        animation-delay: 0.7s;
-      }
-
-      .footer {
-        opacity: 0;
-        animation: fadeIn 0.5s ease forwards;
-        animation-delay: 0.8s;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="signup-container">
-      <div class="signup-box">
-        <div class="signup-header">
-          <h2>Create Your Account</h2>
-          <p>Fill in the details to get started</p>
-        </div>
-        <form id="signupForm" action="/signup" method="POST">
-            <div class="input-group">
-              <label for="fullname">Full Name</label>
-              <input
-                type="text"
-                id="fullname"
-                name="fullname"
-                placeholder="Enter your full name"
-                required
-              />
-            </div>
-            <div class="input-group">
-              <label for="employee_id">Employee ID</label>
-              <input
-                type="text"
-                id="employee_id"
-                name="employee_id"
-                placeholder="Enter your employee ID"
-                required
-              />
-            </div>
-
-          <!-- <div class="input-group">
-          <label for="cell_id">Cell Name</label>
-          <input type="text" id="cell_id" name="cell_id" placeholder="Enter cell name" required />
-        </div> -->
-
-          <div class="two-cols">
-            <div class="input-group">
-              <label for="plant_id">Plant Name</label>
-              <select id="plant_id" name="plant_id" required>
-                <option value="">Select a plant</option>
-              </select>
-            </div>
-
-            <div class="input-group">
-              <label for="cell_id">Cell Name</label>
-              <select id="cell_id" name="cell_id" required>
-                <option value="">Select a cell</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="input-group">
-            <label for="email">Email Address</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="your@email.com"
-              required
-            />
-          </div>
-
-          <div class="input-group">
-            <label for="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              placeholder="Choose a username"
-              required
-            />
-          </div>
-
-          <div class="input-group">
-            <label for="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="Create a strong password"
-              required
-            />
-            <span class="password-toggle" onclick="togglePassword()">👁</span>
-            <div class="completion-bar">
-              <div class="completion-progress" id="passwordStrength"></div>
-            </div>
-          </div>
-
-          <button type="submit" class="btn-submit">Create Account</button>
-          <div class="footer">
-            <p>Already have an account? <a href="login.html">Sign In</a></p>
-          </div>
-        </form>
-      </div>
+  <!-- SIGNUP CONTAINER -->
+  <div class="signup-container">
+    <div class="signup-header">
+      <div class="icon">📝</div>
+      <h1>Create Your Account</h1>
+      <p>Fill in the details to get started</p>
     </div>
 
-    <script>
-      function getCellNames() {
-        fetch("/open/cells")
-          .then((response) => response.json())
-          .then((data) => {
-            console.log(data); // See the structure of the data
+    <!-- SIGNUP FORM -->
+    <form id="signupForm" action="/signup" method="POST">
+      <div class="form-group">
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required />
+      </div>
 
-            const plantSelect = document.getElementById("plant_id");
-            const cellSelect = document.getElementById("cell_id");
+      <div class="form-group">
+        <label for="employee_id">Employee ID</label>
+        <input type="text" id="employee_id" name="employee_id" placeholder="Enter your employee ID" required />
+      </div>
 
-            // Clear existing options except first one
-            plantSelect.length = 1;
+      <div class="two-cols">
+        <div class="form-group">
+          <label for="plant_id">Plant Name</label>
+          <select id="plant_id" name="plant_id" required>
+            <option value="">Select a plant</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="cell_id">Cell Name</label>
+          <select id="cell_id" name="cell_id" required>
+            <option value="">Select a cell</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="your@email.com" required />
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Choose a username" required />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="password" name="password" placeholder="Create a strong password" required />
+          <span class="password-toggle" onclick="togglePassword()">👁</span>
+        </div>
+        <div class="strength-bar">
+          <div class="strength-progress" id="passwordStrength"></div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary">Create Account</button>
+    </form>
+
+    <!-- FOOTER -->
+    <div class="signup-footer">
+      <p>Already have an account? <a href="login.html">Sign In</a></p>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    // Update clock
+    function updateClock() {
+      const now = new Date();
+      const time = now.toLocaleTimeString();
+      const date = now.toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+      });
+      document.getElementById("clock").innerHTML = time + "<br>" + date;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Fetch plants and cells
+    function getCellNames() {
+      fetch("/open/cells")
+        .then((response) => response.json())
+        .then((data) => {
+          const plantSelect = document.getElementById("plant_id");
+          const cellSelect = document.getElementById("cell_id");
+
+          plantSelect.length = 1;
+          cellSelect.length = 1;
+
+          const plantMap = new Map();
+
+          data.forEach((item) => {
+            if (!plantMap.has(item.plant_id)) {
+              plantMap.set(item.plant_id, []);
+            }
+            plantMap.get(item.plant_id).push(item);
+          });
+
+          plantMap.forEach((_, plantId) => {
+            const option = document.createElement("option");
+            option.value = plantId;
+            option.text = plantMap.get(plantId)[0].plant_name;
+            plantSelect.appendChild(option);
+          });
+
+          plantSelect.onchange = function () {
+            const selectedPlant = Number(this.value);
             cellSelect.length = 1;
 
-            const plantMap = new Map();
+            if (plantMap.has(selectedPlant)) {
+              const cells = plantMap.get(selectedPlant);
+              cells.forEach((item) => {
+                const option = document.createElement("option");
+                option.value = item.cell_id;
+                option.text = item.cell_name;
+                cellSelect.appendChild(option);
+              });
+            }
+          };
+        })
+        .catch((error) => {
+          console.error("Error fetching cell names:", error);
+        });
+    }
 
-            data.forEach((item) => {
-              if (!plantMap.has(item.plant_id)) {
-                plantMap.set(item.plant_id, []);
-              }
-              plantMap.get(item.plant_id).push(item);
-            });
+    window.onload = getCellNames;
 
-            plantMap.forEach((_, plantId) => {
-              const option = document.createElement("option");
-              option.value = plantId;
-              option.text = plantMap.get(plantId)[0].plant_name;
-              plantSelect.appendChild(option);
-            });
-
-            // When a plant is selected, populate corresponding cells
-            plantSelect.onchange = function () {
-              const selectedPlant = Number(this.value);
-              // Clear previous cells
-              cellSelect.length = 1;
-
-              if (plantMap.has(selectedPlant)) {
-                const cells = plantMap.get(selectedPlant);
-                cells.forEach((item) => {
-                  const option = document.createElement("option");
-                  option.value = item.cell_id; // or cell name, if needed
-                  option.text = item.cell_name;
-                  cellSelect.appendChild(option);
-                });
-              }
-            };
-          })
-          .catch((error) => {
-            console.error("Error fetching cell names:", error);
-          });
-      }
-
-      // Call the function when page loads
-      window.onload = getCellNames;
-
-      function togglePassword() {
-        const passwordInput = document.getElementById("password");
-        if (passwordInput.type === "password") {
-          passwordInput.type = "text";
-        } else {
-          passwordInput.type = "password";
-        }
-      }
-
-      // Password strength meter
+    // Toggle password visibility
+    function togglePassword() {
       const passwordInput = document.getElementById("password");
-      const strengthMeter = document.getElementById("passwordStrength");
+      passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+    }
 
-      passwordInput.addEventListener("input", function () {
-        const value = passwordInput.value;
-        let strength = 0;
+    // Password strength meter
+    const passwordInput = document.getElementById("password");
+    const strengthMeter = document.getElementById("passwordStrength");
 
-        if (value.length >= 8) strength += 20;
-        if (/[A-Z]/.test(value)) strength += 20;
-        if (/[a-z]/.test(value)) strength += 20;
-        if (/[0-9]/.test(value)) strength += 20;
-        if (/[^A-Za-z0-9]/.test(value)) strength += 20;
+    passwordInput.addEventListener("input", function () {
+      const value = passwordInput.value;
+      let strength = 0;
 
-        strengthMeter.style.width = strength + "%";
+      if (value.length >= 8) strength += 20;
+      if (/[A-Z]/.test(value)) strength += 20;
+      if (/[a-z]/.test(value)) strength += 20;
+      if (/[0-9]/.test(value)) strength += 20;
+      if (/[^A-Za-z0-9]/.test(value)) strength += 20;
 
-        if (strength <= 40) {
-          strengthMeter.style.background =
-            "linear-gradient(to right, #ff416c, #ff4b2b)";
-        } else if (strength <= 80) {
-          strengthMeter.style.background =
-            "linear-gradient(to right, #f7b733, #fc4a1a)";
-        } else {
-          strengthMeter.style.background =
-            "linear-gradient(to right, #56ab2f, #a8e063)";
-        }
-      });
+      strengthMeter.style.width = strength + "%";
 
-      // Form validation
-      const form = document.getElementById("signupForm");
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
+      strengthMeter.className = "strength-progress";
+      if (strength <= 40) {
+        strengthMeter.classList.add("weak");
+      } else if (strength <= 80) {
+        strengthMeter.classList.add("medium");
+      } else {
+        strengthMeter.classList.add("strong");
+      }
+    });
 
-        // Add form validation here
-        const fullname = document.getElementById("fullname").value;
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+    // Form validation
+    const form = document.getElementById("signupForm");
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
 
-        if (fullname.length < 3) {
-          alert("Please enter a valid name");
-          return;
-        }
+      const fullname = document.getElementById("fullname").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-        if (!validateEmail(email)) {
-          alert("Please enter a valid email address");
-          return;
-        }
-
-        if (password.length < 8) {
-          alert("Password must be at least 8 characters long");
-          return;
-        }
-
-        // If all validations pass, submit the form
-        this.submit();
-      });
-
-      function validateEmail(email) {
-        const re =
-          /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return re.test(String(email).toLowerCase());
+      if (fullname.length < 3) {
+        alert("Please enter a valid name");
+        return;
       }
 
-      // Add smooth hover effect to input fields
-      const inputs = document.querySelectorAll("input");
-      inputs.forEach((input) => {
-        input.addEventListener("focus", function () {
-          this.parentElement.style.transform = "translateY(-2px)";
-        });
+      if (!validateEmail(email)) {
+        alert("Please enter a valid email address");
+        return;
+      }
 
-        input.addEventListener("blur", function () {
-          this.parentElement.style.transform = "translateY(0)";
-        });
-      });
-    </script>
-  </body>
+      if (password.length < 8) {
+        alert("Password must be at least 8 characters long");
+        return;
+      }
+
+      this.submit();
+    });
+
+    function validateEmail(email) {
+      const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(String(email).toLowerCase());
+    }
+  </script>
+</body>
+
 </html>

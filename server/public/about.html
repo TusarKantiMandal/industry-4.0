@@ -1,111 +1,344 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dana Anand India Pvt. Ltd.</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Us - Digital AM Check Sheet System</title>
+
   <style>
-    body {
-      font-family: Arial, sans-serif;
+    /* ================= RESET ================= */
+    * {
       margin: 0;
-      background-color: #f4f4f4;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #eef3f8, #dbe7f3);
       color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
-    header {
-      background-color: #004080;
+    /* ================= NAVBAR ================= */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 51, 102, 0.95);
+      padding: 14px 30px;
       color: white;
-      padding: 20px;
-      text-align: center;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
 
-    section {
-      padding: 30px;
-      max-width: 900px;
-      margin: auto;
-      background-color: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
     }
 
-    h1, h2 {
-      margin-top: 0;
+    .navbar ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
     }
 
-    /* Navigation Bar Styling */
-    nav {
-      background-color: #333;
-      padding: 10px 0;
-      text-align: center;
-    }
-
-    nav a {
-      color: white;
-      margin: 0 15px;
+    .navbar ul li a {
       text-decoration: none;
-      font-weight: bold;
-      padding: 10px 20px;
-      border-radius: 5px;
+      color: white;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: 0.3s;
     }
 
-    nav a:hover {
-      background-color: #0073e6;
-      transition: background-color 0.3s ease;
+    .navbar ul li a:hover {
+      background: #00bfff;
+      color: #003366;
     }
 
-    /* Button Styling for LinkedIn */
-    a.button {
+    .clock {
+      font-size: 14px;
+      text-align: right;
+      opacity: 0.9;
+    }
+
+    /* ================= HERO ================= */
+    .hero {
+      text-align: center;
+      padding: 50px 20px 30px;
+      animation: fadeDown 0.8s ease;
+    }
+
+    .hero h1 {
+      font-size: 42px;
+      color: #003366;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: #555;
+    }
+
+    /* ================= CONTENT SECTION ================= */
+    .content-section {
+      padding: 50px 20px;
+      background: linear-gradient(180deg, #f9fbff, #eef4fb);
+      flex: 1;
+    }
+
+    .content-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .about-card {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      margin-bottom: 30px;
+      animation: fadeDown 0.8s ease;
+    }
+
+    .about-card h2 {
+      font-size: 28px;
+      color: #003366;
+      margin-bottom: 20px;
+    }
+
+    .about-card p {
+      font-size: 16px;
+      color: #555;
+      line-height: 1.8;
+      margin-bottom: 15px;
+    }
+
+    .about-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ================= INFO CARDS ================= */
+    .info-wrapper {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .info-card {
+      background: rgba(255, 255, 255, 0.95);
+      width: 280px;
+      padding: 28px 22px;
+      text-align: center;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .info-card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .info-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(120deg, transparent, rgba(0, 191, 255, 0.25), transparent);
+      transition: 0.6s;
+    }
+
+    .info-card:hover::before {
+      left: 100%;
+    }
+
+    .icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .info-card h3 {
+      font-size: 20px;
+      color: #003366;
+      margin-bottom: 8px;
+    }
+
+    .info-card p {
+      font-size: 15px;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    /* ================= BUTTON ================= */
+    .btn-primary {
       display: inline-block;
-      margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #0077b5;
+      padding: 12px 24px;
+      background: #003366;
       color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 500;
       text-decoration: none;
-      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 20px;
     }
 
-    a.button:hover {
-      background-color: #005983;
+    .btn-primary:hover {
+      background: #00bfff;
+      color: #003366;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 191, 255, 0.3);
     }
 
+    /* ================= FOOTER ================= */
     footer {
+      background: linear-gradient(135deg, #003366, #002244);
+      color: white;
       text-align: center;
-      padding: 20px;
-      background-color: #eee;
-      margin-top: 40px;
-      font-size: 0.9em;
+      padding: 14px 0;
+      font-size: 14px;
+    }
+
+    /* ================= ANIMATION ================= */
+    @keyframes fadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+      }
+
+      .hero h1 {
+        font-size: 30px;
+      }
+
+      .about-card {
+        padding: 30px 20px;
+      }
+
+      .info-card {
+        width: 100%;
+        max-width: 320px;
+      }
     }
   </style>
 </head>
+
 <body>
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="logo">Digital AM Check Sheet</div>
 
-  <header>
-    <h1>Dana Anand India Pvt. Ltd.</h1>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="login.html">Login</a></li>
+    </ul>
+
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>About Dana Anand India</h1>
     <p>Driving Innovation in Mobility</p>
-  </header>
-
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="about.html">About</a>
-    <a href="services.html">Services</a>
-    <a href="contact.html">Contact</a>
-  </nav>
-
-  <section>
-    <h2>About Us</h2>
-    <p><strong>Dana Anand India Pvt. Ltd.</strong> is a premier manufacturer and supplier of high-performance automotive components. Formed through a strategic joint venture between Dana Incorporated (USA) and the Anand Group (India), the company leverages global innovation and local expertise to deliver reliable driveline systems for a range of vehicles.</p>
-
-    <p>We serve leading automotive OEMs in both domestic and global markets, committed to excellence in engineering, quality, and environmental responsibility. Our solutions power mobility in the most demanding conditions, from passenger cars to off-highway applications.</p>
-
-    <p>At Dana Anand, we focus on continuous improvement, customer satisfaction, and cutting-edge technologies to remain at the forefront of the automotive supply chain.</p>
-
-    <a class="button" href="https://in.linkedin.com/company/dana-anand-india-private-limited-daipl" target="_blank">
-      Visit us on LinkedIn
-    </a>
   </section>
 
+  <!-- CONTENT SECTION -->
+  <section class="content-section">
+    <div class="content-container">
+      <div class="about-card">
+        <h2>Who We Are</h2>
+        <p><strong>Dana Anand India Pvt. Ltd.</strong> is a premier manufacturer and supplier of high-performance
+          automotive components. Formed through a strategic joint venture between Dana Incorporated (USA) and the Anand
+          Group (India), the company leverages global innovation and local expertise to deliver reliable driveline
+          systems for a range of vehicles.</p>
+
+        <p>We serve leading automotive OEMs in both domestic and global markets, committed to excellence in engineering,
+          quality, and environmental responsibility. Our solutions power mobility in the most demanding conditions, from
+          passenger cars to off-highway applications.</p>
+
+        <p>At Dana Anand, we focus on continuous improvement, customer satisfaction, and cutting-edge technologies to
+          remain at the forefront of the automotive supply chain.</p>
+
+        <a class="btn-primary" href="https://in.linkedin.com/company/dana-anand-india-private-limited-daipl"
+          target="_blank">
+          Visit us on LinkedIn
+        </a>
+      </div>
+
+      <div class="info-wrapper">
+        <div class="info-card">
+          <div class="icon">🎯</div>
+          <h3>Our Mission</h3>
+          <p>To deliver world-class automotive solutions through innovation and excellence.</p>
+        </div>
+
+        <div class="info-card">
+          <div class="icon">🌟</div>
+          <h3>Our Vision</h3>
+          <p>To be the preferred partner for mobility solutions globally.</p>
+        </div>
+
+        <div class="info-card">
+          <div class="icon">⚙️</div>
+          <h3>Our Values</h3>
+          <p>Quality, innovation, integrity, and customer satisfaction drive everything we do.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
   <footer>
-    &copy; 2025 Dana Anand India Pvt. Ltd. All rights reserved.
+    © 2025 Digital AM Check Sheet System | Developed by Tusar
   </footer>
 
+  <!-- JAVASCRIPT -->
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const time = now.toLocaleTimeString();
+      const date = now.toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+      });
+      document.getElementById("clock").innerHTML = time + "<br>" + date;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
 </body>
+
 </html>

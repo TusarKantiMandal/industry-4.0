@@ -1,109 +1,313 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Unique Contact Card</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us - Digital AM Check Sheet System</title>
+
   <style>
+    /* ================= RESET ================= */
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     body {
-      height: 100vh;
-      background: linear-gradient(135deg, #dfe9f3, #ffffff);
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #eef3f8, #dbe7f3);
+      color: #333;
+      min-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+    }
+
+    /* ================= NAVBAR ================= */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: rgba(0, 51, 102, 0.95);
+      padding: 14px 30px;
+      color: white;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
 
-    .glass-card {
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-      padding: 40px 30px;
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .navbar ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+
+    .navbar ul li a {
+      text-decoration: none;
+      color: white;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: 0.3s;
+    }
+
+    .navbar ul li a:hover {
+      background: #00bfff;
+      color: #003366;
+    }
+
+    .clock {
+      font-size: 14px;
+      text-align: right;
+      opacity: 0.9;
+    }
+
+    /* ================= MAIN CONTENT ================= */
+    .main-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .contact-container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 50px 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
       width: 100%;
-      max-width: 480px;
+      max-width: 600px;
+      animation: fadeDown 0.8s ease;
     }
 
-    .glass-card h2 {
+    .contact-header {
       text-align: center;
-      font-size: 28px;
-      margin-bottom: 30px;
-      color: #2c3e50;
+      margin-bottom: 40px;
     }
 
+    .contact-icon {
+      font-size: 64px;
+      margin-bottom: 15px;
+    }
+
+    .contact-header h1 {
+      font-size: 32px;
+      color: #003366;
+      margin-bottom: 10px;
+    }
+
+    .contact-header p {
+      font-size: 16px;
+      color: #666;
+    }
+
+    /* ================= CONTACT INFO ================= */
     .contact-info {
       list-style: none;
     }
 
-    .contact-info li {
+    .contact-item {
       display: flex;
       align-items: center;
-      margin-bottom: 18px;
-      font-size: 17px;
-      color: #333;
-      flex-wrap: wrap;
+      padding: 18px;
+      margin-bottom: 15px;
+      background: linear-gradient(180deg, #f9fbff, #eef4fb);
+      border-radius: 12px;
+      border: 2px solid #dbe7f3;
+      transition: 0.3s;
     }
 
-    .contact-info li span.icon {
-      font-size: 20px;
-      margin-right: 12px;
-      width: 24px;
+    .contact-item:hover {
+      transform: translateX(5px);
+      border-color: #00bfff;
     }
 
-    .contact-info li a {
-      color: #0077cc;
+    .contact-item .icon {
+      font-size: 28px;
+      margin-right: 15px;
+      min-width: 35px;
+    }
+
+    .contact-item .details {
+      flex: 1;
+    }
+
+    .contact-item .label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 3px;
+    }
+
+    .contact-item a {
+      color: #003366;
       text-decoration: none;
-      margin-right: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      transition: 0.3s;
     }
 
-    .contact-info li a:hover {
-      text-decoration: underline;
+    .contact-item a:hover {
+      color: #00bfff;
     }
 
-    .note {
-      font-style: italic;
-      color: #777;
-    }
-
-    .label {
+    .contact-item .text {
       color: #555;
+      font-size: 16px;
+    }
+
+    /* ================= FOOTER ================= */
+    footer {
+      background: linear-gradient(135deg, #003366, #002244);
+      color: white;
+      text-align: center;
+      padding: 14px 0;
       font-size: 14px;
     }
 
-    @media (max-width: 600px) {
-      .glass-card {
-        padding: 25px;
+    /* ================= ANIMATION ================= */
+    @keyframes fadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
       }
 
-      .glass-card h2 {
-        font-size: 24px;
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
       }
 
-      .contact-info li {
-        font-size: 15px;
+      .contact-container {
+        padding: 40px 30px;
+        margin: 20px;
+      }
+
+      .contact-header h1 {
+        font-size: 26px;
+      }
+
+      .contact-icon {
+        font-size: 52px;
+      }
+
+      .contact-item {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .contact-item .icon {
+        margin-right: 0;
+        margin-bottom: 10px;
       }
     }
   </style>
 </head>
-<body>
 
-  <div class="glass-card">
-    <h2>📇 Contact Card</h2>
-    <ul class="contact-info">
-      <li><span class="icon">📞</span> <a href="tel:+91816253053">+91 816253053</a> <span class="label">– Tusar Kanti Mandal</span></li>
-      <li><span class="icon">📞</span> <a href="tel:+918658481376">+91 8658481376</a> <span class="label">– Gyanaranjan Behera</span></li>
-      <li><span class="icon">✉️</span> <a href="mailto:tusarmandal2@gmail.com">tusarmandal2@gmail.com</a></li>
-      <li><span class="icon">📍</span> <span class="note">Sorry, I can't share</span></li>
-      <li><span class="icon">🌐</span> <a href="https://www.danaanand.com" target="_blank">www.danaanand.com</a></li>
+<body>
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="logo">Digital AM Check Sheet</div>
+
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="login.html">Login</a></li>
     </ul>
+
+    <div class="clock" id="clock"></div>
   </div>
 
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <div class="contact-container">
+      <div class="contact-header">
+        <div class="contact-icon">📇</div>
+        <h1>Contact Us</h1>
+        <p>Get in touch with our team</p>
+      </div>
+
+      <ul class="contact-info">
+        <li class="contact-item">
+          <div class="icon">📞</div>
+          <div class="details">
+            <div class="label">Phone - Tusar Kanti Mandal</div>
+            <a href="tel:+918162530530">+91 816253053</a>
+          </div>
+        </li>
+
+        <li class="contact-item">
+          <div class="icon">📞</div>
+          <div class="details">
+            <div class="label">Phone - Gyanaranjan Behera</div>
+            <a href="tel:+918658481376">+91 8658481376</a>
+          </div>
+        </li>
+
+        <li class="contact-item">
+          <div class="icon">✉️</div>
+          <div class="details">
+            <div class="label">Email</div>
+            <a href="mailto:tusarmandal2@gmail.com">tusarmandal2@gmail.com</a>
+          </div>
+        </li>
+
+        <li class="contact-item">
+          <div class="icon">📍</div>
+          <div class="details">
+            <div class="label">Location</div>
+            <div class="text">Dana Anand India Pvt. Ltd.</div>
+          </div>
+        </li>
+
+        <li class="contact-item">
+          <div class="icon">🌐</div>
+          <div class="details">
+            <div class="label">Website</div>
+            <a href="https://www.danaanand.com" target="_blank">www.danaanand.com</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    © 2025 Digital AM Check Sheet System | Developed by Tusar
+  </footer>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const time = now.toLocaleTimeString();
+      const date = now.toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+      });
+      document.getElementById("clock").innerHTML = time + "<br>" + date;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
 </body>
+
 </html>

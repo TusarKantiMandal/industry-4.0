@@ -4,117 +4,198 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - Company Portal</title>
+  <title>Login - Digital AM Check Sheet System</title>
+
   <style>
-    body {
+    /* ================= RESET ================= */
+    * {
       margin: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #2c3e50, #3498db);
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #eef3f8, #dbe7f3);
+      color: #333;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      position: relative;
     }
 
-    .login-box {
-      background-color: #fff;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-      width: 100%;
-      max-width: 400px;
-    }
-
-    .login-box h2 {
-      margin-bottom: 30px;
-      font-size: 24px;
-      text-align: center;
-      color: #333;
-    }
-
-    .login-box label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #555;
-    }
-
-    .login-box input[type="text"],
-    .login-box input[type="password"] {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    .login-box button {
-      width: 100%;
-      padding: 12px;
-      background-color: #0077cc;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    .login-box button:hover {
-      background-color: #005fa3;
-    }
-
-    .login-box .footer {
-      margin-top: 20px;
-      text-align: center;
-      font-size: 14px;
-      color: #666;
-    }
-
-    .login-box .footer a {
-      color: #0077cc;
-      text-decoration: none;
-    }
-
-    .login-box .footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* Date/Time top right */
-    .datetime {
+    /* ================= CLOCK ================= */
+    .clock {
       position: absolute;
       top: 20px;
       right: 30px;
       font-size: 14px;
-      color: #fff;
+      color: #003366;
       text-align: right;
-      background-color: rgba(255, 255, 255, 0.2);
-      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 16px;
       border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    /* Error message styling */
-    .error-message {
-      color: #e74c3c;
-      margin-bottom: 15px;
+    /* ================= LOGIN CONTAINER ================= */
+    .login-container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 440px;
+      animation: fadeDown 0.8s ease;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .login-header .icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .login-header h1 {
+      font-size: 28px;
+      color: #003366;
+      margin-bottom: 8px;
+    }
+
+    .login-header p {
+      font-size: 15px;
+      color: #666;
+    }
+
+    /* ================= FORM ELEMENTS ================= */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #003366;
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #dbe7f3;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: 0.3s;
+      background: white;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #00bfff;
+    }
+
+    /* ================= BUTTONS ================= */
+    .btn-primary {
+      width: 100%;
+      padding: 12px 24px;
+      background: #003366;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 10px;
+    }
+
+    .btn-primary:hover {
+      background: #00bfff;
+      color: #003366;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 191, 255, 0.3);
+    }
+
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ================= LINKS ================= */
+    .form-links {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .form-links a {
+      color: #00bfff;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .form-links a:hover {
+      color: #003366;
+    }
+
+    .toggle-link {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #00bfff;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .toggle-link:hover {
+      color: #003366;
+    }
+
+    /* ================= ACCESS CODE SECTION ================= */
+    .access-code-section {
+      display: none;
+      border-top: 2px solid #eef4fb;
+      padding-top: 20px;
+      margin-top: 20px;
+      animation: fadeDown 0.4s ease;
+    }
+
+    .access-code-section.active {
+      display: block;
+    }
+
+    /* ================= MESSAGES ================= */
+    .message {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
       text-align: center;
       font-size: 14px;
       display: none;
     }
 
-    /* Loading indicator */
-    .loading {
-      display: none;
-      text-align: center;
-      margin-bottom: 15px;
+    .message.error {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
     }
 
-    .loading::after {
+    .message.loading {
+      background: #e3f2fd;
+      color: #1565c0;
+      border: 1px solid #90caf9;
+    }
+
+    .message.loading::after {
       content: "...";
-      animation: dots 1.5s steps(5, end) infinite;
+      animation: dots 1.5s steps(3, end) infinite;
     }
 
     @keyframes dots {
@@ -133,165 +214,215 @@
         content: "...";
       }
     }
+
+    /* ================= FOOTER ================= */
+    .login-footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .login-footer .nav-links {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    .login-footer .nav-links a {
+      color: #00bfff;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .login-footer .nav-links a:hover {
+      color: #003366;
+    }
+
+    /* ================= ANIMATION ================= */
+    @keyframes fadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 768px) {
+      .login-container {
+        padding: 30px 20px;
+        margin: 20px;
+      }
+
+      .clock {
+        top: 10px;
+        right: 10px;
+        font-size: 12px;
+        padding: 8px 12px;
+      }
+
+      .login-header h1 {
+        font-size: 24px;
+      }
+    }
   </style>
 </head>
 
 <body>
-  <!-- Date and Time in top-right -->
-  <div class="datetime">
-    <div id="date"></div>
-    <div id="time"></div>
-  </div>
-  <div class="login-box">
-    <h2>Welcome Back</h2>
-    <div id="error-message" class="error-message"></div>
-    <div id="loading-indicator" class="loading">Signing in</div>
+  <!-- CLOCK -->
+  <div class="clock" id="clock"></div>
+
+  <!-- LOGIN CONTAINER -->
+  <div class="login-container">
+    <div class="login-header">
+      <div class="icon">🔐</div>
+      <h1>Welcome Back</h1>
+      <p>Sign in to access your dashboard</p>
+    </div>
+
+    <!-- MESSAGES -->
+    <div id="error-message" class="message error"></div>
+    <div id="loading-message" class="message loading">Signing in</div>
+
+    <!-- LOGIN FORM -->
     <form id="login-form">
-      <label for="username">Username or Email</label>
-      <input type="text" id="username" name="username" placeholder="Enter your username" required />
+      <div class="form-group">
+        <label for="username">Username or Email</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username" required />
+      </div>
 
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" required>
-      </div>
-      <div style="text-align: right; margin-bottom: 20px;">
-        <a href="forgot-password.html" style="color: #3b82f6; text-decoration: none; font-size: 14px;">Forgot
-          Password?</a>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required />
       </div>
 
-      <div id="access-code-section"
-        style="display: none; border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
-        <label for="temp_code" style="color: #3b82f6;">Access Code</label>
-        <input type="text" id="temp_code" name="temp_code" placeholder="Enter access code">
-
-        <label for="temp_password" style="color: #3b82f6;">Access Password</label>
-        <input type="password" id="temp_password" name="temp_password" placeholder="Enter access password">
+      <div class="form-links">
+        <a href="forgot-password.html">Forgot Password?</a>
+        <a href="#" id="toggle-access-code">Access Code Login</a>
       </div>
 
-      <div style="text-align: right; margin-bottom: 15px;">
-        <a href="#" id="toggle-access-code" style="font-size: 14px; color: #3b82f6; text-decoration: none;">Login with
-          Access Code</a>
+      <!-- ACCESS CODE SECTION -->
+      <div class="access-code-section" id="access-code-section">
+        <div class="form-group">
+          <label for="temp_code">Access Code</label>
+          <input type="text" id="temp_code" name="temp_code" placeholder="Enter access code" />
+        </div>
+
+        <div class="form-group">
+          <label for="temp_password">Access Password</label>
+          <input type="password" id="temp_password" name="temp_password" placeholder="Enter access password" />
+        </div>
       </div>
 
-      <button type="submit">Sign In</button>
-
-      <div class="footer">
-        <p>
-          <a href="Forgot password.html">Forgot password?</a> |
-          <a href="Create account.html">Create account</a>
-        </p>
-        <nav>
-          <a href="/">Home</a>
-          <a href="about.html">About</a>
-          <a href="#">Services</a>
-          <a href="contact.html">Contact</a>
-        </nav>
-      </div>
+      <button type="submit" class="btn-primary">Sign In</button>
     </form>
+
+    <!-- FOOTER -->
+    <div class="login-footer">
+      <p>Don't have an account? <a href="Create account.html" style="color: #00bfff; text-decoration: none;">Sign Up</a>
+      </p>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
   </div>
 
+  <!-- JAVASCRIPT -->
   <script>
-    // Update date and time
-    function updateDateTime() {
+    // Update clock
+    function updateClock() {
       const now = new Date();
-      const date = now.toLocaleDateString(undefined, {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
       const time = now.toLocaleTimeString();
-      document.getElementById("date").textContent = date;
-      document.getElementById("time").textContent = time;
+      const date = now.toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+      });
+      document.getElementById("clock").innerHTML = time + "<br>" + date;
     }
 
-    // Initialize datetime and set interval
-    setInterval(updateDateTime, 1000);
-    updateDateTime();
+    setInterval(updateClock, 1000);
+    updateClock();
 
+    // Toggle access code section
     document.getElementById('toggle-access-code').addEventListener('click', function (e) {
       e.preventDefault();
       const section = document.getElementById('access-code-section');
-      if (section.style.display === 'none') {
-        section.style.display = 'block';
-        this.textContent = 'Hide Access Code Login';
-      } else {
-        section.style.display = 'none';
-        this.textContent = 'Login with Access Code';
-        document.getElementById('temp_code').value = '';
-        document.getElementById('temp_password').value = '';
-      }
+      section.classList.toggle('active');
+      this.textContent = section.classList.contains('active') ? 'Hide Access Code' : 'Access Code Login';
     });
 
     // Handle login form submission
-    document
-      .getElementById("login-form")
-      .addEventListener("submit", function (event) {
-        event.preventDefault();
+    document.getElementById("login-form").addEventListener("submit", function (event) {
+      event.preventDefault();
 
-        // Show loading indicator
-        document.getElementById("loading-indicator").style.display = "block";
-        document.getElementById("error-message").style.display = "none";
+      // Show loading, hide errors
+      document.getElementById("loading-message").style.display = "block";
+      document.getElementById("error-message").style.display = "none";
 
-        // Get form data
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-        const temp_code = document.getElementById("temp_code").value;
-        const temp_password = document.getElementById("temp_password").value;
+      // Get form data
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const temp_code = document.getElementById("temp_code").value;
+      const temp_password = document.getElementById("temp_password").value;
 
-        ADMIN_ROLES = ["admin", "itAdmin", "ptt"]
+      const ADMIN_ROLES = ["admin", "itAdmin", "ptt"];
 
-        // Create request
-        fetch("/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            username: username,
-            password: password,
-            temp_code: temp_code,
-            temp_password: temp_password
-          }),
+      // Send login request
+      fetch("/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          username: username,
+          password: password,
+          temp_code: temp_code,
+          temp_password: temp_password
+        }),
+      })
+        .then(async (response) => {
+          const resp = await response.json();
+
+          if (response.ok) {
+            return resp;
+          } else {
+            throw new Error(
+              resp.message || "Login failed. Please check your credentials."
+            );
+          }
         })
-          .then(async (response) => {
-            const resp = await response.json(); // await here
+        .then((data) => {
+          if (data && ADMIN_ROLES.includes(data.role)) {
+            window.location.href = '/admin';
+            return;
+          }
 
-            if (response.ok) {
-              return resp;
-            } else {
-              // Use message from JSON response or fallback
-              throw new Error(
-                resp.message || "Login failed. Please check your credentials."
-              );
-            }
-          })
-          .then((data) => {
-            if (data && ADMIN_ROLES.includes(data.role)) {
-              window.location.href = '/admin';
-              return;
-            }
+          document.getElementById("loading-message").style.display = "none";
 
-            document.getElementById("loading-indicator").style.display =
-              "none";
-
-            if (data && data.plant_id) {
-              window.location.href = `page1.html?plant=${data.plant_id}`;
-            } else {
-              throw new Error(
-                "Invalid server response. Plant information missing."
-              );
-            }
-          })
-          .catch((error) => {
-            document.getElementById("loading-indicator").style.display =
-              "none";
-            const errorElement = document.getElementById("error-message");
-            errorElement.textContent = error.message;
-            errorElement.style.display = "block";
-          });
-      });
+          if (data && data.plant_id) {
+            window.location.href = `dashboard.html?plant=${data.plant_id}`;
+          } else {
+            throw new Error("Invalid server response. Plant information missing.");
+          }
+        })
+        .catch((error) => {
+          document.getElementById("loading-message").style.display = "none";
+          const errorElement = document.getElementById("error-message");
+          errorElement.textContent = error.message;
+          errorElement.style.display = "block";
+        });
+    });
   </script>
 </body>
 
