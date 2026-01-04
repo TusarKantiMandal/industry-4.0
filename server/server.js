@@ -879,8 +879,6 @@ function verifyItAdmin(req, res, next) {
 
     const access_code_id = decoded.access_code_id;
 
-    console.log("Access code ID:", access_code_id);
-
     if (access_code_id) {
       const q = `
         SELECT *

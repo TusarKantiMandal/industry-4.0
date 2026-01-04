@@ -4,6 +4,8 @@ const fs = require("fs");
 const sqlite3 = require("sqlite3").verbose();
 const router = express.Router();
 const db = new sqlite3.Database("./database.db");
+const { getUserById } = require('./db');
+const { sendEmail } = require("./email");
 
 
 
@@ -124,7 +126,21 @@ router.get("/users/:id", (req, res) => {
           }
           data.machines = skills;
 
-          res.json(data);
+          // If requesting user is PTT, fetch their allowed machines
+          if (req.user.role === 'ptt') {
+            const allowedMachinesQuery = `SELECT machine_id FROM user_skills WHERE user_id = ?`;
+            db.all(allowedMachinesQuery, [req.user.id], (err, allowedRows) => {
+              if (err) {
+                console.error("Error retrieving allowed machines:", err.message);
+                return res.status(500).json({ error: "Database error occurred" });
+              }
+              data.allowed_machines = allowedRows.map(row => row.machine_id);
+              res.json(data);
+            });
+          } else {
+            data.allowed_machines = null; // Admin has access to all
+            res.json(data);
+          }
         });
       });
     });
@@ -177,45 +193,178 @@ router.put("/users/:id", (req, res) => {
           return res.status(500).json({ error: "Failed to update user" });
         }
 
-        const insertSkills = (index) => {
-          if (index >= skills.length) {
-            db.run("COMMIT");
-            return res.status(200).json({ message: "User updated successfully" });
-          }
-
-          const { name, level } = skills[index];
-
-          db.get("SELECT id FROM machines WHERE name = ?", [name], (err, machine) => {
-            if (err || !machine) {
-              console.error("Invalid machine ID:", err?.message);
-              db.run("ROLLBACK");
-              return res.status(400).json({ error: "Invalid machine ID" });
-            }
-
-            db.get("SELECT id FROM skills WHERE name = ?", [level], (err, skill) => {
-              if (err || !skill) {
-                console.error("Invalid skill name:", err?.message);
-                db.run("ROLLBACK");
-                return res.status(400).json({ error: "Invalid skill name" });
-              }
-
-              const updateSkillsQuery = `
-                INSERT OR REPLACE INTO user_skills (user_id, machine_id, skill_id)
-                VALUES (?, ?, ?)
-              `;
-              db.run(updateSkillsQuery, [userId, machine.id, skill.id], (err) => {
-                if (err) {
-                  console.error("Error updating user skills:", err.message);
-                  db.run("ROLLBACK");
-                  return res.status(500).json({ error: "Failed to update user skills" });
-                }
-                insertSkills(index + 1); // process next skill
-              });
+        // Helper to get allowed machines for the requesting user
+        const getAllowedMachines = (callback) => {
+          if (req.user.role === 'ptt') {
+            db.all("SELECT machine_id FROM user_skills WHERE user_id = ?", [req.user.id], (err, rows) => {
+              if (err) return callback(err);
+              callback(null, rows.map(r => r.machine_id));
             });
-          });
+          } else {
+            callback(null, null); // Null means all machines allowed
+          }
         };
 
-        insertSkills(0); // start inserting skills
+        getAllowedMachines((err, allowedMachineIds) => {
+          if (err) {
+            console.error("Error fetching allowed machines:", err.message);
+            db.run("ROLLBACK");
+            return res.status(500).json({ error: "Database error" });
+          }
+
+          // Validate that all new skills are within allowed scope
+          if (allowedMachineIds) {
+            for (const skill of skills) {
+              // We need to resolve machine name to id to check permission
+              // This is tricky because we only have name here.
+              // Let's defer this check to the insertion loop or fetch all machine IDs first.
+              // Actually, we can just proceed and check during processing.
+            }
+          }
+
+          // Fetch current skills of the target user to determine what to delete
+          db.all("SELECT machine_id FROM user_skills WHERE user_id = ?", [userId], (err, currentSkills) => {
+            if (err) {
+              console.error("Error fetching current skills:", err.message);
+              db.run("ROLLBACK");
+              return res.status(500).json({ error: "Database error" });
+            }
+
+            const currentMachineIds = currentSkills.map(s => s.machine_id);
+
+            // We need to map the NEW skills (which have names) to IDs to compare.
+            // Let's fetch all machines to map names to IDs.
+            db.all("SELECT id, name FROM machines", [], (err, allMachines) => {
+              if (err) {
+                console.error("Error fetching machines:", err.message);
+                db.run("ROLLBACK");
+                return res.status(500).json({ error: "Database error" });
+              }
+
+              const machineMap = {}; // name -> id
+              allMachines.forEach(m => machineMap[m.name] = m.id);
+
+              const newMachineIds = [];
+              for (const skill of skills) {
+                const mId = machineMap[skill.name];
+                if (!mId) {
+                  // Invalid machine name in request
+                  console.error("Invalid machine name in request:", skill.name);
+                  // We could error out, or just skip. Let's error.
+                  db.run("ROLLBACK");
+                  return res.status(400).json({ error: `Invalid machine name: ${skill.name}` });
+                }
+                newMachineIds.push(mId);
+              }
+
+              // Determine deletions
+              // Delete if: (In Current) AND (In Scope) AND (NOT in New)
+              const toDelete = currentMachineIds.filter(id => {
+                const inScope = !allowedMachineIds || allowedMachineIds.includes(id);
+                const inNew = newMachineIds.includes(id);
+                return inScope && !inNew;
+              });
+
+              // Check for unauthorized additions
+              if (allowedMachineIds) {
+                // Unauthorized if: (In New) AND (Not Allowed) AND (Not currently assigned)
+                const unauthorizedAdds = newMachineIds.filter(id =>
+                  !allowedMachineIds.includes(id) && !currentMachineIds.includes(id)
+                );
+                if (unauthorizedAdds.length > 0) {
+                  db.run("ROLLBACK");
+                  return res.status(403).json({ error: "You are not authorized to assign some of these machines." });
+                }
+              }
+
+              // Execute Deletions
+              const deletePromises = toDelete.map(machineId => {
+                return new Promise((resolve, reject) => {
+                  db.run("DELETE FROM user_skills WHERE user_id = ? AND machine_id = ?", [userId, machineId], (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                  });
+                });
+              });
+
+              Promise.all(deletePromises)
+                .then(() => {
+                  // Proceed with Insertions/Updates
+                  const insertSkills = (index) => {
+                    if (index >= skills.length) {
+                      db.run("COMMIT");
+
+                      // Send email alert
+                      const machineList = skills.map(s => `<li>${s.name} (${s.level})</li>`).join("");
+                      const emailBody = `
+                        <p>Hello ${fullname},</p>
+                        <p>Your machine assignments have been updated by <strong>${req.user.fullname}</strong> (${req.user.role}).</p>
+                        <p><strong>Current Machines/Skills:</strong></p>
+                        <ul>${machineList}</ul>
+                        <p>Regards,<br>Industry 4.0 Team</p>
+                      `;
+
+                      sendEmail({
+                        to: email,
+                        subject: "Machine Assignment Update",
+                        body: emailBody,
+                        senderName: "Industry 4.0 Admin"
+                      }).catch(err => console.error("Failed to send email:", err));
+
+                      return res.status(200).json({ message: "User updated successfully" });
+                    }
+
+                    const { name, level } = skills[index];
+                    const machineId = machineMap[name]; // We already validated this exists
+
+                    // Check if user is allowed to modify this machine
+                    const isAllowed = !allowedMachineIds || allowedMachineIds.includes(machineId);
+                    if (!isAllowed) {
+                      // Skip modification for restricted machines (preserve existing state)
+                      return insertSkills(index + 1);
+                    }
+
+                    db.get("SELECT id FROM skills WHERE name = ?", [level], (err, skill) => {
+                      if (err || !skill) {
+                        console.error("Invalid skill name:", err?.message);
+                        db.run("ROLLBACK");
+                        return res.status(400).json({ error: "Invalid skill name" });
+                      }
+
+                      // Delete existing skill for this machine to prevent duplicates (since unique constraint includes skill_id)
+                      db.run("DELETE FROM user_skills WHERE user_id = ? AND machine_id = ?", [userId, machineId], (err) => {
+                        if (err) {
+                          console.error("Error deleting old skill:", err.message);
+                          db.run("ROLLBACK");
+                          return res.status(500).json({ error: "Failed to update user skills" });
+                        }
+
+                        const insertSkillQuery = `
+                           INSERT INTO user_skills (user_id, machine_id, skill_id)
+                           VALUES (?, ?, ?)
+                         `;
+                        db.run(insertSkillQuery, [userId, machineId, skill.id], (err) => {
+                          if (err) {
+                            console.error("Error updating user skills:", err.message);
+                            db.run("ROLLBACK");
+                            return res.status(500).json({ error: "Failed to update user skills" });
+                          }
+                          insertSkills(index + 1); // process next skill
+                        });
+                      });
+                    });
+                  };
+
+                  insertSkills(0); // start inserting skills
+                })
+                .catch(err => {
+                  console.error("Error deleting old skills:", err);
+                  db.run("ROLLBACK");
+                  res.status(500).json({ error: "Failed to update skills" });
+                });
+            });
+          });
+        });
       });
     });
   });

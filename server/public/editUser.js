@@ -18,7 +18,7 @@ const notificationMessage = document.getElementById("notification-message");
 const usernameInput = document.getElementById("username");
 const userAvatar = document.getElementById("user-avatar");
 const skillSelect = document.getElementById("new-skill-name");
-// const machineSelect = document.getElementById("new-machine-name");
+const machineSelect = document.getElementById("new-machine-name");
 const panelTitle = document.querySelector(".machine-skills");
 
 // Get user ID from URL parameter
@@ -125,17 +125,21 @@ function loadUserData(userId) {
       `;
 
         addSkillBtn.innerHTML = `<i class="fas fa-plus"></i> Add Machine`;
-      } else {
-        // Add user skills
-        const existingSkills = data.machines.filter(m => m.skill);
-        if (existingSkills.length > 0) {
-          existingSkills.forEach((m, index) => {
+      }
+
+      // Add user skills
+      const existingSkills = data.machines.filter(m => m.skill);
+      if (existingSkills.length > 0) {
+        existingSkills.forEach((m, index) => {
+          if (user.role === "ptt") {
+            addMachineCard(m.machine_name, m.machine_id);
+          } else {
             addSkillCard(m.machine_name, m.skill, index + 1);
-          });
-          skillCounter = existingSkills.length + 1;
-        } else {
-          skillCounter = 1;
-        }
+          }
+        });
+        skillCounter = existingSkills.length + 1;
+      } else {
+        skillCounter = 1;
       }
 
       globalUser = user;
@@ -196,7 +200,8 @@ form.addEventListener("submit", (e) => {
   const skillCards = skillsContainer.querySelectorAll(".skill-card");
   skillCards.forEach((card, index) => {
     const skillName = card.querySelector(".skill-title").textContent;
-    const skillLevel = card.querySelector("input[type='radio']:checked").value;
+    const skillLevelInput = card.querySelector("input[type='radio']:checked");
+    const skillLevel = skillLevelInput ? skillLevelInput.value : "L1";
 
     if (formData.skills.some((skill) => skill.name === skillName)) {
       showNotification(`Skill "${skillName}" already exists`, "error");
@@ -311,7 +316,7 @@ confirmAddMachineBtn.addEventListener("click", () => {
   const machines = gloablData.machines;
   const id = document.getElementById("new-machine-name").value.trim();
 
-  const machineName = machines.find((machine) => machine.id == id)?.name;
+  const machineName = machines.find((machine) => machine.machine_id == id)?.machine_name;
   console.log(machineName);
 
   if (!machineName) {
@@ -364,6 +369,7 @@ function addSkillCard(name, level, customId = null) {
 
   // Add event listener to remove button
   const removeBtn = skillCard.querySelector(".remove-skill");
+
   removeBtn.addEventListener("click", () => {
     if (confirm("Are you sure you want to remove this skill?")) {
       skillCard.remove();
@@ -427,10 +433,10 @@ async function populateMachines(machines) {
     option.textContent = machine.machine_name;
     skillSelect.appendChild(option);
 
-    // const machineOption = document.createElement("option");
-    // machineOption.value = machine.id;
-    // machineOption.textContent = machine.name;
-    // machineSelect.appendChild(machineOption);
+    const machineOption = document.createElement("option");
+    machineOption.value = machine.machine_id;
+    machineOption.textContent = machine.machine_name;
+    machineSelect.appendChild(machineOption);
   });
 
   if (machines.length === 0) {

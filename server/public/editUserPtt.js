@@ -126,11 +126,12 @@ function loadUserData(userId) {
         addSkillBtn.innerHTML = `<i class="fas fa-plus"></i> Add Machine`;
       } else {
         // Add user skills
-        if (user.skills && user.skills.length > 0) {
-          user.skills.forEach((skill, index) => {
-            addSkillCard(skill.machine_name, skill.skill.toString(), index + 1);
+        const existingSkills = data.machines.filter(m => m.skill);
+        if (existingSkills.length > 0) {
+          existingSkills.forEach((m, index) => {
+            addSkillCard(m.machine_name, m.skill, index + 1, m.machine_id);
           });
-          skillCounter = user.skills.length + 1;
+          skillCounter = existingSkills.length + 1;
         } else {
           skillCounter = 1;
         }
@@ -139,7 +140,12 @@ function loadUserData(userId) {
       globalUser = user;
       gloablData = data;
 
-      populateMachines(data.machines);
+      // Filter machines for dropdown based on allowed_machines
+      let availableMachines = data.machines;
+      if (data.allowed_machines) {
+        availableMachines = data.machines.filter(m => data.allowed_machines.includes(m.machine_id));
+      }
+      populateMachines(availableMachines);
     })
     .catch((error) => {
       showNotification(error.message, "error");
@@ -319,37 +325,40 @@ confirmAddSkillBtn.addEventListener("click", () => {
 //   closeModal();
 // });
 
-function addSkillCard(name, level, customId = null) {
+function addSkillCard(name, level, customId = null, machineId = null) {
   const skillId = customId || skillCounter++;
 
   const skillCard = document.createElement("div");
   skillCard.className = "skill-card";
+  skillCard.dataset.machineId = machineId;
+
+  const isAllowed = !gloablData.allowed_machines || (machineId && gloablData.allowed_machines.includes(machineId));
+  const disabledAttr = isAllowed ? "" : "disabled";
+  const opacityStyle = isAllowed ? "" : "opacity: 0.6;";
+
   skillCard.innerHTML = `
-    <div class="skill-header">
+    <div class="skill-header" style="${opacityStyle}">
       <h3 class="skill-title">${name}</h3>
-      <button type="button" class="remove-skill">
+      <button type="button" class="remove-skill" ${disabledAttr}>
         <i class="fas fa-trash"></i> Remove
       </button>
     </div>
-    <div class="form-group">
+    <div class="form-group" style="${opacityStyle}">
       <label class="form-label">Skill Level</label>
       <div class="skill-level">
         <div class="level-option">
-          <input type="radio" name="skill-${skillId}-level" id="skill-${skillId}-level-1" class="level-radio" value="L1" ${
-    level === "L1" ? "checked" : ""
-  }>
+          <input type="radio" name="skill-${skillId}-level" id="skill-${skillId}-level-1" class="level-radio" value="L1" ${level === "L1" ? "checked" : ""
+    } ${disabledAttr}>
           <label for="skill-${skillId}-level-1" class="level-label">L1</label>
         </div>
         <div class="level-option">
-          <input type="radio" name="skill-${skillId}-level" id="skill-${skillId}-level-2" class="level-radio" value="L2" ${
-    level === "L2" ? "checked" : ""
-  }>
+          <input type="radio" name="skill-${skillId}-level" id="skill-${skillId}-level-2" class="level-radio" value="L2" ${level === "L2" ? "checked" : ""
+    } ${disabledAttr}>
           <label for="skill-${skillId}-level-2" class="level-label">L2</label>
         </div>
         <div class="level-option">
-          <input type="radio" name="skill-${skillId}-level" id="skill-${skillId}-level-3" class="level-radio" value="L3" ${
-    level === "L3" ? "checked" : ""
-  }>
+          <input type="radio" name="skill-${skillId}-level" id="skill-${skillId}-level-3" class="level-radio" value="L3" ${level === "L3" ? "checked" : ""
+    } ${disabledAttr}>
           <label for="skill-${skillId}-level-3" class="level-label">L3</label>
         </div>
       </div>
@@ -416,17 +425,17 @@ document.addEventListener("click", (e) => {
 });
 
 async function populateMachines(machines) {
-//   machineSelect.innerHTML = '<option value="">-- Select a Machine --</option>';
+  //   machineSelect.innerHTML = '<option value="">-- Select a Machine --</option>';
 
   machines.forEach((machine) => {
     const option = document.createElement("option");
-    option.value = machine.name;
-    option.textContent = machine.name;
+    option.value = machine.machine_name;
+    option.textContent = machine.machine_name;
     skillSelect.appendChild(option);
 
     // const machineOption = document.createElement("option");
-    // machineOption.value = machine.id;
-    // machineOption.textContent = machine.name;
+    // machineOption.value = machine.machine_id;
+    // machineOption.textContent = machine.machine_name;
     // machineSelect.appendChild(machineOption);
   });
 
