@@ -407,6 +407,11 @@
 </style>
 
 <body>
+  <!-- Mobile Menu Toggle -->
+  <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
   <div class="container">
     <!-- Sidebar -->
     <div class="sidebar">
@@ -564,6 +569,24 @@
           alert("Logout failed!");
         });
     }
+
+    // Toggle sidebar for mobile
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('active');
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function (event) {
+      const sidebar = document.querySelector('.sidebar');
+      const toggle = document.querySelector('.mobile-menu-toggle');
+
+      if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+        if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
+          sidebar.classList.remove('active');
+        }
+      }
+    });
   </script>
 </body>
 

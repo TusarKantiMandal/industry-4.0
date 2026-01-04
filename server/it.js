@@ -108,7 +108,7 @@ const enhancedScript = `
           let menu = this.nextElementSibling;
            const row = this.closest('tr');
             const userId = row.cells[0].textContent;
-            const status = row.cells[5].textContent;
+            const status = row.cells[6].textContent.trim();
 
             const secondOption = status === 'Active' ? 'Deactivate' : 'Activate'
 
@@ -197,7 +197,7 @@ const enhancedScript = `
   // Function to call API and deactivate user
   function deactivateUser(userId, row, action) {
       // Show loading state
-      const statusCell = row.cells[5].querySelector('.chip');
+      const statusCell = row.cells[6].querySelector('.chip');
       const originalText = statusCell.textContent;
       statusCell.textContent = 'Processing...';
       
