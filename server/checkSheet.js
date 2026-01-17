@@ -241,6 +241,66 @@ router.put("/updateData", async (req, res) => {
     }).catch((err) => {
       return res.status(400).json({ error: err.message });
     });
+
+    // Check for failure and send alert email
+    try {
+      const checkpointDetailsQuery = `SELECT name, type, min_value, max_value, alert_email FROM checkpoints WHERE id = ?`;
+      const cpDetails = await new Promise((resolve, reject) => {
+        db.get(checkpointDetailsQuery, [checkpoint], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      if (cpDetails && cpDetails.alert_email) {
+        let isFail = false;
+        let failReason = "";
+
+        if (cpDetails.type === 'numeric' && cpDetails.min_value !== null && cpDetails.max_value !== null) {
+          const numVal = parseFloat(value);
+          if (!isNaN(numVal) && (numVal < cpDetails.min_value || numVal > cpDetails.max_value)) {
+            isFail = true;
+            failReason = `Value ${value} is outside range [${cpDetails.min_value}, ${cpDetails.max_value}]`;
+          }
+        } else if (cpDetails.type === 'level') {
+          if (value === 'L' || value === 'Low') {
+            isFail = true;
+            failReason = `Level is '${value}'`;
+          }
+        } else {
+          // Boolean / Pass-Fail
+          if (value === '✗' || value === 'Fail' || value === 'false') {
+            isFail = true;
+            failReason = `Value is '${value}'`;
+          }
+        }
+
+        if (isFail) {
+          const machineNameObj = (await getMatchineById(machineId)) || { name: machineId };
+          const subject = `Checkpoint Failure Alert: ${cpDetails.name}`;
+          const body = `
+            <h3>Checkpoint Failure Alert</h3>
+            <p><strong>Machine:</strong> ${machineNameObj.name}</p>
+            <p><strong>Checkpoint:</strong> ${cpDetails.name}</p>
+            <p><strong>Date:</strong> ${year}-${month}-${day}</p>
+            <p><strong>Shift:</strong> ${shift}</p>
+            <p><strong>Value:</strong> ${value}</p>
+            <p><strong>Reason:</strong> ${failReason}</p>
+            <p><strong>User:</strong> ${req.user.fullname} (${req.user.email})</p>
+          `;
+
+          console.log(`Sending failure alert to ${cpDetails.alert_email} for checkpoint ${cpDetails.name}`);
+          sendEmail({
+            to: cpDetails.alert_email,
+            subject: subject,
+            body: body
+          }).catch(err => console.error("Failed to send alert email:", err));
+        }
+      }
+    } catch (err) {
+      console.error("Error processing alert email:", err);
+      // Continue execution, don't block data update
+    }
   }
 
   for (const op of dbOps) {
